@@ -2367,42 +2367,114 @@
       html body #simulatorDialog .allowance-add:hover {
         background: #164234;
       }
-      /* かんたん入力・くわしく入力の切り替え */
-      .sim-mode {
+      /* 結果欄：折りたためる表と、2つの条件の比較 */
+      html body #simulatorDialog details.sim-fold {
+        margin-top: 18px;
+        border: 1px solid #e3e8e4;
+        border-radius: 16px;
+        background: #fff;
+      }
+      html body #simulatorDialog details.sim-fold > summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 6px 14px;
+        margin: 0;
+        padding: 16px 48px 16px 18px;
+        list-style: none;
+        position: relative;
+        cursor: pointer;
+      }
+      html body #simulatorDialog details.sim-fold > summary::-webkit-details-marker {
+        display: none;
+      }
+      html body #simulatorDialog details.sim-fold > summary::after {
+        content: "";
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        width: 9px;
+        height: 9px;
+        border-right: 2px solid #a8792c;
+        border-bottom: 2px solid #a8792c;
+        transform: translateY(-70%) rotate(45deg);
+        transition: transform 0.2s;
+      }
+      html body #simulatorDialog details.sim-fold[open] > summary::after {
+        transform: translateY(-30%) rotate(-135deg);
+      }
+      html body #simulatorDialog details.sim-fold > .sim-scroll {
+        margin: 0 12px 12px;
+      }
+      .sim-compare {
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px solid #e3e8e4;
+        border-radius: 16px;
+        background: #fff;
+      }
+      .sim-compare-head {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 8px 0;
-        margin: 22px 0 6px;
+        justify-content: space-between;
+        gap: 10px;
       }
-      .sim-mode button {
-        padding: 10px 18px;
+      .sim-compare-head h3 {
+        margin: 0;
+        color: #0c2a22;
+        font-size: 17px;
+      }
+      .sim-compare-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sim-compare-clear {
+        padding: 10px 16px;
         border: 1px solid #cfd8d3;
+        border-radius: 999px;
         background: #fff;
         color: #2c463e;
-        font: 700 13px/1 var(--sans);
+        font-weight: 700;
         cursor: pointer;
       }
-      .sim-mode button:first-of-type {
-        border-radius: 999px 0 0 999px;
+      .sim-compare-help {
+        margin: 10px 0 0;
+        color: #5d6d66;
+        font-size: 12.5px;
+        line-height: 1.7;
       }
-      .sim-mode button:last-of-type {
-        border-left: 0;
-        border-radius: 0 999px 999px 0;
+      .sim-compare-table {
+        min-width: 560px !important;
       }
-      .sim-mode button[aria-pressed="true"] {
-        border-color: #0c271e;
-        background: #0c271e;
-        color: #fff;
+      .sim-compare-table td,
+      .sim-compare-table th {
+        white-space: normal;
       }
-      .sim-mode-note {
-        flex-basis: 100%;
-        color: #6c7c74;
-        font-size: 12px;
+      html body #simulatorDialog .sim-compare-table td {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
       }
-      #simulator.sim-simple .sim-detail-only,
-      #simulator.sim-simple .sim-grid > div:not([data-basic]) {
-        display: none !important;
+      html body #simulatorDialog .sim-compare-table th {
+        text-align: left;
+      }
+      .sim-compare-table tr.sim-compare-key td {
+        color: #0c2a22;
+        font-weight: 800;
+      }
+      #compareWrap {
+        margin-top: 12px;
+      }
+      @media print {
+        .print-area .sim-compare-actions,
+        .print-area .sim-compare-help {
+          display: none !important;
+        }
+        .print-area details.sim-fold > summary {
+          list-style: none;
+        }
       }
       @media (max-width: 560px) {
         .hero-facts > div {
@@ -2710,15 +2782,9 @@
           <p class="sub">
             昇給・昇任の時期を変えて、入隊から退職までの給与を試算します。条件を変えると自動で計算し直します。
           </p>
-          <!-- かんたん入力：所属・入隊区分・入隊時の年齢・予想階級だけを出す（ほかは初期値のまま計算する） -->
-          <div class="sim-mode" role="group" aria-label="入力のしかた">
-            <button type="button" data-mode="simple" aria-pressed="true">かんたん入力</button
-            ><button type="button" data-mode="detail" aria-pressed="false">くわしく入力</button>
-            <small class="sim-mode-note" id="simModeNote">入隊区分・年齢・将来の階級だけで試算します。昇任の時期・手当・家族などは「くわしく入力」で変えられます</small>
-          </div>
           <h3 class="sim-group">所属</h3>
           <div class="sim-grid">
-            <div data-basic>
+            <div>
               <label for="branch">所属</label
               ><select id="branch" aria-describedby="branchNote">
                 <option value="ground">陸上自衛隊</option>
@@ -2730,7 +2796,7 @@
           </div>
           <h3 class="sim-group">基本の条件</h3>
           <div class="sim-grid">
-            <div data-basic>
+            <div>
               <label for="entryType">入隊区分</label
               ><select id="entryType" aria-describedby="entryTypeNote">
                 <option value="sotsu" selected>一般曹候補生（任期なし）</option>
@@ -2741,7 +2807,7 @@
               </select>
               <small id="entryTypeNote" class="fixed-note">一般曹候補生・任期制は2士で入隊します。幹部候補生（一般幹部候補生）は幹部候補生学校を出て3尉（院卒は2尉）に任官します。区分を変えると入隊時の年齢の目安も変わります</small>
             </div>
-            <div data-basic id="ninkiPlanWrap" hidden>
+            <div id="ninkiPlanWrap" hidden>
               <label for="ninkiPlan">任期の扱い</label
               ><select id="ninkiPlan" aria-describedby="ninkiPlanNote">
                 <option value="1">1任期で満了退職</option>
@@ -2754,7 +2820,7 @@
                 >1任期目は陸上2年・海上と航空3年、2任期目からは2年です（自衛隊法第36条）。任期ごとに任期満了金（退職手当）が出ます</small
               >
             </div>
-            <div data-basic>
+            <div>
               <label for="startAge">入隊時の年齢</label>
               <div class="unit">
                 <input id="startAge" type="number" min="16" max="60" value="18" /><span>歳</span>
@@ -2794,7 +2860,7 @@
                 >税・共済掛金の改正の時期と、若年定年退職者給付金で使う自衛官以外の職員の定年を決めるのに使います</small
               >
             </div>
-            <div data-basic id="targetRankWrap">
+            <div id="targetRankWrap">
               <label for="targetRank">予想する将来の階級（定年年齢を決定）</label
               ><select id="targetRank" aria-describedby="targetRankNote">
                 <!-- data-age：定年年齢（2024年10月以降） -->
@@ -2825,7 +2891,7 @@
                 >）</small
               >
             </div>
-            <div data-basic>
+            <div>
               <label for="retireAge" id="retireAgeLabel">定年年齢（予想階級に連動）</label>
               <div class="unit">
                 <input id="retireAge" type="number" value="56" readonly /><span>歳</span>
@@ -3256,6 +3322,32 @@
               <div class="sim-net"><small>生涯の手取り（退職手当等を含む）</small><strong id="lifetimeNet"></strong></div>
             </div>
             <p class="note" id="deductionDetail"></p>
+            <!-- 2つの条件を比べる：保存した結果（A）と今の結果（B） -->
+            <div class="sim-compare" id="simCompare">
+              <div class="sim-compare-head">
+                <h3>条件を比べる</h3>
+                <div class="sim-compare-actions">
+                  <button type="button" id="compareSave" class="allowance-add">今の結果をAとして保存</button>
+                  <button type="button" id="compareClear" class="sim-compare-clear" hidden>比べるのをやめる</button>
+                </div>
+              </div>
+              <p class="sim-compare-help" id="compareHelp">
+                今の結果をAとして保存してから条件を変えると、Aと今の結果（B）を並べて比べられます。例：「任期制で2任期」と「一般曹候補生で定年まで」
+              </p>
+              <div class="sim-scroll" id="compareWrap" hidden>
+                <table class="sim-table sim-compare-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">項目</th>
+                      <th scope="col">A（保存）</th>
+                      <th scope="col">B（今）</th>
+                      <th scope="col">差（B−A）</th>
+                    </tr>
+                  </thead>
+                  <tbody id="compareRows"></tbody>
+                </table>
+              </div>
+            </div>
             <div class="sim-section-head">
               <h3>年収の推移</h3>
               <span class="sim-legend"
@@ -3263,10 +3355,11 @@
               >
             </div>
             <div class="sim-chart" id="simChart"></div>
-            <div class="sim-section-head">
+            <details class="sim-fold">
+            <summary class="sim-section-head">
               <h3>年齢ごとの内訳</h3>
-              <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」</span>
-            </div>
+              <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」。押すと開きます</span>
+            </summary>
             <div class="sim-scroll" tabindex="0" role="region" aria-label="年齢ごとの内訳の表">
               <table class="sim-table">
                 <thead>
@@ -3284,15 +3377,18 @@
                 <tbody id="simRows"></tbody>
               </table>
             </div>
-            <div class="sim-section-head">
+            </details>
+            <details class="sim-fold" open>
+            <summary class="sim-section-head">
               <h3>退職時・退職後の給付</h3>
-              <span>退職手当は退職時、若年定年退職者給付金は分割して支給</span>
-            </div>
+              <span>退職手当・若年定年退職者給付金・退職後の負担と年金の見込み</span>
+            </summary>
             <div class="sim-scroll" tabindex="0" role="region" aria-label="退職時・退職後の給付の表">
               <table class="sim-table">
                 <tbody id="retireRows"></tbody>
               </table>
             </div>
+            </details>
             <!-- 再就職の年収によって、若年定年退職者給付金（60歳までの分）がどれだけ減るか -->
             <div id="reemploySection" hidden>
               <div class="sim-section-head">
@@ -5708,30 +5804,6 @@
             $("retireAgeLabel").textContent = "定年年齢（予想階級に連動）";
           }
         }
-        // かんたん入力：入力欄のうち data-basic の付いた欄と、それを含む見出し・欄だけを出す（ほかの欄は値を保ったまま隠す）
-        {
-          const sim = $("simulator"),
-            kids = [...sim.children],
-            from = kids.findIndex((el) => el.matches("h3.sim-group")),
-            to = kids.indexOf($("simError"));
-          kids.slice(from, to).forEach((el, i, list) => {
-            const basicGrid = (node) => node?.matches(".sim-grid") && node.querySelector("[data-basic]");
-            if (basicGrid(el) || (el.matches("h3.sim-group") && basicGrid(list[i + 1]))) return;
-            el.classList.add("sim-detail-only");
-          });
-          const setMode = (mode) => {
-            sim.classList.toggle("sim-simple", mode === "simple");
-            for (const b of sim.querySelectorAll(".sim-mode button")) b.setAttribute("aria-pressed", String(b.dataset.mode === mode));
-            $("simModeNote").textContent =
-              mode === "simple"
-                ? "入隊区分・年齢・将来の階級だけで試算します。昇任の時期・手当・家族などは「くわしく入力」で変えられます"
-                : "すべての条件を変えられます。「かんたん入力」に戻しても、変えた条件はそのまま計算に使います";
-          };
-          for (const b of sim.querySelectorAll(".sim-mode button")) b.addEventListener("click", () => setMode(b.dataset.mode));
-          setMode("simple");
-          // 共有URLで開いたときは、変えてある条件が見えるように「くわしく入力」にする
-          if (location.hash.startsWith("#sim=")) setMode("detail");
-        }
         // 入隊区分を変えたら、入隊時の年齢をその区分の目安にする
         $("entryType").addEventListener("change", () => {
           $("startAge").value = String(window.RULES.entry.defaultAge[$("entryType").value] ?? 18);
@@ -6025,6 +6097,60 @@
         $("simulator").addEventListener("input", schedule);
         $("simulator").addEventListener("change", schedule);
         new MutationObserver(schedule).observe($("allowanceList"), { childList: true });
+        // ---- 2つの条件を比べる：保存したA と、今の結果B ----
+        let savedSummary = null,
+          latestSummary = null;
+        function renderCompare() {
+          const on = !!savedSummary && !!latestSummary;
+          // 結果が出るまでは保存できない
+          $("compareSave").disabled = !latestSummary;
+          $("compareWrap").hidden = !on;
+          $("compareClear").hidden = !savedSummary;
+          $("compareSave").textContent = savedSummary ? "今の結果でAを上書き" : "今の結果をAとして保存";
+          $("compareHelp").textContent = on
+            ? "Aは保存した時点の結果です。条件を変えるとB（今）だけが変わります。"
+            : "今の結果をAとして保存してから条件を変えると、Aと今の結果（B）を並べて比べられます。例：「任期制で2任期」と「一般曹候補生で定年まで」";
+          if (!on) return;
+          const A = savedSummary,
+            B = latestSummary,
+            diff = (k) => {
+              const d = B[k] - A[k];
+              return d === 0 ? "±0円" : (d > 0 ? "+" : "−") + fmt(Math.abs(d));
+            },
+            money = [
+              ["在職中の給与の総額", "total"],
+              ["退職手当（任期満了金を含む）", "allowance"],
+              ["若年定年退職者給付金", "pension"],
+              ["税・共済掛金・退職後の負担", "deductions"],
+              ["生涯の手取り", "lifetime"],
+              ["65歳からの年金の見込み（年額）", "nenkin"],
+            ];
+          $("compareRows").innerHTML =
+            `<tr><th scope="row">条件</th><td>${A.label}</td><td>${B.label}</td><td></td></tr>` +
+            `<tr><th scope="row">勤務期間・最終の階級</th><td>${A.years}・${A.rank}</td><td>${B.years}・${B.rank}</td><td></td></tr>` +
+            money
+              .map(
+                ([name, k]) =>
+                  `<tr${k === "lifetime" ? ' class="sim-compare-key"' : ""}><th scope="row">${name}</th><td>${fmt(A[k])}</td><td>${fmt(B[k])}</td><td>${diff(k)}</td></tr>`,
+              )
+              .join("");
+        }
+        $("compareSave").addEventListener("click", () => {
+          if (!latestSummary) return;
+          savedSummary = { ...latestSummary };
+          renderCompare();
+        });
+        $("compareClear").addEventListener("click", () => {
+          savedSummary = null;
+          renderCompare();
+        });
+        renderCompare();
+        // 比較で使う条件の名前（入隊区分・予想階級または任期・入隊年齢）
+        function compareLabel(c) {
+          const type = $("entryType").selectedOptions[0].textContent.replace(/（.*?）/g, ""),
+            goal = c.ninki?.exit ? `${$("ninkiPlan").selectedOptions[0].textContent}` : `${$("targetRank").value}で定年`;
+          return `${type}・${goal}・${c.startAge}歳で入隊`;
+        }
         function run() {
           if (!table) return false;
           const value = (id) => Number($(id).value),
@@ -6296,6 +6422,19 @@
                 );
             $("deductionDetail").textContent =
               `在職中：共済掛金 ${fmt(sum("social"))}、所得税 ${fmt(sum("incomeTax"))}、住民税 ${fmt(sum("residentTax"))}。退職後に納める住民税 ${fmt(x.afterResident)}${kokumin ? `、退職後の国民年金保険料 ${fmt(kokumin)}` : ""}${health ? `、退職後の健康保険料 ${fmt(health)}` : ""}。退職所得の税 ${fmt(r.tax)}`;
+            // 比較用の要約（Aとして保存できる）
+            latestSummary = {
+              label: compareLabel(c),
+              years: $("serviceYears").textContent,
+              rank: lastRank,
+              total: x.total,
+              allowance: r.allowance,
+              pension: r.pension,
+              deductions: deductions + r.tax,
+              lifetime,
+              nenkin: AR.basicFull + hirei,
+            };
+            renderCompare();
             return true;
           } catch (e) {
             $("simError").textContent = e.message;
@@ -6621,6 +6760,10 @@
             "<h2>試算結果</h2>";
           const copy = result.cloneNode(true);
           copy.removeAttribute("hidden");
+          // 印刷では折りたたんだ表も開き、比べていないときは比較の欄を出さない
+          copy.querySelectorAll("details").forEach((d) => (d.open = true));
+          const cmp = copy.querySelector(".sim-compare");
+          if (cmp && cmp.querySelector(".sim-scroll[hidden]")) cmp.remove();
           // 画面と同じ id が2つにならないように消す。グラフの中の id（色のグラデーション）は名前を変えて参照も付け替える
           copy.querySelectorAll("[id]").forEach((el) => {
             if (el.closest("svg")) el.id = `pa-${el.id}`;
