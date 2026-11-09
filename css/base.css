@@ -1,0 +1,1021 @@
+/* 骨組み：レイアウト・部品の基本の見た目（元は index.html の最初の <style>） */
+
+:root {
+  --ink: #17312d;
+  --muted: #60716a;
+  --forest: #1c5143;
+  --gold: #c39a54;
+  --paper: #f6f5ef;
+  --line: #e0e6df;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Noto Sans JP",
+    sans-serif;
+}
+header {
+  background: #fff;
+  border-bottom: 1px solid #e1e6e0;
+}
+.top {
+  max-width: 1160px;
+  margin: auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 18px;
+}
+.brand span {
+  color: #547d6f;
+}
+.hero {
+  background: #1c5143;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero:after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  top: -180px;
+  width: 490px;
+  height: 490px;
+  border: 1px solid #ffffff20;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 70px #ffffff08,
+    0 0 0 140px #ffffff08;
+}
+.hero-in {
+  max-width: 1160px;
+  margin: auto;
+  padding: 55px 24px 76px;
+  position: relative;
+  z-index: 1;
+}
+.hero h1 {
+  font-size: clamp(29px, 5vw, 43px);
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  margin: 14px 0;
+}
+.hero p {
+  color: #d5e3dc;
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 0;
+}
+.layout {
+  max-width: 1160px;
+  margin: -39px auto 0;
+  padding: 0 24px 70px;
+  position: relative;
+  z-index: 2;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 7px 30px #173c2c12;
+  padding: 28px;
+  margin-bottom: 22px;
+}
+.cap {
+  color: #906e39;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  font-weight: 800;
+}
+.section-title {
+  font-size: 20px;
+  margin: 8px 0 7px;
+}
+.sub {
+  font-size: 13px;
+  color: #687870;
+  line-height: 1.8;
+  margin: 0;
+}
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 22px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+select {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #cdd9d1;
+  border-radius: 7px;
+  color: #213b32;
+  background: #fff;
+  font-size: 15px;
+}
+.result {
+  margin-top: 20px;
+  background: #edf5ef;
+  border: 1px solid #dae9dc;
+  border-radius: 8px;
+  padding: 20px 23px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.result small {
+  color: #5b7365;
+}
+.result strong {
+  font-size: 31px;
+  letter-spacing: 0.02em;
+}
+.result strong span {
+  font-size: 15px;
+}
+.result .empty {
+  font-size: 17px;
+}
+.note {
+  font-size: 12px;
+  color: #637068;
+  line-height: 1.8;
+  margin-top: 14px;
+}
+.titleline {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+}
+.hint {
+  color: #6b786f;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.scroll {
+  overflow: auto;
+  max-height: 620px;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1700px;
+  width: 100%;
+  font-size: 12px;
+  text-align: right;
+}
+th,
+td {
+  padding: 11px 12px;
+  border-right: 1px solid #e6ece7;
+  border-bottom: 1px solid #e6ece7;
+  white-space: nowrap;
+}
+thead th {
+  background: #e9f1eb;
+  color: #385849;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  text-align: right;
+}
+thead th:first-child {
+  z-index: 4;
+}
+th:first-child,
+td:first-child {
+  position: sticky;
+  left: 0;
+  background: #f5f8f4;
+  text-align: center;
+  font-weight: 700;
+  z-index: 1;
+}
+tbody tr:nth-child(even) td:not(:first-child) {
+  background: #fafcf9;
+}
+td.highlight {
+  background: #e1f0e1 !important;
+  color: #185c40;
+  font-weight: 800;
+}
+.foot {
+  max-width: 1160px;
+  margin: auto;
+  padding: 0 24px 35px;
+  color: #647169;
+  font-size: 12px;
+  line-height: 1.8;
+}
+a {
+  color: #246a51;
+}
+.source {
+  border-top: 1px solid #e9eee9;
+  padding-top: 17px;
+  margin-top: 20px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #667b70;
+}
+@media (max-width: 600px) {
+  .top {
+    padding: 16px;
+  }
+  .brand {
+    font-size: 15px;
+  }
+  .hero-in {
+    padding: 42px 20px 70px;
+  }
+  .layout {
+    padding: 0 14px 40px;
+  }
+  .card {
+    padding: 21px 17px;
+  }
+  .fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .result {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .result strong {
+    font-size: 27px;
+  }
+  .titleline {
+    display: block;
+  }
+  .hint {
+    display: block;
+    margin-top: 10px;
+  }
+  .scroll {
+    max-height: 500px;
+  }
+}
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 23px;
+}
+.sim-grid [hidden] {
+  display: none;
+}
+.unit input[readonly] {
+  background: #f2f5f1;
+  color: #617167;
+  cursor: default;
+}
+.fixed-note {
+  display: block;
+  color: #617068;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.unit {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cdd9d1;
+  border-radius: 7px;
+  background: white;
+  overflow: hidden;
+}
+.unit input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  padding: 14px;
+  font-size: 15px;
+  color: #213b32;
+  outline: none;
+}
+.unit:focus-within {
+  outline: 2px solid #579074;
+}
+.unit span {
+  padding-right: 13px;
+  font-size: 13px;
+  color: #617068;
+  white-space: nowrap;
+}
+.sim-error {
+  color: #a23d33;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.sim-total {
+  margin-top: 20px;
+  background: #1c5143;
+  color: white;
+  border-radius: 8px;
+  padding: 23px;
+}
+.sim-split {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 16px;
+}
+.sim-split > div + div {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  padding-left: 16px;
+}
+.sim-split div:not(:first-child) strong {
+  font-size: clamp(20px, 2.6vw, 26px);
+}
+@media (max-width: 600px) {
+  .sim-split {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .sim-split > div + div {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    padding-top: 10px;
+  }
+}
+.sim-total span,
+.sim-total small {
+  display: block;
+  font-size: 12px;
+  color: #cbe0d3;
+}
+.sim-total strong {
+  display: block;
+  font-size: clamp(26px, 4vw, 36px);
+  margin: 8px 0;
+}
+.sim-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+.sim-metrics div {
+  padding: 16px;
+  background: #f1f6f1;
+  border-radius: 7px;
+}
+.sim-metrics small,
+.sim-metrics strong {
+  display: block;
+}
+.sim-metrics small {
+  font-size: 11px;
+  color: #72867a;
+}
+.sim-metrics strong {
+  margin-top: 6px;
+  font-size: 17px;
+}
+.sim-metrics .sim-net {
+  grid-column: 1 / -1;
+  background: #e3eee5;
+}
+#retireRows th,
+#retireRows td:last-child {
+  text-align: left;
+}
+#retireRows td:nth-child(2) {
+  text-align: right;
+  white-space: nowrap;
+}
+.sim-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 26px;
+}
+.sim-section-head h3 {
+  font-size: 16px;
+}
+.sim-section-head span {
+  color: #84938a;
+  font-size: 12px;
+}
+.sim-scroll {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  max-height: 420px;
+}
+.sim-table {
+  min-width: 620px;
+}
+.sim-table th:first-child,
+.sim-table td:first-child {
+  position: static;
+}
+.sim-table thead th {
+  z-index: 1;
+}
+.sim-table td:nth-child(2) {
+  text-align: left;
+}
+@media (max-width: 600px) {
+  .sim-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .sim-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.sim-launch {
+  position: fixed;
+  z-index: 20;
+  right: 24px;
+  bottom: 24px;
+  width: 76px;
+  height: 76px;
+  border: 2px solid #d5bc80;
+  border-radius: 50%;
+  background: #1c5143;
+  color: white;
+  box-shadow: 0 6px 22px #142d2690;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.25;
+}
+.sim-launch:hover {
+  background: #2a6b55;
+  transform: translateY(-2px);
+}
+.sim-launch:focus-visible,
+.sim-close:focus-visible {
+  outline: 3px solid #c39a54;
+  outline-offset: 3px;
+}
+.sim-launch-icon {
+  font-size: 21px;
+  line-height: 1;
+}
+#simulatorDialog {
+  border: 0;
+  padding: 0;
+  border-radius: 14px;
+  width: min(1200px, calc(100vw - 40px));
+  max-width: none;
+  max-height: min(94vh, 1200px);
+  overflow: auto;
+  background: #fff;
+  box-shadow: 0 15px 60px #102e2760;
+}
+#simulatorDialog::backdrop {
+  background: #102720a8;
+}
+/* 長い説明は「説明ページ」にまとめ、各項目の直下には青いリンクだけを置く */
+.note-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #1a5fb4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.note-link:hover {
+  color: #0d3f80;
+}
+#notesPage {
+  border: 0;
+  padding: 0;
+  border-radius: 14px;
+  width: min(820px, calc(100vw - 40px));
+  max-width: none;
+  max-height: min(94vh, 1200px);
+  overflow: auto;
+  overflow-x: hidden;
+  background: #fff;
+  color: #1d2b24;
+}
+#notesPage::backdrop {
+  background: #102720c4;
+}
+.notes-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #1c5143;
+  color: #fff;
+}
+.notes-head h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.notes-back {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #fff;
+  color: #1c5143;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.notes-body {
+  padding: 8px 20px 28px;
+}
+.notes-body section {
+  padding: 16px 0;
+  border-bottom: 1px solid #e3e9e4;
+  scroll-margin-top: 70px;
+}
+.notes-body h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #1c5143;
+}
+.notes-body p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+@media (max-width: 600px) {
+  #notesPage {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 32px);
+  }
+  .notes-head,
+  .notes-body {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+.simulator.card {
+  box-shadow: none;
+  margin: 0;
+  position: relative;
+}
+.sim-close {
+  position: absolute;
+  right: 20px;
+  top: 17px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #edf3ee;
+  color: #36584a;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+.simulator .section-title {
+  padding-right: 40px;
+}
+@media (max-width: 600px) {
+  .sim-launch {
+    right: 16px;
+    bottom: 16px;
+    width: 68px;
+    height: 68px;
+  }
+  #simulatorDialog {
+    max-height: calc(100dvh - 32px);
+  }
+  .sim-close {
+    right: 13px;
+    top: 13px;
+  }
+}
+.allowance-panel {
+  margin-top: 24px;
+  border: 1px solid #dae6dc;
+  background: #f9fbf8;
+  border-radius: 9px;
+  padding: 20px;
+}
+.allowance-panel h3 {
+  margin: 8px 0;
+  font-size: 18px;
+}
+.allowance-selector {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 18px;
+}
+.allowance-add,
+.allowance-remove {
+  border: 1px solid #bdd0c3;
+  background: white;
+  color: #235743;
+  border-radius: 7px;
+  padding: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.allowance-item {
+  background: #fff;
+  border: 1px solid #dbe5dd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 13px;
+}
+.allowance-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.allowance-item-head strong {
+  font-size: 14px;
+}
+.allowance-remove {
+  padding: 5px 9px;
+  font-size: 12px;
+}
+.allowance-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.allowance-fields label {
+  font-size: 11px;
+}
+.allowance-fields input,
+.allowance-fields select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #cdd9d1;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  background: #fff;
+  color: #213b32;
+}
+.allowance-source {
+  font-size: 12px;
+  line-height: 1.8;
+}
+/* 条件から月額を出す欄：手当の入力欄の上に、淡い緑の枠でまとめる */
+.a-calc-wrap {
+  grid-column: 1 / -1;
+  padding: 14px;
+  border: 1px solid #d5e6dc;
+  border-radius: 10px;
+  background: #f4f9f6;
+}
+.a-calc-top {
+  max-width: 240px;
+}
+.a-calc {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.a-calc[hidden],
+.a-calc-out[hidden] {
+  display: none;
+}
+.a-calc-out {
+  margin: 12px 0 6px;
+  color: #0c5a3d;
+  font-size: 14px;
+  font-weight: 700;
+}
+.allowance-fields .a-amount:read-only {
+  background: #f1f4f2;
+  color: #5d6d66;
+}
+@media (max-width: 600px) {
+  .a-calc {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .allowance-selector {
+    grid-template-columns: 1fr;
+  }
+  .allowance-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .allowance-add {
+    width: 100%;
+  }
+}
+.auto-allowances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.auto-allowances [hidden] {
+  display: none;
+}
+.auto-sources {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #6b7d70;
+}
+.branch-title {
+  font-size: 13px;
+  color: #1c5143;
+  margin: 18px 0 0;
+}
+.manual-allowances {
+  margin-top: 18px;
+  border-top: 1px solid #dce8de;
+  padding-top: 13px;
+}
+.manual-allowances summary {
+  font-size: 13px;
+  color: #265d49;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .auto-allowances {
+    grid-template-columns: 1fr;
+  }
+}
+/* シミュレーター：常に見える結果の要約 */
+.sim-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -28px -28px 20px;
+  padding: 10px 14px 10px 28px;
+  background: #1c5143;
+  color: #fff;
+}
+.sim-sticky-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.sim-sticky-text small {
+  font-size: 11px;
+  color: #cbe0d3;
+}
+.sim-sticky-text strong {
+  font-size: 18px;
+}
+.sim-sticky-text span {
+  font-size: 12px;
+  color: #cbe0d3;
+}
+.sim-jump {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid #ffffff60;
+  border-radius: 20px;
+  padding: 6px 12px;
+  text-decoration: none;
+}
+.sim-sticky .sim-close {
+  position: static;
+  flex: none;
+}
+/* 入力欄のまとまり */
+.sim-group {
+  font-size: 14px;
+  color: #1c5143;
+  margin: 26px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.sim-group-note {
+  font-size: 12px;
+  color: #617068;
+  margin: 8px 0 0;
+}
+.sim-group + .sim-grid,
+.sim-group-note + .sim-grid {
+  margin-top: 14px;
+}
+.sim-section-head {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.sim-section-head h3 {
+  white-space: nowrap;
+}
+/* 年収の推移グラフ */
+.sim-chart {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 8px 4px;
+}
+.sim-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sim-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sim-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-left: 6px;
+}
+.sw-salary {
+  background: #1c5143;
+}
+.sw-extra {
+  background: linear-gradient(#f0d59a, #c39a54);
+}
+.sw-salary {
+  background: linear-gradient(#2f7a62, #15402f);
+}
+.sw-net {
+  height: 3px !important;
+  border-radius: 2px;
+  background: #2d8c72;
+}
+/* グラフ：触れた年以外を薄くし、吹き出しで内訳を出す */
+.sim-chart {
+  position: relative;
+  background: linear-gradient(#fbfdfb, #fff);
+}
+.sim-chart svg {
+  touch-action: pan-y;
+}
+.sim-chart .bar {
+  transition: opacity 0.2s;
+}
+.sim-chart .bar.dim {
+  opacity: 0.35;
+}
+.chart-tip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(20, 52, 43, 0.92);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #e8f1ec;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px #0c241d40;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.chart-tip.show {
+  opacity: 1;
+  transform: none;
+}
+.chart-tip b {
+  color: #fff;
+  font-size: 13px;
+}
+.chart-tip em {
+  font-style: normal;
+  font-weight: 700;
+  color: #f0d59a;
+}
+.chart-tip i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: 1px;
+}
+.reemploy-summary {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border-left: 3px solid #c39a54;
+  background: #fbf6ea;
+  border-radius: 0 7px 7px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.reemploy-summary b {
+  color: #1c5143;
+}
+.sim-table {
+  min-width: 720px;
+}
+/* 共有・リセット */
+.sim-share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+}
+.sim-share .fixed-note {
+  flex-basis: 100%;
+  margin-top: 0;
+}
+.sim-share-url {
+  flex-basis: 100%;
+  border: 1px solid #cdd9d1;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  color: #213b32;
+}
+@media (max-width: 600px) {
+  .sim-sticky {
+    margin: -21px -17px 18px;
+    padding: 8px 10px 8px 17px;
+  }
+  .sim-sticky-text strong {
+    font-size: 16px;
+  }
+}
+/* 入力欄・ボタンの操作性 */
+select,
+input,
+button,
+summary {
+  touch-action: manipulation;
+}
+.scroll {
+  scroll-behavior: smooth;
+}
+/* 右下のシミュレーターボタンでフッターの文字が隠れないようにする */
+.foot {
+  padding-bottom: 120px;
+}
+@media (max-width: 600px) {
+  /* iPhoneでは16px未満の入力欄をタップすると画面が拡大されるため16pxにする */
+  select,
+  .unit input,
+  .allowance-fields input,
+  .allowance-fields select {
+    font-size: 16px;
+  }
+  .foot {
+    padding-bottom: 104px;
+  }
+}
+main.layout > section.card:hover {
+  transform: none;
+  border-color: rgba(91,125,101,.17);
+  box-shadow: 0 18px 44px rgba(24,55,42,.075), 0 2px 5px rgba(24,55,42,.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll {
+    scroll-behavior: auto;
+  }
+  .sim-launch:hover {
+    transform: none;
+  }
+}

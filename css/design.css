@@ -1,0 +1,1217 @@
+/*
+ ===================================================================
+   デザイン v3（2026年10月・1から作り直し）
+   参考：scrolltide / supahero（暗い映画的なヒーローと光）、navbar.gallery（浮いたガラスのナビ）、
+         cta.gallery（白い丸ボタン＋帯）、footer.design（大きな文字のフッター）、3dicons（立体アイコン）、
+         glass.samasante（ガラスの部品）、UIエフェクト見本帳（ぼかしから現れる表示・線で囲まれる枠・カウントアップ）。
+   2026-10-31 見直し：傾くカード・浮くタグ・光るボタン・浮くナビはやめ、最初の画面で俸給を調べられる形にした。
+   方針：ページは夜の深緑。光の玉と細い方眼で奥行きを出し、カードはガラス。金色は大事な数字とボタンだけ。
+         シミュレーターは入力が多いので、明るい紙のシートにして読みやすさを優先する。
+   このファイルの見た目はこの style 1枚で決める（上の基本 style は骨組み、下のスクリプトは演出だけ）。
+   ===================================================================
+*/
+
+:root {
+  --bg: #050f0b;
+  --bg-2: #0a1a14;
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-2: rgba(255, 255, 255, 0.07);
+  --edge: rgba(255, 255, 255, 0.1);
+  --edge-2: rgba(255, 255, 255, 0.16);
+  --text: #eef4f0;
+  --dim: #a3b6ac;
+  --faint: #6f857a;
+  --mint: #7ee2b4;
+  --emerald: #1f7a57;
+  --gold: #ebc77c;
+  --gold-2: #c99a45;
+  --r: 22px;
+  --sans: "Noto Sans JP", system-ui, -apple-system, "Hiragino Sans", sans-serif;
+  --num: "Inter", "Noto Sans JP", system-ui, sans-serif;
+  --serif: "Shippori Mincho B1", "Yu Mincho", serif;
+  color-scheme: dark;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+  background: var(--bg);
+}
+html body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection {
+  background: rgba(235, 199, 124, 0.35);
+  color: #fff;
+}
+
+/* ---------- 背景：漂う光の玉と細い方眼 ---------- */
+.bg-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-scene .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  animation: orb-drift 22s ease-in-out infinite alternate;
+}
+.bg-scene .o1 {
+  width: 620px;
+  height: 620px;
+  left: -160px;
+  top: -200px;
+  background: radial-gradient(circle, #1f7a57 0%, transparent 70%);
+}
+.bg-scene .o2 {
+  width: 520px;
+  height: 520px;
+  right: -140px;
+  top: 80px;
+  background: radial-gradient(circle, #8a6a2c 0%, transparent 70%);
+  opacity: 0.4;
+  animation-duration: 28s;
+}
+.bg-scene .o3 {
+  width: 700px;
+  height: 700px;
+  left: 30%;
+  top: 70vh;
+  background: radial-gradient(circle, #124c3a 0%, transparent 70%);
+  animation-duration: 34s;
+}
+.bg-scene .bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+}
+@keyframes orb-drift {
+  to {
+    transform: translate(80px, 60px) scale(1.12);
+  }
+}
+
+/* ---------- ナビ：ページの上端に置くだけの細い帯（スクロールしても追ってこない） ---------- */
+html body .site-head {
+  position: relative;
+  z-index: 5;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+html body .site-head .top {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border-bottom: 1px solid var(--edge);
+}
+html body .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font: 700 15px/1 var(--sans);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+html body .brand .brand-name {
+  color: var(--text);
+}
+html body .brand-mark svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+html body .brand-mark rect {
+  fill: #13402f;
+}
+html body .brand-mark path {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
+}
+html body .site-nav {
+  display: flex;
+  gap: 26px;
+  margin-left: auto;
+}
+html body .site-nav a {
+  position: relative;
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 0;
+  transition: color 0.2s;
+}
+/* 下線が左から伸びる */
+html body .site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+html body .site-nav a:hover {
+  color: #fff;
+}
+html body .site-nav a:hover::after {
+  transform: scaleX(1);
+}
+html body .head-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gold);
+  font: 700 13px/1 var(--sans);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+html body .head-cta span {
+  transition: transform 0.25s;
+}
+html body .head-cta:hover span {
+  transform: translateX(3px);
+}
+
+/* ---------- ヒーロー：左に説明、右にそのまま使える「俸給を調べる」 ---------- */
+html body .hero {
+  background: none;
+  color: var(--text);
+  overflow: visible;
+  min-height: 0;
+}
+html body .hero::before,
+html body .hero::after {
+  content: none;
+}
+html body .hero-in {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 80px 24px 96px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  gap: 64px;
+  align-items: center;
+}
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--dim);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 0 4px rgba(126, 226, 180, 0.14);
+}
+html body .hero h1 {
+  margin: 24px 0 22px;
+  color: #fff;
+  font: 900 clamp(30px, 4.6vw, 60px) / 1.18 var(--sans);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-shadow: none;
+  max-width: none;
+}
+html body .hero h1 em {
+  font-style: normal;
+  color: var(--gold);
+}
+html body .hero .hero-lead {
+  max-width: 32em;
+  margin: 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.95;
+}
+html body .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 36px;
+}
+/* ボタン：光や丸い矢印は付けず、平らな面と文字だけで見せる */
+html body .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 12px;
+  font: 700 14px/1 var(--sans);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+html body .btn span {
+  transition: transform 0.25s;
+}
+html body .btn:hover span {
+  transform: translateX(4px);
+}
+html body .btn-primary {
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: #17110a;
+  box-shadow: none;
+}
+html body .btn-primary:hover {
+  background: #f3d692;
+  border-color: #f3d692;
+}
+html body .btn-ghost {
+  border: 1px solid var(--edge-2);
+  background: transparent;
+  color: #fff;
+}
+html body .btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+html body .btn:focus-visible,
+html body .head-cta:focus-visible,
+html body a:focus-visible,
+html body select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* 俸給を調べる（ヒーローの右側のパネル） */
+html body .lookup {
+  padding: 28px;
+  border: 1px solid var(--edge);
+  border-radius: 20px;
+  background: rgba(12, 28, 22, 0.72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+}
+.lookup-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--edge);
+}
+.lookup-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.lookup-head span {
+  color: var(--faint);
+  font: 600 11px/1 var(--sans);
+  letter-spacing: 0.14em;
+}
+html body .lookup .fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+html body .lookup label {
+  display: block;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+html body .lookup select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 50px;
+  margin-top: 8px;
+  padding: 0 40px 0 16px;
+  border: 1px solid var(--edge-2);
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.25);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23ebc77c' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  color: #fff;
+  font: 500 15px/1 var(--sans);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+html body .lookup select option {
+  background: #0d1f18;
+  color: #fff;
+}
+html body .lookup select:hover,
+html body .lookup select:focus {
+  outline: 0;
+  border-color: var(--gold);
+}
+html body .lookup .result {
+  margin-top: 24px;
+  padding: 0;
+  display: block;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+}
+html body .lookup #detail {
+  margin: 0;
+  color: var(--dim);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+html body .lookup .result strong {
+  display: block;
+  margin-top: 10px;
+  color: #fff;
+  font: 800 clamp(44px, 5vw, 64px) / 1 var(--num);
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+html body .lookup .result strong span {
+  margin-left: 8px;
+  color: var(--gold);
+  font: 600 15px/1 var(--sans);
+  letter-spacing: 0.04em;
+}
+/* 昇給の見通し：1〜3年後の号俸と金額を細い行で並べる */
+.outlook {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge);
+}
+.outlook-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.outlook-head span {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.outlook-head small {
+  color: var(--faint);
+  font-size: 11px;
+}
+#outlook {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#outlook li {
+  display: grid;
+  grid-template-columns: 4.5em 1fr auto auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  color: var(--dim);
+  font-size: 12px;
+}
+#outlook li:last-child {
+  border-bottom: 0;
+}
+#outlook b {
+  color: var(--faint);
+  font-weight: 500;
+}
+#outlook strong {
+  color: #fff;
+  font: 700 15px/1 var(--num);
+  font-variant-numeric: tabular-nums;
+}
+#outlook em {
+  min-width: 5.5em;
+  color: var(--mint);
+  font: 600 12px/1 var(--num);
+  font-style: normal;
+  text-align: right;
+}
+#outlook .outlook-max {
+  display: block;
+  color: var(--faint);
+}
+/* 俸給表では、見通しの号俸を点線の枠で示す */
+html body .paytable td.ahead {
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(235, 199, 124, 0.35);
+  background-image: linear-gradient(rgba(235, 199, 124, 0.05), rgba(235, 199, 124, 0.05));
+}
+html body .lookup > .note {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge);
+  color: var(--faint);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+/* ---------- 本文のカード ---------- */
+html body .layout {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+html body main.layout > section.card {
+  position: relative;
+  margin: 0 0 24px;
+  padding: 44px 48px;
+  border: 1px solid var(--edge);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: none;
+  color: var(--text);
+  overflow: visible;
+}
+html body .cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  font: 600 11px/1.4 var(--num);
+  letter-spacing: 0.22em;
+}
+html body .cap::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--gold);
+}
+html body .section-title {
+  margin: 12px 0 8px;
+  color: #fff;
+  font: 900 clamp(24px, 2.8vw, 34px) / 1.25 var(--sans);
+  letter-spacing: -0.01em;
+}
+html body main .sub {
+  color: var(--dim);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* 俸給表：縦の罫線をなくし、横の細い線だけで読ませる */
+html body .paytable .titleline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+html body .paytable .hint {
+  color: var(--faint);
+  font-size: 12px;
+}
+html body .paytable .scroll {
+  margin-top: 24px;
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background: #07140f;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+html body .paytable table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font: 500 13px/1 var(--num);
+  font-variant-numeric: tabular-nums;
+}
+html body .paytable th,
+html body .paytable td {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+html body .paytable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 14px 16px;
+  background: #0b1c16;
+  color: var(--dim);
+  font: 600 12px/1.3 var(--sans);
+  letter-spacing: 0.06em;
+  text-align: right;
+  border-bottom: 1px solid var(--edge-2);
+  white-space: nowrap;
+}
+html body .paytable thead th:first-child,
+html body .paytable tbody th {
+  position: sticky;
+  left: 0;
+  text-align: center;
+  box-shadow: 1px 0 0 var(--edge);
+}
+html body .paytable thead th:first-child {
+  z-index: 3;
+}
+html body .paytable tbody th {
+  z-index: 1;
+  padding: 11px 16px;
+  background: #0b1c16;
+  color: var(--faint);
+  font: 600 12px/1 var(--num);
+}
+html body .paytable tbody tr td,
+html body .paytable tbody tr:nth-child(even) td:not(:first-child) {
+  padding: 11px 16px;
+  background: transparent;
+  color: #cfdcd5;
+  text-align: right;
+  white-space: nowrap;
+}
+html body .paytable tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+/* 選んだ号俸：行の番号と金額を金色にし、細い枠で示す */
+html body .paytable td.highlight {
+  background: rgba(235, 199, 124, 0.14) !important;
+  color: var(--gold) !important;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(235, 199, 124, 0.6);
+  border-radius: 0;
+}
+html body .paytable tr:has(td.highlight) th {
+  color: var(--gold);
+}
+html body main .source {
+  margin-top: 18px;
+  padding-top: 0;
+  border-top: 0;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.8;
+}
+html body main .source a {
+  color: var(--mint);
+}
+
+/* ---------- フッター ---------- */
+html body .foot {
+  max-width: none;
+  margin: 72px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--edge);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+  color: var(--dim);
+  overflow: hidden;
+}
+html body .footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 56px 24px 0;
+}
+.footer-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px 48px;
+}
+html body .footer-brand p {
+  margin: 14px 0 0;
+  color: var(--dim);
+  font-size: 13px;
+}
+html body .footer-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.footer-h {
+  margin: 0 0 4px;
+  color: var(--faint);
+  font: 600 11px/1 var(--num);
+  letter-spacing: 0.2em;
+}
+html body .footer-nav a {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--dim);
+  font: 500 13px/1.5 var(--sans);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+html body .footer-nav a:hover {
+  color: #fff;
+}
+html body .footer-note {
+  margin: 40px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--edge);
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+html body .footer-copy {
+  color: var(--faint);
+}
+.to-top {
+  color: var(--dim);
+  text-decoration: none;
+}
+.to-top:hover {
+  color: #fff;
+}
+/* 画面の幅いっぱいの大きな文字（下半分だけ見せる） */
+.footer-word {
+  margin: 28px 0 0;
+  height: 0.62em;
+  overflow: hidden;
+  font: 800 clamp(48px, 12.4vw, 160px) / 1 var(--num);
+  letter-spacing: -0.04em;
+  text-align: center;
+  white-space: nowrap;
+  background: linear-gradient(180deg, rgba(235, 199, 124, 0.5), rgba(235, 199, 124, 0.02));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  user-select: none;
+}
+
+/* ---------- 右下の丸ボタンは使わない（入口はヘッダー・ヒーロー・帯に） ---------- */
+html body .sim-launch {
+  display: none !important;
+}
+
+/* ---------- 画面に入ったらふわっと出す ---------- */
+.reveal-ready .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.reveal-ready .reveal.in {
+  opacity: 1;
+  transform: none;
+}
+.hero-copy > *,
+html body .hero .lookup {
+  animation: rise-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.hero-copy > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+.hero-copy > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.hero-copy > :nth-child(4) {
+  animation-delay: 0.18s;
+}
+html body .hero .lookup {
+  animation-delay: 0.15s;
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* ---------- シミュレーター：明るい紙のシートとして読みやすく ---------- */
+html body #simulatorDialog::backdrop {
+  background: rgba(2, 8, 6, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+html body #simulatorDialog {
+  color-scheme: light;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 50px 120px -30px rgba(0, 0, 0, 0.9);
+  /* 枠の外にはみ出して見えるスクロールバーを出さない（スクロール自体はできる） */
+  scrollbar-width: none;
+}
+html body #simulatorDialog::-webkit-scrollbar {
+  display: none;
+}
+html body #simulatorDialog .simulator {
+  color: #17312d;
+}
+html body #simulatorDialog .section-title {
+  color: #0c2a22;
+  font-size: clamp(22px, 5.6vw, 32px);
+}
+html body #simulatorDialog .sub {
+  color: #5d6d66;
+}
+html body #simulatorDialog .cap {
+  color: #a8792c;
+}
+html body #simulatorDialog .cap::before {
+  background: #a8792c;
+}
+html body #simulatorDialog .source {
+  color: #6c7c74;
+}
+html body #simulatorDialog .source a {
+  color: #1f7a57;
+}
+html body #simulatorDialog .sim-sticky {
+  background: #0c271e;
+}
+html body #simulatorDialog .sim-total {
+  background: #0c271e;
+  color: #fff;
+}
+html body #simulatorDialog .sim-total strong,
+html body #simulatorDialog .sim-metrics strong,
+html body #simulatorDialog .sim-sticky strong {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+/* 結果の数字：白い枠のタイルにし、2つの合計だけを深緑で強調する */
+html body #simulatorDialog .sim-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+html body #simulatorDialog .sim-metrics > div {
+  padding: 18px 20px;
+  border: 1px solid #e3e8e4;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: none;
+}
+html body #simulatorDialog .sim-metrics small {
+  color: #6c7c74;
+  font-size: 12px;
+}
+html body #simulatorDialog .sim-metrics strong {
+  display: block;
+  margin-top: 8px;
+  color: #0c2a22;
+  font-size: 22px;
+}
+html body #simulatorDialog .sim-metrics > .sim-net {
+  grid-column: span 2;
+  border-color: #0c271e;
+  background: #0c271e;
+}
+html body #simulatorDialog .sim-metrics > .sim-net small {
+  color: #a3b6ac;
+}
+html body #simulatorDialog .sim-metrics > .sim-net strong {
+  color: #fff;
+  font-size: 28px;
+}
+html body #simulatorDialog .sim-metrics > .sim-net:last-child strong {
+  color: var(--gold);
+}
+html body #notesPage {
+  color-scheme: light;
+  border-radius: 22px;
+}
+html body #notesPage::backdrop {
+  background: rgba(2, 8, 6, 0.6);
+}
+/* グラフの棒を順に伸ばす（開いたときだけ） */
+#simChart.fx-grow g {
+  animation: bar-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: bottom;
+  transform-box: fill-box;
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+/* ---------- タブレット・スマホ ---------- */
+@media (max-width: 960px) {
+  html body .site-nav {
+    display: none;
+  }
+  html body .head-cta {
+    margin-left: auto;
+  }
+  html body .hero-in {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 48px 20px 64px;
+  }
+  html body .layout {
+    padding: 0 16px 32px;
+  }
+  html body main.layout > section.card {
+    padding: 30px 22px;
+    border-radius: 20px;
+  }
+  html body #simulatorDialog .sim-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  html body .site-head .top {
+    padding: 16px;
+  }
+  html body .brand-name {
+    font-size: 13px;
+  }
+  html body .hero h1 {
+    font-size: clamp(26px, 8.4vw, 40px);
+  }
+  html body .hero-actions .btn {
+    flex: 1 1 100%;
+  }
+  html body .lookup {
+    padding: 22px 18px;
+  }
+  html body .lookup .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  html body #simulatorDialog .sim-metrics > .sim-net {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-scene .orb,
+  .hero-copy > *,
+  html body .hero .lookup,
+  #simChart.fx-grow g {
+    animation: none !important;
+  }
+  .reveal-ready .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ デザインの仕上げ：ヒーローの数字の帯、シミュレーターの手順番号と入力欄
+*/
+
+/* ヒーロー下の数字の帯：このサイトの中身を3つの数字で示す */
+.hero-facts {
+  display: flex;
+  gap: 0;
+  margin: 44px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--edge);
+}
+.hero-facts > div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  flex: 1 1 0;
+  padding: 18px 20px 0 0;
+}
+.hero-facts > div + div {
+  padding-left: 20px;
+  border-left: 1px solid var(--edge);
+}
+.hero-facts dd {
+  margin: 0;
+  color: #fff;
+  font: 800 clamp(24px, 2.6vw, 32px) / 1 var(--num);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-facts dd small {
+  margin-left: 4px;
+  color: var(--gold);
+  font: 600 12px/1 var(--sans);
+  letter-spacing: 0;
+}
+.hero-facts dt {
+  margin-top: 8px;
+  color: var(--faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.foot {
+  padding-bottom: 40px !important;
+}
+
+/* シミュレーター：見出しに 01・02… の手順番号を付け、紙のシートを少し温かい白に */
+html body #simulatorDialog .simulator {
+  counter-reset: simstep;
+  background: #fbfbf8;
+}
+html body #simulatorDialog h3.sim-group {
+  counter-increment: simstep;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 44px 0 18px;
+  padding: 0;
+  border: 0;
+  color: #0c2a22;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+html body #simulatorDialog h3.sim-group::before {
+  content: counter(simstep, decimal-leading-zero);
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #0c271e;
+  color: var(--gold);
+  font: 700 12px/1 var(--num);
+  letter-spacing: 0.04em;
+}
+html body #simulatorDialog h3.sim-group::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, #dfe6e2, transparent);
+}
+/* 入力欄：角の丸い白い箱にそろえ、選択欄は金色の矢印にする */
+html body #simulatorDialog .sim-grid select,
+html body #simulatorDialog .allowance-fields select,
+html body #simulatorDialog .allowance-selector select,
+html body #simulatorDialog .unit,
+html body #simulatorDialog .allowance-fields input:not([type="hidden"]) {
+  border: 1px solid #dfe6e2;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(12, 39, 30, 0.04);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+html body #simulatorDialog .sim-grid select,
+html body #simulatorDialog .allowance-fields select,
+html body #simulatorDialog .allowance-selector select {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 48px;
+  padding: 12px 40px 12px 15px;
+  color: #17312d;
+  font-weight: 600;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a8792c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  cursor: pointer;
+}
+html body #simulatorDialog .unit span {
+  border-left-color: #edf1ee;
+  background: #f6f8f6;
+  color: #5d6d66;
+  border-radius: 0 11px 11px 0;
+}
+html body #simulatorDialog .unit input {
+  font-weight: 600;
+}
+html body #simulatorDialog .unit:has(input[readonly]) {
+  background: #f3f5f3;
+  box-shadow: none;
+}
+html body #simulatorDialog .sim-grid select:hover,
+html body #simulatorDialog .allowance-fields select:hover,
+html body #simulatorDialog .unit:hover {
+  border-color: #c6d3cb;
+}
+html body #simulatorDialog .sim-grid select:focus,
+html body #simulatorDialog .allowance-fields select:focus,
+html body #simulatorDialog .allowance-fields input:focus,
+html body #simulatorDialog .unit:focus-within {
+  outline: 0;
+  border-color: #1f7a57;
+  box-shadow: 0 0 0 4px rgba(31, 122, 87, 0.12);
+}
+html body #simulatorDialog .sim-grid label {
+  color: #2c463e;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+/* 手当の行：白いカードに */
+html body #simulatorDialog .allowance-item {
+  border: 1px solid #e3e8e4;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 6px 18px -12px rgba(12, 39, 30, 0.25);
+}
+html body #simulatorDialog .allowance-add {
+  border-radius: 999px;
+  padding: 10px 18px;
+  border: 1px solid #0c271e;
+  background: #0c271e;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+html body #simulatorDialog .allowance-add:hover {
+  background: #164234;
+}
+/* 結果欄：折りたためる表と、2つの条件の比較 */
+html body #simulatorDialog details.sim-fold {
+  margin-top: 18px;
+  border: 1px solid #e3e8e4;
+  border-radius: 16px;
+  background: #fff;
+}
+html body #simulatorDialog details.sim-fold > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 16px 48px 16px 18px;
+  list-style: none;
+  position: relative;
+  cursor: pointer;
+}
+html body #simulatorDialog details.sim-fold > summary::-webkit-details-marker {
+  display: none;
+}
+html body #simulatorDialog details.sim-fold > summary::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #a8792c;
+  border-bottom: 2px solid #a8792c;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s;
+}
+html body #simulatorDialog details.sim-fold[open] > summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+html body #simulatorDialog details.sim-fold > .sim-scroll {
+  margin: 0 12px 12px;
+}
+.sim-compare {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #e3e8e4;
+  border-radius: 16px;
+  background: #fff;
+}
+.sim-compare-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sim-compare-head h3 {
+  margin: 0;
+  color: #0c2a22;
+  font-size: 17px;
+}
+.sim-compare-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sim-compare-clear {
+  padding: 10px 16px;
+  border: 1px solid #cfd8d3;
+  border-radius: 999px;
+  background: #fff;
+  color: #2c463e;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sim-compare-help {
+  margin: 10px 0 0;
+  color: #5d6d66;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.sim-compare-table {
+  min-width: 560px !important;
+}
+.sim-compare-table td,
+.sim-compare-table th {
+  white-space: normal;
+}
+html body #simulatorDialog .sim-compare-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+html body #simulatorDialog .sim-compare-table th {
+  text-align: left;
+}
+.sim-compare-table tr.sim-compare-key td {
+  color: #0c2a22;
+  font-weight: 800;
+}
+#compareWrap {
+  margin-top: 12px;
+}
+@media print {
+  .print-area .sim-compare-actions,
+  .print-area .sim-compare-help {
+    display: none !important;
+  }
+  .print-area details.sim-fold > summary {
+    list-style: none;
+  }
+}
+@media (max-width: 560px) {
+  .hero-facts > div {
+    padding-right: 12px;
+  }
+  .hero-facts > div + div {
+    padding-left: 12px;
+  }
+  .hero-facts dt {
+    font-size: 11px;
+  }
+}

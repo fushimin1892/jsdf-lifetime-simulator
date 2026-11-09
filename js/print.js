@@ -1,0 +1,92 @@
+      // 印刷・PDF：シミュレーターを開いているときだけ、入力条件と結果を1つの紙面（.print-area）に写して印刷する。
+      // Ctrl+P で印刷したときも同じ紙面になる。計算には触れない
+      (() => {
+        "use strict";
+        const $ = (id) => document.getElementById(id),
+          dialog = $("simulatorDialog"),
+          esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+        // 画面に出ている入力欄を「項目名：値」で集める（選択欄は選んだ文字、数値は単位つき）
+        function conditions() {
+          const rows = [];
+          for (const box of document.querySelectorAll("#simulator .sim-grid > div, #branchAllowances .sim-grid > div")) {
+            if (!box.offsetParent) continue;
+            const label = box.querySelector("label"),
+              field = box.querySelector("select, input");
+            if (!label || !field) continue;
+            const value =
+              field.tagName === "SELECT"
+                ? field.selectedOptions[0]?.textContent ?? ""
+                : `${field.value}${box.querySelector(".unit span")?.textContent ?? ""}`;
+            rows.push([label.textContent.trim(), value.trim()]);
+          }
+          const barracks = $("barracksYears"),
+            eigai = $("eigaiStart");
+          for (const el of [barracks, eigai])
+            if (el && !rows.some(([k]) => k === el.labels?.[0]?.textContent.trim()))
+              rows.push([el.labels?.[0]?.textContent.trim() || el.id, el.selectedOptions[0]?.textContent.trim() ?? ""]);
+          return rows;
+        }
+        function allowances() {
+          return [...document.querySelectorAll("#allowanceList .allowance-item")].map((item) => {
+            const v = (sel) => item.querySelector(sel)?.value ?? "",
+              method = v(".a-method"),
+              amount = Number(v(".a-amount")).toLocaleString("ja-JP"),
+              how =
+                method === "percent" ? `${amount}％` : method === "daily" ? `日額 ${amount}円 × ${v(".a-days")}日` : method === "annual" ? `年額 ${amount}円` : `月額 ${amount}円`;
+            return `${v(".a-name")}：${how}（入隊から${v(".a-start")}〜${v(".a-end")}年後）`;
+          });
+        }
+        function build() {
+          remove();
+          const result = $("simResult");
+          if (!dialog.open || !result || result.hidden) return false;
+          const area = document.createElement("div");
+          area.className = "print-area";
+          const today = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" }),
+            extra = allowances();
+          area.innerHTML =
+            `<header class="pa-head"><div><p class="pa-brand">自衛官 給料表ナビ</p><h1>生涯年収シミュレーション</h1></div><p class="pa-date">作成日 ${esc(today)}</p></header>` +
+            `<h2>入力した条件</h2><dl class="pa-cond">${conditions()
+              .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`)
+              .join("")}</dl>` +
+            (extra.length ? `<ul class="pa-allowances">${extra.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "") +
+            "<h2>試算結果</h2>";
+          const copy = result.cloneNode(true);
+          copy.removeAttribute("hidden");
+          // 印刷では折りたたんだ表も開き、比べていないときは比較の欄を出さない
+          copy.querySelectorAll("details").forEach((d) => (d.open = true));
+          const cmp = copy.querySelector(".sim-compare");
+          if (cmp && cmp.querySelector(".sim-scroll[hidden]")) cmp.remove();
+          // 画面と同じ id が2つにならないように消す。グラフの中の id（色のグラデーション）は名前を変えて参照も付け替える
+          copy.querySelectorAll("[id]").forEach((el) => {
+            if (el.closest("svg")) el.id = `pa-${el.id}`;
+            else el.removeAttribute("id");
+          });
+          copy.removeAttribute("id");
+          copy.querySelectorAll("svg *").forEach((el) => {
+            for (const attr of ["fill", "stroke", "clip-path", "mask"]) {
+              const val = el.getAttribute(attr);
+              if (val?.includes("url(#")) el.setAttribute(attr, val.replace(/url\(#/g, "url(#pa-"));
+            }
+          });
+          area.append(copy);
+          area.insertAdjacentHTML(
+            "beforeend",
+            '<p class="pa-foot">入力した条件に基づく試算で、実際の支給額とは異なることがあります。個人向けの情報提供サイトです。防衛省・自衛隊の公式サイトではありません。正式な金額・適用条件は法令等をご確認ください。</p>',
+          );
+          document.body.append(area);
+          document.documentElement.classList.add("printing");
+          return true;
+        }
+        function remove() {
+          document.querySelectorAll(".print-area").forEach((el) => el.remove());
+          document.documentElement.classList.remove("printing");
+        }
+        $("printSim")?.addEventListener("click", () => {
+          if (build()) window.print();
+        });
+        window.addEventListener("beforeprint", () => {
+          if (!document.querySelector(".print-area")) build();
+        });
+        window.addEventListener("afterprint", remove);
+      })();
