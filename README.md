@@ -4,6 +4,12 @@
 
 公開先: https://fushimin1892.github.io/jsdf-lifetime-simulator/
 
+## 開発時の確認
+
+リポジトリのルートで `python -m http.server 8000` を実行し、ブラウザで `http://localhost:8000/` を開きます。終了は Ctrl+C です。
+
+計算結果を変更前後で比べる手順は [AI向け改修ガイド](AI用/AI向け改修ガイド.md) と [検証用スクリプト](AI用/検証用スクリプト.js) を参照してください。検証用スクリプトはブラウザのコンソールで実行します。
+
 ## ファイル構成
 
 - `index.html` — 画面の構造
