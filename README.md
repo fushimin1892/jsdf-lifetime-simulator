@@ -8,7 +8,7 @@
 
 リポジトリのルートで `python -m http.server 8000` を実行し、ブラウザで `http://localhost:8000/` を開きます。終了は Ctrl+C です。
 
-データの検査はリポジトリのルートで `node test/check.js`（NG 0 で合格）。法令の改正を反映する手順は [改正対応の手順書](AI用/改正対応の手順書.md) にまとめています。
+検査はリポジトリのルートで `node test/check.js`（データ。NG 0 で合格）、`node tools/egov-check.js all`（e-Gov の条文との照合）、`node test/regression.js`（計算結果の回帰。Playwright が必要）。法令の改正を反映する手順は [改正対応の手順書](AI用/改正対応の手順書.md) にまとめています。
 
 計算結果を変更前後で比べる手順は [AI向け改修ガイド](AI用/AI向け改修ガイド.md) と [検証用スクリプト](AI用/検証用スクリプト.js) を参照してください。検証用スクリプトはブラウザのコンソールで実行します。
 
@@ -19,8 +19,8 @@
 - `data/` — 俸給表、昇任表、計算に使う規則、出典の一覧（`sources.js`。画面では読み込まない）
 - `js/` — 試算、俸給の検索、画面操作、印刷
 - `icons/` — アイコン画像
-- `test/` — データの検査（`node test/check.js`）
-- `tools/` — e-Gov との照合（`node tools/egov-check.js`）
+- `test/` — データの検査（`check.js`）と計算結果の回帰テスト（`regression.js`・`expected.json`）
+- `tools/` — e-Gov との照合（`egov-check.js`・`value-checks.js`）
 - `AI用/` — 修正ガイド、改正対応の手順書、検証用スクリプト
 
 ビルドは不要です。ローカルで確認する場合は、このディレクトリを静的サーバーで配信して開きます。

@@ -336,7 +336,7 @@
               regionCustom.value = oldRate;
             }
             if (name.value === "広域異動手当") {
-              // 保存済みデータの旧割合（5％・10％）は、新しい距離区分の割合へ移行する。
+              // 以前の版の共有URLにある割合は、今の距離区分の割合へ移す（RULES.allowances.wideRateMigration）。
               const oldRate = String(saved[7] ?? saved[2] ?? "0"),
                 migrated = A.wideRateMigration[oldRate];
               if (migrated != null) distance.value = String(migrated);
@@ -429,11 +429,13 @@
           for (const key of branchAllowances[$("branch").value]) {
             const a = placement[key],
               v = $(`ba-${$("branch").value}-${key}`).value;
+            // 値が「first:割合」なら、その選択肢だけ階級の最低号俸に掛ける（乗組手当の「その他の乗組員」）
+            const [base, rate] = v.includes(":") ? v.split(":") : [a.base, v];
             if (v !== "none")
               auto.push({
                 name: a.name,
-                method: a.base === "pay" ? "percent" : "percentFirst",
-                amount: Number(v),
+                method: base === "pay" ? "percent" : "percentFirst",
+                amount: Number(rate),
                 startMonth: 0,
                 endMonth: 960,
                 // 配置手当（教育期間中はほかの手当と同じく支給しない。model() で判定）

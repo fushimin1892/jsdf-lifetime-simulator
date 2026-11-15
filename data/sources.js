@@ -10,6 +10,9 @@
 // items：data の場所ごとの根拠（法令の key・条や表・最後に原文と照合した日）。
 // ===================================================================
 window.SOURCES = {
+  // 毎月の点検が最後に終わった日（クラウドの定期実行は、この日付が今月なら何もしない）
+  lastMonthlyCheck: "2026-11-16",
+
   laws: [
     {
       key: "boeiKyuyo",
@@ -45,11 +48,28 @@ window.SOURCES = {
     },
     {
       key: "jinjiin9_49",
-      title: "人事院規則九―四九（地域手当）と九―四九―五七（経過措置）",
+      title: "人事院規則九―四九（地域手当）",
       num: "平成十八年人事院規則九―四九",
-      // e-Gov のタイトル検索では本則が一つに決まらないので、人事院の改正通知で確かめる
-      egovId: null,
-      url: "https://www.jinji.go.jp/",
+      // e-Gov では全部改正した規則（九―四九―三二）の番号で載っている。経過措置の九―四九―五七の附則別表は載らないので人事院の改正通知で確かめる
+      egovId: "418RJNJ09049032",
+      url: "https://laws.e-gov.go.jp/law/418RJNJ09049032",
+      egovRevision: { promulgated: "2026-02-13", enforced: "2026-04-01", by: "人事院規則九―四九―五七（人事院規則九―四九（地域手当）の一部を改正する人事院規則）の一部を改正する人事院規則" },
+    },
+    {
+      key: "jinjiin9_24",
+      title: "人事院規則九―二四（通勤手当）",
+      num: "昭和三十三年人事院規則九―二四",
+      egovId: "333RJNJ09024000",
+      url: "https://laws.e-gov.go.jp/law/333RJNJ09024000",
+      egovRevision: { promulgated: "2026-09-01", enforced: "2026-10-01", by: "人事院規則九―二四（通勤手当）の一部を改正する人事院規則" },
+    },
+    {
+      key: "jinjiin9_89",
+      title: "人事院規則九―八九（単身赴任手当）",
+      num: "平成二年人事院規則九―八九",
+      egovId: "402RJNJ09089000",
+      url: "https://laws.e-gov.go.jp/law/402RJNJ09089000",
+      egovRevision: { promulgated: "2025-02-05", enforced: "2025-04-01", by: "人事院規則九―八九（単身赴任手当）の一部を改正する人事院規則" },
     },
     {
       key: "taishoku",
@@ -157,36 +177,38 @@ window.SOURCES = {
     { key: "boeiKyosai", title: "防衛省共済組合（掛金等・負担金）", url: "https://www.boueikyosai.or.jp/" },
   ],
 
-  // data の場所 → 根拠。checked は原文と照合した日（数値を直したら、その日の日付に）
+  // data の場所 → 根拠。checked は原文と照合した日（数値を直したら、その日の日付に）。
+  // e-Gov にある値は `node tools/egov-check.js values` が自動で照合する（2026-11-16 に全件一致）。
+  // e-Gov にない値（kyosai・afterRetire・tax・地域手当の経過措置・訓令の割合）は、公表資料で人が確かめた日を書く
   items: [
     { path: "PAY_TABLE", file: "data/pay-table.js", law: "boeiKyuyo", where: "別表第二（自衛官俸給表）", checked: "2026-11-16", how: "node tools/egov-check.js paytable で e-Gov（2026-10-01 施行版）と全1,388欄一致" },
     { path: "PROMOTION_TABLE", file: "data/promotion-table.js", law: "boeiKyuyoRei", where: "別表第一ロ（第六条の六関係）", checked: "2026-11-16", how: "node tools/egov-check.js promotion で e-Gov（2026-10-01 施行版）と全145行一致" },
-    { path: "RULES.promotion.retireAge", law: "jieitaiRei", where: "別表第九", checked: "2026-10-30" },
-    { path: "RULES.promotion.choices", law: "jieitaiKisoku", where: "別表第七ほか", checked: "2026-10-30" },
-    { path: "RULES.promotion.restrict*", law: "boeiKyuyoRei", where: "第六条の十四・第六条の十四の二", checked: "2026-10-30" },
-    { path: "RULES.bonus.kimatsuMonths / kinbenMonths / kimatsuPer", law: "ippanKyuyo", where: "第十九条の四・第十九条の七", checked: "2026-10-30" },
-    { path: "RULES.bonus.kinbenStandard / kinbenPeriod", law: "jinjiin9_40", where: "第十三条・別表第二", checked: "2026-10-30" },
-    { path: "RULES.bonus.rankAdd / managerAdd", law: "boeiKyuyoRei", where: "別表第八・第十二条の六", checked: "2026-10-30" },
-    { path: "RULES.allowances.eigai", law: "boeiKyuyo", where: "第十八条", checked: "2026-10-30" },
-    { path: "RULES.allowances.barracksBonus", law: "boeiKyuyo", where: "第二十六条の二（額は施行令）", checked: "2026-10-30" },
-    { path: "RULES.allowances.managerPay", law: "boeiKyuyoRei", where: "別表第四", checked: "2026-10-30" },
-    { path: "RULES.allowances.placement / seniorRate", law: "boeiKyuyoRei", where: "第十二条（割合の区分は各訓令）", checked: "2026-10-30" },
-    { path: "RULES.allowances.manualGroups / branchOnly / defaultAmount", law: "boeiKyuyoRei", where: "別表第五", checked: "2026-10-30" },
-    { path: "RULES.allowances.regionalAreas / regionalTransition", law: "jinjiin9_49", where: "別表第一・九―四九―五七 附則別表第一", checked: "2026-10-30" },
-    { path: "RULES.allowances.wideRates", law: "ippanKyuyo", where: "第十一条の八（勧告の割合。法改正の成立待ち）", checked: "2026-10-30" },
-    { path: "RULES.allowances.calcRates", law: "ippanKyuyo", where: "第十一条・第十一条の十・第十二条・第十二条の二（寒冷地は寒冷地手当法第二条）", checked: "2026-10-30" },
-    { path: "RULES.retirement", law: "taishoku", where: "第三条〜第六条の五・附則（83.7％）", checked: "2026-10-30" },
-    { path: "RULES.entry", law: "jieitai", where: "第三十六条（任期）・防衛省給与法第二十八条（任期満了金）", checked: "2026-10-30" },
-    { path: "RULES.youngPension", law: "boeiKyuyo", where: "第二十七条の二〜・施行令第二十二条〜第二十四条", checked: "2026-10-30" },
-    { path: "RULES.afterRetire", law: "kokunen", where: "第二十七条・第八十七条（年額・保険料は日本年金機構の公表額）", checked: "2026-10-30" },
-    { path: "RULES.kyosai", law: "kyosai", where: "掛金率は防衛省共済組合の公表資料", checked: "2026-10-30" },
-    { path: "RULES.tax", law: "shotoku", where: "所得税法・租税特別措置法・地方税法", checked: "2026-10-30" },
+    { path: "RULES.promotion.retireAge", law: "jieitaiRei", where: "別表第九", checked: "2026-11-16" },
+    { path: "RULES.promotion.choices", law: "jieitaiKisoku", where: "別表第七ほか", checked: "2026-11-16" },
+    { path: "RULES.promotion.restrict*", law: "boeiKyuyoRei", where: "第六条の十四・第六条の十四の二", checked: "2026-11-16" },
+    { path: "RULES.bonus.kimatsuMonths / kinbenMonths / kimatsuPer", law: "ippanKyuyo", where: "第十九条の四・第十九条の七", checked: "2026-11-16" },
+    { path: "RULES.bonus.kinbenStandard / kinbenPeriod", law: "jinjiin9_40", where: "第十三条・別表第二", checked: "2026-11-16" },
+    { path: "RULES.bonus.rankAdd / managerAdd", law: "boeiKyuyoRei", where: "別表第八・第十二条の六", checked: "2026-11-16" },
+    { path: "RULES.allowances.eigai", law: "boeiKyuyo", where: "第十八条", checked: "2026-11-16" },
+    { path: "RULES.allowances.barracksBonus", law: "boeiKyuyo", where: "第二十六条の二（額は施行令）", checked: "2026-11-16" },
+    { path: "RULES.allowances.managerPay", law: "boeiKyuyoRei", where: "別表第四", checked: "2026-11-16" },
+    { path: "RULES.allowances.placement / seniorRate", law: "boeiKyuyoRei", where: "第十二条（割合の区分は各訓令）", checked: "2026-11-16" },
+    { path: "RULES.allowances.manualGroups / branchOnly / defaultAmount", law: "boeiKyuyoRei", where: "別表第五", checked: "2026-11-16" },
+    { path: "RULES.allowances.regionalAreas / regionalTransition", law: "jinjiin9_49", where: "別表第一・九―四九―五七 附則別表第一", checked: "2026-11-16" },
+    { path: "RULES.allowances.wideRates", law: "ippanKyuyo", where: "第十一条の八第一項（現行法の5％・10％）", checked: "2026-11-16" },
+    { path: "RULES.allowances.calcRates", law: "ippanKyuyo", where: "第十一条・第十一条の十・第十二条・第十二条の二（寒冷地は寒冷地手当法第二条）", checked: "2026-11-16" },
+    { path: "RULES.retirement", law: "taishoku", where: "第三条〜第六条の五・附則（83.7％）", checked: "2026-11-16" },
+    { path: "RULES.entry", law: "jieitai", where: "第三十六条（任期）・防衛省給与法第二十八条（任期満了金）", checked: "2026-11-16" },
+    { path: "RULES.youngPension", law: "boeiKyuyo", where: "第二十七条の二〜・施行令第二十二条〜第二十四条", checked: "2026-11-16" },
+    { path: "RULES.afterRetire", law: "kokunen", where: "第二十七条・第八十七条（年額・保険料は日本年金機構の公表額）", checked: "2026-11-16" },
+    { path: "RULES.kyosai", law: "kyosai", where: "掛金率は防衛省共済組合の公表資料", checked: "2026-11-16" },
+    { path: "RULES.tax", law: "shotoku", where: "所得税法・租税特別措置法・地方税法", checked: "2026-11-16" },
   ],
 
   // 出ているが、まだ法令になっていないもの（成立・公布したら data に入れる）
   pending: [
     {
-      what: "令和8年人事院勧告（月例給の引上げ、賞与 年4.70か月、転居に関する手当の新設は2027年4月）",
+      what: "令和8年人事院勧告（月例給の引上げ、賞与 年4.70か月、広域異動手当 8％・16％、営外手当の引上げ、転居に関する手当の新設は2027年4月）",
       status: "防衛省の職員の給与等に関する法律の一部を改正する法律案を第222回国会（臨時）に令和8年10月9日提出。2026-11-16 時点で法律番号・公布日の記載なし（未公布）",
       url: "https://www.mod.go.jp/j/presiding/houan/index.html",
       checked: "2026-11-16",

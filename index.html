@@ -3,18 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- 読み込めるのはこのサイトのファイルだけ（外部のスクリプト・フォント・通信なし。入力は送信しない） -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+    />
     <title>自衛官 給料表ナビ｜2025年改定 俸給表と生涯年収シミュレーター</title>
     <meta
       name="description"
       content="2025年12月公布の改正法に基づく自衛官の俸給表。階級と号俸を選ぶだけで俸給月額がわかり、昇任・賞与・手当を含めた生涯年収も試算できます。"
     />
     <meta name="theme-color" content="#06120e" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@600;800&display=swap"
-    />
     <meta name="format-detection" content="telephone=no" />
     <link
       rel="icon"
@@ -50,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261109-2" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261109-2" />
-    <link rel="stylesheet" href="css/design.css?v=20261109-2" />
-    <link rel="stylesheet" href="css/print.css?v=20261109-2" />
+    <link rel="stylesheet" href="css/base.css?v=20261116" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261116" />
+    <link rel="stylesheet" href="css/design.css?v=20261116" />
+    <link rel="stylesheet" href="css/print.css?v=20261116" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -837,9 +836,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261109-2"></script>
-    <script src="data/promotion-table.js?v=20261109-2"></script>
-    <script src="js/pay-lookup.js?v=20261109-2"></script>
+    <script src="data/pay-table.js?v=20261116"></script>
+    <script src="data/promotion-table.js?v=20261116"></script>
+    <script src="js/pay-lookup.js?v=20261116"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -850,11 +849,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261109-2"></script>
-    <script src="js/regional-rate.js?v=20261109-2"></script>
-    <script src="js/allowances.js?v=20261109-2"></script>
-    <script src="js/simulator.js?v=20261109-2"></script>
-    <script src="js/simulator-dialog.js?v=20261109-2"></script>
+    <script src="data/rules.js?v=20261116"></script>
+    <script src="js/regional-rate.js?v=20261116"></script>
+    <script src="js/allowances.js?v=20261116"></script>
+    <script src="js/simulator.js?v=20261116"></script>
+    <script src="js/simulator-dialog.js?v=20261116"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -863,9 +862,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261109-2"></script>
-    <script src="js/effects.js?v=20261109-2"></script>
-    <script src="js/scroll-lock.js?v=20261109-2"></script>
-    <script src="js/print.js?v=20261109-2"></script>
+    <script src="js/notes-page.js?v=20261116"></script>
+    <script src="js/effects.js?v=20261116"></script>
+    <script src="js/scroll-lock.js?v=20261116"></script>
+    <script src="js/print.js?v=20261116"></script>
   </body>
 </html>

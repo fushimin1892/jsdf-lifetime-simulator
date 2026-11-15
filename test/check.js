@@ -110,8 +110,17 @@ const koufu = read("data/pay-table.js").match(/(\d{4}年\d{1,2}月公布)/)?.[1]
 check(!!koufu && html.includes(koufu), `pay-table.js の「${koufu}」が index.html の説明文にない（説明文の直し忘れ）`);
 // 外部のスクリプト・スタイルを読み込まない
 check(!/<script[^>]+src="https?:/i.test(html), "index.html が外部のスクリプトを読み込んでいる");
-// 外部フォント（Google Fonts）は今も使っている。外すかどうかは見た目の判断なので、警告だけ出す
-if (/fonts\.googleapis\.com/.test(html)) console.log("警告 index.html が Google Fonts を読み込んでいる（外部への通信。外すかは要相談）");
+check(!/https?:\/\/fonts\.|<link[^>]+rel="preconnect"/.test(html), "index.html が外部のフォントを読み込んでいる");
+// CSP：このサイトのファイルだけを読み込む（default-src 'none'）
+const csp = html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1] || "";
+check(/default-src 'none'/.test(csp) && /script-src 'self'(;|$)/.test(csp) && !/unsafe/.test(csp), `index.html の CSP「${csp}」`);
+const inlineScript = [...html.matchAll(/<script([^>]*)>/gi)].some(([, attrs]) => !/ src=/.test(attrs) && !attrs.includes("application/ld+json"));
+check(!inlineScript && !/ on[a-z]+="/i.test(html) && !/ style="/i.test(html), "index.html にインラインのスクリプト・イベント属性・style 属性がある（CSP で止まる）");
+// 利用者の入力を保存しない（以前の版の保存を消す removeItem だけ許す）
+for (const f of fs.readdirSync(path.join(ROOT, "js"))) {
+  const src = read("js/" + f);
+  check(!/localStorage\.setItem|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|sendBeacon/.test(src), `js/${f} が入力を保存・送信している可能性`);
+}
 
 console.log(`\nOK ${ok} / NG ${ng}`);
 process.exitCode = ng ? 1 : 0;

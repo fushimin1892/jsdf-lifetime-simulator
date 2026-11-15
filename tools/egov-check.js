@@ -5,7 +5,11 @@
 //                                         記録（egovRevision）と比べ、変わっていれば「要確認」と出す
 //   node tools/egov-check.js paytable   … e-Gov の別表第二（自衛官俸給表）を全欄読み、data/pay-table.js と照合する
 //   node tools/egov-check.js promotion  … e-Gov の施行令 別表第一ロ（昇任後の号俸）を data/promotion-table.js と照合する
+//   node tools/egov-check.js values     … data/rules.js の手当・賞与・定年・退職手当・若年給付金の数値を、条文の文言と照合する
+//                                         （一覧は tools/value-checks.js。e-Gov にない値は最後に「人が確かめる一覧」として出す）
+//   node tools/egov-check.js all        … 上の4つ（改正日・俸給表・昇任表・数値）を全部
 //   node tools/egov-check.js paytable --xml <保存したXML>  … ネットにつながず、保存済みの本文で照合する（promotion も同じ）
+//   node tools/egov-check.js values --cache <フォルダ>     … 取った本文をフォルダに保存し、次からはそれを使う
 //
 // e-Gov の本文は施行済みの版。改正法が公布されても施行日（さかのぼり適用でも公布日の施行が多い）までは
 // 古い表が返るので、公布直後は官報・防衛省の新旧対照表と照合する（手順書を参照）。
@@ -119,6 +123,143 @@ async function checkPromotion(xmlPath) {
   return diff === 0 && rows.length === T.length;
 }
 
+// 法令の本文（XML）を取る。--cache <フォルダ> があれば <egovId>.xml をそこから読み、なければ取ってそこへ保存する
+const xmlCache = new Map();
+async function lawXml(egovId, cacheDir) {
+  if (xmlCache.has(egovId)) return xmlCache.get(egovId);
+  const file = cacheDir && path.join(cacheDir, egovId + ".xml");
+  let xml;
+  if (file && fs.existsSync(file)) xml = fs.readFileSync(file, "utf8");
+  else {
+    const j = await getJson(`${API}/law_data/${egovId}?law_full_text_format=xml&response_format=json`);
+    xml = Buffer.from(j.law_full_text, "base64").toString("utf8");
+    if (file) fs.writeFileSync(file, xml);
+  }
+  xmlCache.set(egovId, xml);
+  return xml;
+}
+// spaced：表のセルの区切りを空白1つで残す（表の行を正規表現で確かめるとき）
+const plain = (s, spaced) =>
+  spaced
+    ? s.replace(/<Rt>[\s\S]*?<\/Rt>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+    : s.replace(/<Rt>[\s\S]*?<\/Rt>/g, "").replace(/<[^>]+>/g, "").replace(/\s+/g, "");
+// 条（Num）・別表（「別表第四」など）・法令全体（"*"）の本文を、タグを外した文字列で返す
+function scope(xml, article, spaced) {
+  if (article === "*") return plain(xml, spaced);
+  if (article.startsWith("別表")) {
+    const t = [...xml.matchAll(/<AppdxTable[\s\S]*?<\/AppdxTable>/g)].map((m) => m[0]).find((s) => plain(s.slice(0, 400)).startsWith(article + "（") || plain(s.slice(0, 400)).startsWith(article));
+    return t ? plain(t, spaced) : null;
+  }
+  // 本則の条（附則に同じ番号の条があっても、最初に出てくる本則のものを使う）
+  const a = xml.indexOf(`<Article Num="${article}">`);
+  return a < 0 ? null : plain(xml.slice(a, xml.indexOf("</Article>", a)), spaced);
+}
+
+// 人事院規則9-49 別表第一（「茨城県 一 次の各号に掲げる地域以外の地域 五級地 二 つくば市 二級地 …」）を読み、
+// data の regionalAreas（都道府県の割合 rate と市の割合 cities）と両方向に比べる。空港の区域（第4条）は比べない
+function compareRegional(spaced, { areas, gradeRate }) {
+  const KN = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7 };
+  const prefs = Object.keys(areas);
+  const body = spaced.replace(/^.*?支給地域 級地 /, "");
+  const tokens = body.split(" ");
+  const law = {};
+  let pref = null;
+  let names = [];
+  for (const tk of tokens) {
+    if (prefs.includes(tk)) {
+      pref = tk;
+      law[pref] = {};
+      names = [];
+      continue;
+    }
+    if (!pref) continue;
+    const m = tk.match(/^([一二三四五六七])級地$/);
+    if (m) {
+      const rate = gradeRate[KN[m[1]]];
+      if (!names.length) law[pref]._rest = rate;
+      for (const n of names) law[pref][n] = rate;
+      names = [];
+      continue;
+    }
+    if (/^[一二三四五六七八九十]+$/.test(tk)) continue; // 号の番号
+    if (/地域以外の地域$/.test(tk)) {
+      names.push("_rest");
+      continue;
+    }
+    names.push(tk);
+  }
+  const errs = [];
+  for (const p of prefs) {
+    const d = areas[p];
+    const l = law[p] || {};
+    const lawRest = l._rest ?? 0;
+    if (d.rate !== lawRest) errs.push(`${p}（下記以外の地域）：data ${d.rate}％ ／ 規則 ${lawRest}％`);
+    const dc = Object.fromEntries((d.cities || []).filter(([n]) => !/空港/.test(n)));
+    for (const [n, r] of Object.entries(dc)) if (l[n] !== r) errs.push(`${p} ${n}：data ${r}％ ／ 規則 ${l[n] ?? "載っていない"}`);
+    for (const [n, r] of Object.entries(l)) if (n !== "_rest" && !(n in dc)) errs.push(`${p} ${n}：規則 ${r}％ ／ data に載っていない`);
+  }
+  for (const p of Object.keys(law)) if (!prefs.includes(p)) errs.push(`${p}：規則にあるが data にない`);
+  return errs;
+}
+
+async function checkValues(cacheDir) {
+  const W = loadData("data/rules.js");
+  const S = loadData("data/sources.js").SOURCES;
+  const { build, manual } = require("./value-checks.js");
+  const laws = Object.fromEntries(S.laws.map((l) => [l.key, l]));
+  if (cacheDir) fs.mkdirSync(cacheDir, { recursive: true });
+  let ng = 0;
+  let ok = 0;
+  const byArea = {};
+  for (const c of build(W.RULES, W)) {
+    if (c.fail) {
+      ng++;
+      console.log(`NG [${c.area}] ${c.what}`);
+      continue;
+    }
+    const law = laws[c.law];
+    let text = null;
+    let spaced = null;
+    try {
+      const xml = await lawXml(law.egovId, cacheDir);
+      text = scope(xml, c.article);
+      spaced = scope(xml, c.article, true);
+    } catch (e) {
+      console.log(`★取得失敗 ${law.title}：${e.message}`);
+    }
+    const where = `${law.title} ${c.article === "*" ? "（全体）" : c.article.startsWith("別表") ? c.article : "第" + c.article.replace(/_/g, "条の").replace(/^(\d+)$/, "$1") + (c.article.includes("_") ? "" : "条")}`;
+    if (c.regional) {
+      const errs = text == null ? ["別表第一が見つからない"] : compareRegional(spaced, c.regional);
+      byArea[c.area] = byArea[c.area] || { ok: 0, ng: 0 };
+      if (errs.length) {
+        ng++;
+        byArea[c.area].ng++;
+        console.log(`NG [${c.area}] ${c.what}：\n  ${errs.join("\n  ")}`);
+      } else {
+        ok++;
+        byArea[c.area].ok++;
+      }
+      continue;
+    }
+    const has = (e) => (typeof e === "string" ? text.includes(e) : e.spaced.test(spaced));
+    const missing = text == null ? ["（条・表が見つからない）"] : c.expect.filter((e) => !has(e)).map((e) => (typeof e === "string" ? e : String(e.spaced)));
+    byArea[c.area] = byArea[c.area] || { ok: 0, ng: 0 };
+    if (missing.length) {
+      ng++;
+      byArea[c.area].ng++;
+      console.log(`NG [${c.area}] ${c.what}：${where} に「${missing.join("」「")}」がない`);
+    } else {
+      ok++;
+      byArea[c.area].ok++;
+    }
+  }
+  console.log("\n区分ごとの結果：" + Object.entries(byArea).map(([k, v]) => `${k} ${v.ok}件一致${v.ng ? `・${v.ng}件NG` : ""}`).join("、"));
+  console.log(`合計：一致 ${ok} 件 / NG ${ng} 件`);
+  console.log("\ne-Gov で確かめられない値（毎月、公表資料で確かめる）：");
+  for (const [area, what, src] of manual) console.log(`- [${area}] ${what} … ${src}`);
+  return ng === 0;
+}
+
 async function checkRevisions() {
   const S = loadData("data/sources.js").SOURCES;
   let changed = 0;
@@ -150,8 +291,17 @@ async function checkRevisions() {
 (async () => {
   const [cmd, opt, file] = process.argv.slice(2);
   const xmlPath = opt === "--xml" ? file : null;
+  const cacheDir = opt === "--cache" ? file : null;
   const ok =
-    cmd === "paytable" ? await checkPayTable(xmlPath) : cmd === "promotion" ? await checkPromotion(xmlPath) : await checkRevisions();
+    cmd === "paytable"
+      ? await checkPayTable(xmlPath)
+      : cmd === "promotion"
+        ? await checkPromotion(xmlPath)
+        : cmd === "values"
+          ? await checkValues(cacheDir)
+          : cmd === "all"
+            ? [await checkRevisions(), await checkPayTable(null), await checkPromotion(null), await checkValues(cacheDir)].every(Boolean)
+            : await checkRevisions();
   process.exitCode = ok ? 0 : 1;
 })().catch((e) => {
   console.error(e);
