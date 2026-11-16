@@ -9,7 +9,7 @@
 // やること：
 //   1. このフォルダを 127.0.0.1 の一時サーバーで配信して開く
 //   2. 初期条件の結果（在職中の給与の総額・退職手当・若年給付金・生涯の手取り）を読む
-//   3. 「AI用/検証用スクリプト.js」（87通りの条件）を実行して hash を出す
+//   3. 「AI用/検証用スクリプト.js」（89通りの条件）を実行して hash を出す
 //   4. コンソールのエラー・CSP の違反・外部への通信がないこと、スマホ幅（375px）で横にはみ出さないことを確かめる
 "use strict";
 const fs = require("fs");
@@ -86,7 +86,7 @@ function serve() {
     });
 
     console.log("初期条件：" + JSON.stringify(initial));
-    // 87通りの回帰（数分かかる）
+    // 89通りの回帰（数分かかる）
     console.log("検証用スクリプトを実行中…");
     const src = fs.readFileSync(path.join(ROOT, "AI用/検証用スクリプト.js"), "utf8").replace(/\(\{ hash: h, len: s\.length, n: out\.cases\.length \}\);\s*$/, "return { hash: h, len: s.length, n: out.cases.length };");
     const snap = await page.evaluate(`(async () => {\n${src}\n})()`);

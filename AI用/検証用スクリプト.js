@@ -1,7 +1,7 @@
 // 回帰テスト：改修の前後でこのスクリプトをブラウザのコンソール（または AI のブラウザ操作ツール）で実行し、
 // 最後に出る hash が改修前と同じなら、計算結果は1円も変わっていない。法令の数値を変えた改修では hash は変わるので、
 // その場合は変わった case だけを見て、変わり方が改正の内容どおりかを確かめる（window.__snapText に全文が入る）。
-// 2026-11-16 時点の hash: 1038785846（87通り。本府省業務調整手当・航海手当（階級で額が決まる）のケースを足した後。その前は -1395469485（85通り）：乗組手当の「その他の乗組員」を外した後。その前は 177391807：広域異動手当を現行法の5％・10％に戻し、乗組手当「その他の乗組員」・特殊作戦隊員手当の区分を足した後。期待値は test/expected.json、自動実行は node test/regression.js）。その前の 2026-11-02 時点の hash: 1201817853（85通り。国民年金の免除のケースを足した後。その前は 1514484702（84通り）。入隊月・扶養手当の階級別・通勤の併用・異動保障・入隊区分・退職後の負担のケースを足し、若年給付金2回目以降の退職所得控除を直した後。その前は 2011296705（69通り）。標準報酬の等級表・税の暦年計算・住民税の翌年徴収・地域手当の異動保障を入れた後。その前の賞与の修正後は -1237756367。それ以前は 1395599498、さらに前は 964384010）
+// 2026-11-16 時点の hash: 45198030（89通り。支給開始（年・月）・支給期間の欄と、同じ手当の期間の重なりのエラーを入れ、在宅勤務等手当の2通りを足した後。扶養手当・通勤手当を重ねて追加していた所は、前の分を外してから追加するように直した。その前は 1038785846（87通り）：本府省業務調整手当・航海手当（階級で額が決まる）のケースを足した後。その前は -1395469485（85通り）：乗組手当の「その他の乗組員」を外した後。その前は 177391807：広域異動手当を現行法の5％・10％に戻し、乗組手当「その他の乗組員」・特殊作戦隊員手当の区分を足した後。期待値は test/expected.json、自動実行は node test/regression.js）。その前の 2026-11-02 時点の hash: 1201817853（85通り。国民年金の免除のケースを足した後。その前は 1514484702（84通り）。入隊月・扶養手当の階級別・通勤の併用・異動保障・入隊区分・退職後の負担のケースを足し、若年給付金2回目以降の退職所得控除を直した後。その前は 2011296705（69通り）。標準報酬の等級表・税の暦年計算・住民税の翌年徴収・地域手当の異動保障を入れた後。その前の賞与の修正後は -1237756367。それ以前は 1395599498、さらに前は 964384010）
 window.requestAnimationFrame = (cb) => { cb(performance.now() + 1e6); return 0; };
 const g = (id) => document.getElementById(id);
 const wait = (t = 400) => new Promise((r) => setTimeout(r, t));
@@ -46,16 +46,21 @@ await set("startAge", "50"); await wait(); out.cases.push("age50: " + read());
 await set("startAge", "18"); await set("entryMonth", "11"); await set("raise", "8"); await wait(); out.cases.push("nov-raise8: " + read());
 // ---- 2026-11-02 追加：入隊月・手当の「条件から計算」・異動保障・入隊区分・退職後の負担 ----
 const calcIn = (item, k, v) => setIn(item, `.a-calc [data-k=${k}]`, v, "input");
+const dropItem = (name) => { const it = [...document.querySelectorAll(".allowance-item")].find((x) => x.querySelector(".a-name").value === name); it?.remove(); };
+
 await set("raise", "4"); await set("entryMonth", "1"); await wait(); out.cases.push("jan: " + read());
 await set("entryMonth", "7"); await wait(); out.cases.push("jul: " + read());
 await set("entryMonth", "4");
 // 扶養手当（父母等1人）を1佐（1）欄まで：上位の階級で父母等の額が変わる
 await set("targetRank", "1佐"); await set("colClass", "3");
+// 同じ手当の期間が重なるとエラーになるので、前に追加した扶養手当（金額入力）を外してから「条件から計算」で追加する
+dropItem("扶養手当"); await wait();
 await addAllowance("扶養手当", (it) => { calcIn(it, "child", "1"); calcIn(it, "parent", "1"); });
 await wait(); out.cases.push("fuyou-parent-1sa1: " + read());
 // 通勤手当：電車と車（2km未満）・電車と車（10km）
 await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "1500"); setIn(it, ".a-calc [data-k=car]", "short"); });
 await wait(); out.cases.push("commute-short: " + read());
+dropItem("通勤手当"); await wait();
 await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "8000"); setIn(it, ".a-calc [data-k=car]", "10"); });
 await wait(); out.cases.push("commute-both: " + read());
 // 前に追加した地域手当（東京都）を12年後でやめる：その後3年間の異動保障
@@ -81,6 +86,15 @@ await addAllowance("本府省業務調整手当", () => {});
 await wait(); out.cases.push("honsho-rank: " + read());
 await addAllowance("航海手当", (it) => { setIn(it, ".a-rate", "rank:z2"); setIn(it, ".a-days", "8", "input"); });
 await wait(); out.cases.push("kokai-z2: " + read());
+// ---- 2026-11-16 追加：支給開始（年・月）と支給期間、同じ手当の期間の重なり ----
+// 在宅勤務等手当を 2030年4月から2年、2035年10月から1年6か月 の2回（重ならない）→ 両方とも計算に入る
+const period = (it, y, m, ly, lm) => { setIn(it, ".a-start-y", y, "input"); setIn(it, ".a-start-m", m); setIn(it, ".a-len-y", ly, "input"); setIn(it, ".a-len-m", lm); };
+await addAllowance("在宅勤務等手当", (it) => period(it, "2030", "4", "2", "0"));
+await addAllowance("在宅勤務等手当", (it) => period(it, "2035", "10", "1", "6"));
+await wait(); out.cases.push("zaitaku-split: " + read());
+// 3つ目を 2031年1月から1年（1つ目と重なる）→ エラーで知らせる
+await addAllowance("在宅勤務等手当", (it) => period(it, "2031", "1", "1", "0"));
+await wait(); out.cases.push("zaitaku-overlap: " + read());
 const s = JSON.stringify(out); let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) | 0;
 window.__snapText = s;
 ({ hash: h, len: s.length, n: out.cases.length });

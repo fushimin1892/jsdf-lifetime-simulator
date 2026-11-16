@@ -1,6 +1,10 @@
       (() => {
         "use strict";
         const $ = (id) => document.getElementById(id);
+        // 入隊した年月（年×12＋月−1）と、その表示
+        const entryYm = () => (Number($("entryYear")?.value) || 2026) * 12 + (Number($("entryMonth")?.value) || 4) - 1,
+          ymText = (ym) => `${Math.floor(ym / 12)}年${(ym % 12) + 1}月`,
+          monthsText = (n) => (n >= 12 ? `${Math.floor(n / 12)}年` : "") + (n % 12 || n < 12 ? `${n % 12}か月` : "");
         // 手当の一覧・割合・額は window.RULES.allowances（法令の数値のブロック）にまとめてある。
         // 配置手当、指定場所生活調整金、営外手当は自動計算するので、手入力の一覧には入れない（二重計算を防ぐ）
         const A = window.RULES.allowances,
@@ -134,7 +138,7 @@
           const container = document.createElement("div");
           container.className = "allowance-item";
           container.innerHTML =
-            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div></div>';
+            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
           const name = container.querySelector(".a-name");
           name.value = kind === "その他（自由入力）" ? "その他の手当" : kind;
           container.querySelector(".allowance-title").textContent = name.value;
@@ -146,6 +150,45 @@
           const serviceYears = Number($("retireAge").value) - Number($("startAge").value);
           container.querySelector(".a-end").value =
             kind === "広域異動手当" ? Math.min(A.wideYears, Math.max(0.25, serviceYears)) : Math.max(1, serviceYears);
+          // ---- 支給開始（年・月）と支給期間（年・か月）の欄 ----
+          // 計算に使うのは今までどおり .a-start・.a-end（入隊から何年後）。この欄はそれを年月で打てるようにしたもの。
+          // 入隊年・月を変えても、入隊からの時期は変えずに年月の表示だけを直す（syncPeriodFrom）
+          const periodWrap = container.querySelector(".a-period-wrap"),
+            startY = container.querySelector(".a-start-y"),
+            startM = container.querySelector(".a-start-m"),
+            lenY = container.querySelector(".a-len-y"),
+            lenM = container.querySelector(".a-len-m"),
+            periodOut = container.querySelector(".a-period-out");
+          for (let mo = 1; mo <= 12; mo++) startM.append(new Option(`${mo}月`, String(mo)));
+          for (let mo = 0; mo <= 11; mo++) lenM.append(new Option(`${mo}か月`, String(mo)));
+          const showPeriod = () => {
+            const s = Math.round(Number(container.querySelector(".a-start").value) * 12),
+              e = Math.round(Number(container.querySelector(".a-end").value) * 12);
+            periodOut.textContent =
+              e > s ? `${ymText(entryYm() + s)}から${ymText(entryYm() + e - 1)}まで（${monthsText(e - s)}。${s ? `入隊から${monthsText(s)}後に開始` : "入隊と同時に開始"}）` : "支給期間を1か月以上にしてください。";
+          };
+          // 年月の欄 → 入隊から何年後（.a-start・.a-end）
+          const syncPeriodTo = () => {
+            const s = Number(startY.value) * 12 + Number(startM.value) - 1 - entryYm(),
+              len = Math.max(0, Math.floor(Number(lenY.value) || 0)) * 12 + Number(lenM.value);
+            container.querySelector(".a-start").value = String(s / 12);
+            container.querySelector(".a-end").value = String((s + len) / 12);
+            showPeriod();
+          };
+          // 入隊から何年後 → 年月の欄
+          const syncPeriodFrom = () => {
+            const s = Math.round(Number(container.querySelector(".a-start").value) * 12),
+              e = Math.round(Number(container.querySelector(".a-end").value) * 12),
+              ym = entryYm() + s;
+            startY.value = String(Math.floor(ym / 12));
+            startM.value = String((ym % 12) + 1);
+            lenY.value = String(Math.max(0, Math.floor((e - s) / 12)));
+            lenM.value = String(Math.max(0, (e - s) % 12));
+            showPeriod();
+          };
+          container.syncPeriodFrom = syncPeriodFrom;
+          for (const el of [startY, lenY]) el.addEventListener("input", syncPeriodTo);
+          for (const el of [startM, lenM]) el.addEventListener("change", syncPeriodTo);
           const method = container.querySelector(".a-method");
           method.value = defaultMethod(kind);
           if (defaultAmount[kind]) container.querySelector(".a-amount").value = defaultAmount[kind];
@@ -312,7 +355,12 @@
             const startInput = container.querySelector(".a-start"),
               endField = container.querySelector(".a-end"),
               endSelect = wide || regional;
-            startInput.step = wide ? "1" : "0.25";
+            startInput.step = wide ? "1" : regional ? "0.25" : "any";
+            // 地域手当・広域異動手当は今までの欄（異動の時期を年単位、終了を3年ごと）。それ以外は年・月で打つ欄
+            const plainPeriod = !(wide || regional);
+            periodWrap.hidden = !plainPeriod;
+            container.querySelector(".a-start-wrap").hidden = plainPeriod;
+            container.querySelector(".a-end-wrap").hidden = plainPeriod;
             if (endSelect && endField.tagName === "INPUT") {
               const select = document.createElement("select"),
                 current = Number(endField.value);
@@ -337,8 +385,13 @@
               endField.replaceWith(select);
             } else if (!endSelect && endField.tagName === "SELECT") {
               const input = document.createElement("input");
-              Object.assign(input, { className: "a-end", type: "number", min: "0.25", max: "80", step: "0.25", value: endField.value });
+              Object.assign(input, { className: "a-end", type: "number", min: "0", max: "80", step: "any", value: endField.value });
               endField.replaceWith(input);
+            }
+            if (plainPeriod) {
+              container.querySelector(".a-end").min = "0";
+              container.querySelector(".a-end").step = "any";
+              syncPeriodFrom();
             }
             daysWrap.hidden = method.value !== "daily";
             amountLabel.textContent =
@@ -375,6 +428,7 @@
               if (saved[i] != null && i !== 6 && el) el.value = saved[i];
             });
             container.syncRate?.();
+            container.syncPeriodFrom?.();
             // 旧データは都道府県を保存していないため、保存済み率を「官署指定」に移して引き継ぐ。
             if (saved[9] == null && name.value === "地域手当") {
               const oldCustom = saved[6] === "custom" ? saved[8] : null,
@@ -441,6 +495,15 @@
               start = num(".a-start"),
               end = num(".a-end");
             if (!name) throw Error(`${index + 1}件目の手当名を入力してください。`);
+            // 年・月で打つ欄（地域手当・広域異動手当以外）：入隊より前・期間0か月を、わかる言葉で知らせる
+            if (!row.querySelector(".a-period-wrap").hidden) {
+              const sm = Math.round(start * 12),
+                em = Math.round(end * 12);
+              if (!val(".a-start-y") || !/^[0-9]{4}$/.test(val(".a-start-y")))
+                throw Error(`「${name}」の支給開始の年を西暦4けたで入力してください。`);
+              if (sm < 0) throw Error(`「${name}」の支給開始（${ymText(entryYm() + sm)}）が入隊（${ymText(entryYm())}）より前です。`);
+              if (em <= sm) throw Error(`「${name}」の支給期間を1か月以上にしてください。`);
+            }
             for (const sel of [
               ".a-amount",
               ".a-start",
@@ -475,6 +538,22 @@
               ...(area ? { area } : {}),
               ...(rankTable ? { rankTable } : {}),
             };
+          });
+          const seen = new Map();
+          manual.forEach((a, i) => {
+            if (a.name === "地域手当" || a.name === "広域異動手当") return;
+            const key = a.name + "|" + (rows[i].querySelector(".a-rate")?.value ?? "");
+            for (const j of seen.get(key) || []) {
+              const b = manual[j];
+              if (a.startMonth < b.endMonth && b.startMonth < a.endMonth) {
+                const from = Math.max(a.startMonth, b.startMonth),
+                  to = Math.min(a.endMonth, b.endMonth) - 1;
+                throw Error(
+                  `「${a.name}」の${j + 1}件目と${i + 1}件目の支給期間が重なっています（${ymText(entryYm() + from)}〜${ymText(entryYm() + to)}）。途中で止まる・また始まる手当は、期間が重ならないように分けて追加してください。`,
+                );
+              }
+            }
+            seen.set(key, [...(seen.get(key) || []), i]);
           });
           const auto = [];
           for (const key of branchAllowances[$("branch").value]) {
@@ -614,5 +693,11 @@
         }
         $("branch").addEventListener("change", updateBranch);
         $("addAllowance").addEventListener("click", () => create());
+        // 入隊年・月を変えたら、入隊からの時期はそのままで、支給開始・終了の年月の表示を直す
+        for (const id of ["entryYear", "entryMonth"])
+          for (const type of ["input", "change"])
+            $(id)?.addEventListener(type, () => {
+              for (const it of document.querySelectorAll(".allowance-item")) it.syncPeriodFrom?.();
+            });
         updateBranch();
       })();

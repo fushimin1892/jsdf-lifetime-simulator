@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261116-4" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261116-4" />
-    <link rel="stylesheet" href="css/design.css?v=20261116-4" />
-    <link rel="stylesheet" href="css/print.css?v=20261116-4" />
+    <link rel="stylesheet" href="css/base.css?v=20261116-6" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261116-6" />
+    <link rel="stylesheet" href="css/design.css?v=20261116-6" />
+    <link rel="stylesheet" href="css/print.css?v=20261116-6" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -524,7 +524,7 @@
               <div id="allowanceList"></div>
             </details>
             <p class="note" data-note-title="手当の入力と計算方法">
-              手当名ごとに基本の計算方法を固定しています。月額の手当は月額、日額・勤務1回ごとの手当は単価×支給日数・回数で試算し、地域手当・広域異動手当は勤務地・異動距離から割合を適用します。支給額や対象となる日数・回数は、任務区分・勤務実績・官署の指定などで変わるため、手入力欄がある手当は実際の区分に合った単価・月額・日数等を入力してください。地域手当と広域異動手当の調整、再異動時の期間重複は計算に反映します。通勤手当は非課税として税金の計算から除きます。
+              手当名ごとに基本の計算方法を固定しています。月額の手当は月額、日額・勤務1回ごとの手当は単価×支給日数・回数で試算し、地域手当・広域異動手当は勤務地・異動距離から割合を適用します。支給額や対象となる日数・回数は、任務区分・勤務実績・官署の指定などで変わるため、手入力欄がある手当は実際の区分に合った単価・月額・日数等を入力してください。地域手当と広域異動手当の調整、再異動時の期間重複は計算に反映します。法令で額が決まっている手当は「区分（法令の額）」を選ぶと額が入り、本府省業務調整手当・航海手当は昇任に合わせて階級の額で計算します。支給期間は「支給開始（年・月）」と「支給期間（年・か月）」で入力します。途中で止まる・また始まる手当は、期間を分けて何件でも追加できます。同じ手当の期間が重なっているとエラーで知らせます（地域手当・広域異動手当と、区分が違うものは重なってもかまいません）。通勤手当は非課税として税金の計算から除きます。
             </p>
             <p class="allowance-source">
               <a
@@ -836,9 +836,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261116-4"></script>
-    <script src="data/promotion-table.js?v=20261116-4"></script>
-    <script src="js/pay-lookup.js?v=20261116-4"></script>
+    <script src="data/pay-table.js?v=20261116-6"></script>
+    <script src="data/promotion-table.js?v=20261116-6"></script>
+    <script src="js/pay-lookup.js?v=20261116-6"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -849,11 +849,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261116-4"></script>
-    <script src="js/regional-rate.js?v=20261116-4"></script>
-    <script src="js/allowances.js?v=20261116-4"></script>
-    <script src="js/simulator.js?v=20261116-4"></script>
-    <script src="js/simulator-dialog.js?v=20261116-4"></script>
+    <script src="data/rules.js?v=20261116-6"></script>
+    <script src="js/regional-rate.js?v=20261116-6"></script>
+    <script src="js/allowances.js?v=20261116-6"></script>
+    <script src="js/simulator.js?v=20261116-6"></script>
+    <script src="js/simulator-dialog.js?v=20261116-6"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -862,9 +862,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261116-4"></script>
-    <script src="js/effects.js?v=20261116-4"></script>
-    <script src="js/scroll-lock.js?v=20261116-4"></script>
-    <script src="js/print.js?v=20261116-4"></script>
+    <script src="js/notes-page.js?v=20261116-6"></script>
+    <script src="js/effects.js?v=20261116-6"></script>
+    <script src="js/scroll-lock.js?v=20261116-6"></script>
+    <script src="js/print.js?v=20261116-6"></script>
   </body>
 </html>

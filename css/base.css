@@ -677,6 +677,32 @@ a {
 .allowance-fields .a-rate-wrap {
   grid-column: 1 / -1;
 }
+/* 支給開始（年・月）と支給期間（年・か月）：1行ぶんの幅に2つ並べる */
+.allowance-fields .a-period-wrap {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.allowance-fields .a-period-wrap[hidden] {
+  display: none;
+}
+.a-period-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+}
+.a-period-out {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+@media (max-width: 520px) {
+  .allowance-fields .a-period-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .allowance-fields input,
 .allowance-fields select {
   width: 100%;
