@@ -71,6 +71,40 @@ function build(R, W) {
   for (const [kind, cols] of Object.entries(A.managerPay))
     for (const [col, v] of Object.entries(cols))
       add("手当", `俸給の特別調整額 ${kind}種 ${MP_RANK[col]} ${v}円 allowances.managerPay`, "boeiKyuyoRei", "別表第四", { spaced: new RegExp(`${MP_RANK[col]} [^ ]+ [^ ]+ ${digitYen(v)}`) });
+  // 法令で額が決まる手当の区分（allowances.specialRates）。別表第五の手当は、その手当の行の中にその額があること。
+  // 別表第五以外の条文にある手当は SOURCE の条に、その額があること
+  const SOURCE = {
+    小笠原手当: ["boeiKyuyoRei", "*", "小笠原手当を支給する"], // 施行令 附則第3項
+    航海手当: ["boeiKyuyoRei", "12_3"],
+    管理職員特別勤務手当: ["boeiKyuyoRei", "11_2"],
+    在宅勤務等手当: ["ippanKyuyo", "12_3"],
+  };
+  for (const [name, rows] of Object.entries(A.specialRates))
+    for (const [v, text] of rows) {
+      const src = SOURCE[name];
+      if (src) add("手当", `${name}「${text}」 allowances.specialRates`, src[0], src[1], src[2] ? [src[2], yen(v)] : yen(v));
+      else add("手当", `特殊勤務手当 ${name}「${text}」 allowances.specialRates`, "boeiKyuyoRei", "別表第五", { row: name, text: yen(v) });
+    }
+  // 階級で額が決まる手当（allowances.rankRates）：表の各行（階級の区分）に、その区分の列の額があること
+  const NAVY = [["陸将", [0, 1, 2]], ["一等陸佐", [3, 4, 5]], ["二等陸佐", [6, 7]], ["一等陸尉", [8]], ["二等陸尉", [9, 10]], ["准陸尉", [11]], ["陸曹長", [12, 13]], ["二等陸曹", [14, 15]], ["陸士長", [16]], ["一等陸士", [17, 18]]];
+  for (const [zone, o] of Object.entries(A.rankRates.航海手当 || {})) {
+    const z = Number(zone.slice(-1));
+    for (const [label, cols] of NAVY) {
+      const vals = new Set(cols.map((c) => o.byCol[c]));
+      if (vals.size !== 1) list.push({ area: "手当", what: `航海手当 ${zone} ${label} の区分の列で額が違う`, fail: true });
+      // 行は「陸将 海将 陸将補 海将補 一、四一〇円 二、一二〇円 二、六五〇円 三、九八〇円」の形。z 番目の額を見る
+      add("手当", `航海手当 第${z}区 ${label}など ${[...vals][0]}円 allowances.rankRates`, "boeiKyuyoRei", "別表第七", { spaced: new RegExp(`(^| )${label}( [^ 円]+){0,7}?( [^ ]+円){${z - 1}} ${digitYen([...vals][0])}`) });
+    }
+  }
+  const HQ = [["一等陸佐以上", [0, 1, 2, 3, 4, 5]], ["二等陸佐、", [6]], ["三等陸佐、", [7]], ["一等陸尉、", [8]], ["二等陸尉以下准陸尉以上", [9, 10, 11]], ["陸曹長以下二等陸曹以上", [12, 13, 14]], ["三等陸曹以下", [15, 16, 17, 18]]];
+  for (const o of Object.values(A.rankRates.本府省業務調整手当 || {}))
+    for (const [label, cols] of HQ) {
+      const vals = new Set(cols.map((c) => o.byCol[c]));
+      if (vals.size !== 1) list.push({ area: "手当", what: `本府省業務調整手当 ${label} の区分の列で額が違う`, fail: true });
+      add("手当", `本府省業務調整手当 ${label} ${[...vals][0]}円 allowances.rankRates`, "boeiKyuyoRei", "別表第四の二", { spaced: new RegExp(`${label}[^ ]* [^ ]+級(以上)? ${digitYen([...vals][0])}`) });
+    }
+  // 区分のない手当の初期値も、別表第五のその手当の行にあること
+  for (const [name, v] of Object.entries(A.defaultAmount)) add("手当", `特殊勤務手当の初期値 ${name} ${v}円 allowances.defaultAmount`, "boeiKyuyoRei", "別表第五", { row: name, text: yen(v) });
   // 「条件から計算」の手当（一般職給与法・人事院規則・寒冷地手当法）
   const CR = A.calcRates;
   add("手当", "扶養手当 子・16〜22歳の加算・父母等 calcRates.fuyou", "ippanKyuyo", "11", [yen(CR.fuyou.child), yen(CR.fuyou.teenAdd), yen(CR.fuyou.parent)]);
@@ -155,7 +189,7 @@ function digitYen(n) {
 // 法令で確かめられない値（毎月、公表資料で人が確かめる）
 const manual = [
   ["手当", "3佐以上の配置手当の割合 allowances.seniorRate、航空手当の乗員の区分の割合、配置手当の区分（だれがどの率か）", "防衛大臣の訓令・防衛省職員給与施行細則"],
-  ["手当", "特殊勤務手当の日額の初期値 allowances.defaultAmount", "施行令 別表第五（日額の範囲）と訓令"],
+  ["手当", "特殊勤務手当の［上限額］の区分の実際の額 allowances.specialRates（種類 max）", "防衛大臣の定め（訓令）。法令にあるのは上限だけ"],
   ["手当", "地域手当の経過措置 allowances.regionalTransition（令和10年3月まで）と空港の区域", "人事院規則9-49-57 附則別表第一（人事院の改正通知。e-Gov の9-49本則には載らない）・9-49第4条"],
   ["手当", "寒冷地手当の支給地域・級地（どこが何級地か）", "寒冷地手当法 別表（画面では利用者が級地を選ぶ）"],
   ["階級", "士長→3曹の最短（一般曹候補生）・3曹→3尉の最短（部内幹部の受験資格）・1士→士長の6か月（運用） promotion.choices / fixedMonths", "採用・試験の案内（別表第七によらない前提）"],

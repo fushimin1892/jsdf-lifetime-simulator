@@ -241,8 +241,16 @@ async function checkValues(cacheDir) {
       }
       continue;
     }
-    const has = (e) => (typeof e === "string" ? text.includes(e) : e.spaced.test(spaced));
-    const missing = text == null ? ["（条・表が見つからない）"] : c.expect.filter((e) => !has(e)).map((e) => (typeof e === "string" ? e : String(e.spaced)));
+    // row：別表の中で、その手当名から次の手当名までの範囲に text があるか
+    const rowText = (name) => {
+      const i = text.indexOf(name);
+      if (i < 0) return "";
+      const others = Object.keys(W.RULES.allowances.specialRates).concat(["駐留軍関係業務手当", "備考"]).filter((n) => n !== "小笠原手当").filter((n) => n !== name);
+      const ends = others.map((n) => text.indexOf(n, i + name.length)).filter((j) => j > i);
+      return text.slice(i, ends.length ? Math.min(...ends) : undefined);
+    };
+    const has = (e) => (typeof e === "string" ? text.includes(e) : e.row ? rowText(e.row).includes(e.text) : e.spaced.test(spaced));
+    const missing = text == null ? ["（条・表が見つからない）"] : c.expect.filter((e) => !has(e)).map((e) => (typeof e === "string" ? e : e.row ? `${e.row}の行に${e.text}` : String(e.spaced)));
     byArea[c.area] = byArea[c.area] || { ok: 0, ng: 0 };
     if (missing.length) {
       ng++;

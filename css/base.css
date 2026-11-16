@@ -673,6 +673,10 @@ a {
 .allowance-fields label {
   font-size: 11px;
 }
+/* 法令の額の区分は文言が長いので、1行ぶんの幅を使う */
+.allowance-fields .a-rate-wrap {
+  grid-column: 1 / -1;
+}
 .allowance-fields input,
 .allowance-fields select {
   width: 100%;

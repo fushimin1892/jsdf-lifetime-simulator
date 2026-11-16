@@ -134,7 +134,7 @@
           const container = document.createElement("div");
           container.className = "allowance-item";
           container.innerHTML =
-            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">令和8年人事院勧告の改定割合（給与法の改正が成立すれば令和8年4月にさかのぼって実施。現行の法律は5％・10％）：60km以上300km未満は8％、300km以上は16％です。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額8％・4％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％・12％なら広域分も支給（差額16％・12％・8％・4％）、16％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div></div>';
+            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div></div>';
           const name = container.querySelector(".a-name");
           name.value = kind === "その他（自由入力）" ? "その他の手当" : kind;
           container.querySelector(".allowance-title").textContent = name.value;
@@ -149,6 +149,50 @@
           const method = container.querySelector(".a-method");
           method.value = defaultMethod(kind);
           if (defaultAmount[kind]) container.querySelector(".a-amount").value = defaultAmount[kind];
+          // 法令で額が決まっている手当：区分を選ぶと額を入れる（RULES.allowances.specialRates）。
+          // 階級で額が決まる区分（RULES.allowances.rankRates。値は "rank:…"）は、計算のときに毎月その階級の額を使う
+          const rates = A.specialRates[kind] || [],
+            rankOpts = Object.entries(A.rankRates[kind] || {});
+          if (rates.length || rankOpts.length) {
+            const wrap = document.createElement("div"),
+              label = document.createElement("label"),
+              pick = document.createElement("select"),
+              note = document.createElement("small"),
+              amountBox = container.querySelector(".a-amount-wrap"),
+              amount = container.querySelector(".a-amount");
+            wrap.className = "a-rate-wrap";
+            label.textContent = "区分（法令の額）";
+            pick.className = "a-rate";
+            pick.append(new Option("選んでください（額を直接入力するときはそのまま）", ""));
+            for (const [value, o] of rankOpts) pick.append(new Option(o.label, value));
+            rates.forEach(([, text, type], i) => pick.append(new Option(type === "max" ? `${text}［上限額］` : text, String(i))));
+            note.className = "fixed-note";
+            note.textContent = "［上限額］の区分は、法令に上限だけがあり、実際の額は防衛大臣が定めます（上限より低いことがあります）。";
+            note.hidden = !rates.some((r) => r[2] === "max");
+            pick.id = `a-rate-${container.querySelectorAll("*").length}-${Date.now()}`;
+            label.htmlFor = pick.id;
+            wrap.append(label, pick, note);
+            amountBox.parentNode.insertBefore(wrap, amountBox);
+            // 階級で決まる区分のときは、金額の欄を隠す（額は model() で毎月その階級の額にする）
+            const sync = () => {
+              const byRank = pick.value.startsWith("rank:");
+              amountBox.hidden = byRank;
+              if (byRank) amount.value = "0";
+            };
+            pick.addEventListener("change", () => {
+              if (pick.value !== "" && !pick.value.startsWith("rank:")) amount.value = rates[Number(pick.value)][0];
+              sync();
+              amount.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            container.syncRate = sync;
+            // 区分が1つだけで、上限額でないときは最初から選んでおく
+            const only = rankOpts.length + rates.length === 1;
+            if (only && (rankOpts.length || rates[0][2] !== "max")) {
+              pick.value = rankOpts.length ? rankOpts[0][0] : "0";
+              if (!rankOpts.length) amount.value = rates[0][0];
+              sync();
+            }
+          }
           const prefectureWrap = container.querySelector(".a-prefecture-wrap"),
             regionWrap = container.querySelector(".a-region-wrap"),
             distanceWrap = container.querySelector(".a-distance-wrap"),
@@ -248,7 +292,8 @@
             regionCustomWrap.hidden = !regional || region.value !== "custom";
             methodWrap.hidden = fixedMethod;
             methodFixedWrap.hidden = !fixedMethod;
-            amountWrap.hidden = regional || wide;
+            // 階級で額が決まる区分を選んでいるときも、金額の欄は出さない（container.syncRate）
+            amountWrap.hidden = regional || wide || (container.querySelector(".a-rate")?.value || "").startsWith("rank:");
             if (fixedMethod) method.value = defaultMethod(name.value);
             methodFixed.textContent =
               method.value === "daily"
@@ -326,8 +371,10 @@
             }
             // 地域（6番目）は上の rebuildRegionOptions で選び直したので、ここでは上書きしない
             fields.forEach((sel, i) => {
-              if (saved[i] != null && i !== 6) container.querySelector(sel).value = saved[i];
+              const el = container.querySelector(sel);
+              if (saved[i] != null && i !== 6 && el) el.value = saved[i];
             });
+            container.syncRate?.();
             // 旧データは都道府県を保存していないため、保存済み率を「官署指定」に移して引き継ぐ。
             if (saved[9] == null && name.value === "地域手当") {
               const oldCustom = saved[6] === "custom" ? saved[8] : null,
@@ -361,11 +408,12 @@
           $("allowanceList").append(container);
           if (!saved) name.focus();
         }
-        const fields = [".a-name", ".a-method", ".a-amount", ".a-days", ".a-start", ".a-end", ".a-region", ".a-distance", ".a-region-custom", ".a-prefecture", ".a-calc-state"];
+        // 11番目の .a-rate（法令の額の区分）は、区分のある手当だけにある
+        const fields = [".a-name", ".a-method", ".a-amount", ".a-days", ".a-start", ".a-end", ".a-region", ".a-distance", ".a-region-custom", ".a-prefecture", ".a-calc-state", ".a-rate"];
         // 追加した手当の入力値をそのまま取り出す（保存・共有用）
         function dump() {
           return [...document.querySelectorAll(".allowance-item")].map((row) =>
-            fields.map((sel) => row.querySelector(sel).value),
+            fields.map((sel) => row.querySelector(sel)?.value ?? null),
           );
         }
         function restore(list) {
@@ -407,6 +455,8 @@
             if (start >= end) throw Error(`「${name}」の支給終了は開始より後にしてください。`);
             if (method === "percent" && amount > 100)
               throw Error(`「${name}」の割合は0〜100％で入力してください。`);
+            // 階級で額が決まる区分（本府省業務調整手当・航海手当）を選んだときは、列番号ごとの額の表を渡す
+            const rankTable = A.rankRates[name]?.[row.querySelector(".a-rate")?.value]?.byCol;
             // 地域手当で地域を選んだ場合は、割合を年度ごとに決める（model() で月ごとに RULES.regionalRate を引く）
             const area =
               name === "地域手当" && val(".a-region") !== "custom"
@@ -423,6 +473,7 @@
               // 扶養手当を「条件から計算」したときの父母等の人数（上位の階級で額が変わるので model() で月ごとに直す）
               ...(name === "扶養手当" ? { parents: calcParents(row) } : {}),
               ...(area ? { area } : {}),
+              ...(rankTable ? { rankTable } : {}),
             };
           });
           const auto = [];

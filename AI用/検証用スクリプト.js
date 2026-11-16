@@ -1,7 +1,7 @@
 // 回帰テスト：改修の前後でこのスクリプトをブラウザのコンソール（または AI のブラウザ操作ツール）で実行し、
 // 最後に出る hash が改修前と同じなら、計算結果は1円も変わっていない。法令の数値を変えた改修では hash は変わるので、
 // その場合は変わった case だけを見て、変わり方が改正の内容どおりかを確かめる（window.__snapText に全文が入る）。
-// 2026-11-16 時点の hash: 177391807（85通り。広域異動手当を現行法の5％・10％に戻し、乗組手当「その他の乗組員」・特殊作戦隊員手当の区分を足した後。期待値は test/expected.json、自動実行は node test/regression.js）。その前の 2026-11-02 時点の hash: 1201817853（85通り。国民年金の免除のケースを足した後。その前は 1514484702（84通り）。入隊月・扶養手当の階級別・通勤の併用・異動保障・入隊区分・退職後の負担のケースを足し、若年給付金2回目以降の退職所得控除を直した後。その前は 2011296705（69通り）。標準報酬の等級表・税の暦年計算・住民税の翌年徴収・地域手当の異動保障を入れた後。その前の賞与の修正後は -1237756367。それ以前は 1395599498、さらに前は 964384010）
+// 2026-11-16 時点の hash: 1038785846（87通り。本府省業務調整手当・航海手当（階級で額が決まる）のケースを足した後。その前は -1395469485（85通り）：乗組手当の「その他の乗組員」を外した後。その前は 177391807：広域異動手当を現行法の5％・10％に戻し、乗組手当「その他の乗組員」・特殊作戦隊員手当の区分を足した後。期待値は test/expected.json、自動実行は node test/regression.js）。その前の 2026-11-02 時点の hash: 1201817853（85通り。国民年金の免除のケースを足した後。その前は 1514484702（84通り）。入隊月・扶養手当の階級別・通勤の併用・異動保障・入隊区分・退職後の負担のケースを足し、若年給付金2回目以降の退職所得控除を直した後。その前は 2011296705（69通り）。標準報酬の等級表・税の暦年計算・住民税の翌年徴収・地域手当の異動保障を入れた後。その前の賞与の修正後は -1237756367。それ以前は 1395599498、さらに前は 964384010）
 window.requestAnimationFrame = (cb) => { cb(performance.now() + 1e6); return 0; };
 const g = (id) => document.getElementById(id);
 const wait = (t = 400) => new Promise((r) => setTimeout(r, t));
@@ -74,6 +74,13 @@ await set("afterPension", "kokumin"); await set("afterHealth", "nini"); await se
 out.cases.push("after-burden: " + read());
 // 退職後〜60歳の国民年金を免除（保険料0、老齢基礎年金は免除月を2分の1で数える）
 await set("afterPension", "exempt"); await wait(); out.cases.push("after-exempt: " + read());
+// ---- 2026-11-16 追加：階級で額が決まる手当（本府省業務調整手当・航海手当。施行令 別表第四の二・別表第七） ----
+for (const it of [...document.querySelectorAll(".allowance-item")]) it.remove();
+await set("branch", "maritime"); await set("targetRank", "2佐"); await wait();
+await addAllowance("本府省業務調整手当", () => {});
+await wait(); out.cases.push("honsho-rank: " + read());
+await addAllowance("航海手当", (it) => { setIn(it, ".a-rate", "rank:z2"); setIn(it, ".a-days", "8", "input"); });
+await wait(); out.cases.push("kokai-z2: " + read());
 const s = JSON.stringify(out); let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) | 0;
 window.__snapText = s;
 ({ hash: h, len: s.length, n: out.cases.length });

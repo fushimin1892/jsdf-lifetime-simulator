@@ -268,7 +268,10 @@
               list = (inEducation ? c.allowances.filter((a) => a.method === "year_end") : c.allowances.concat(guaranteesAt(m))).map((a) =>
                 a.area
                   ? { ...a, amount: R.regionalRate(a.area.pref, a.area.name, fyNow) }
-                  : // 上位の階級では父母等の扶養手当が減る（施行令第8条の7・第8条の8）
+                  : // 階級で額が決まる手当（本府省業務調整手当・航海手当）は、その月の階級の額
+                    a.rankTable
+                    ? { ...a, amount: a.rankTable[rank] ?? 0 }
+                    : // 上位の階級では父母等の扶養手当が減る（施行令第8条の7・第8条の8）
                     a.parents && FUYOU_PARENT[rank] != null
                     ? { ...a, amount: a.amount - a.parents * (AL.calcRates.fuyou.parent - FUYOU_PARENT[rank]) }
                     : a,
