@@ -14,6 +14,21 @@
           methodOverride = A.methodOverride,
           defaultAmount = A.defaultAmount,
           bonusBaseNames = A.bonusBaseNames;
+        // 手当の種類（kind）：行を作ったときに選んだ手当（manualGroups の名前。「その他（自由入力）」は "その他"）。
+        // 賞与の基礎・階級の額・地域手当などの判定は kind で行い、手当名（.a-name）は表示にだけ使う
+        const OTHER = "その他",
+          kindNames = groups.flatMap((g) => g.names).filter((n) => n !== "その他（自由入力）"),
+          // 古いURL（kind を保存していない）では、手当名から kind を推定する
+          inferKind = (name) => {
+            const n = String(name ?? "").trim();
+            return kindNames.includes(n) ? n : OTHER;
+          },
+          toKind = (pick) => (kindNames.includes(pick) ? pick : OTHER),
+          kindOf = (a) => a.kind ?? a.name,
+          branchNames = { ground: "陸上自衛隊", maritime: "海上自衛隊", air: "航空自衛隊" },
+          // 0 以上の整数にする（「条件から計算」の入力の守り）
+          count = (x) => Math.max(0, Math.floor(Number(x) || 0));
+        let rowSeq = 0;
         const defaultMethod = (name) =>
           methodOverride[name] || groups.find((g) => g.names.includes(name))?.method || "monthly";
         // 「条件から計算」の入力欄と計算（額は RULES.allowances.calcRates）。compute は月額（円）と説明文を返す
@@ -37,9 +52,9 @@
               { k: "parent", label: "60歳以上の父母・祖父母など", max: 10, unit: "人" },
             ],
             compute: (v) => {
-              const c = Number(v.child) || 0,
-                t = Number(v.teen) || 0,
-                p = Number(v.parent) || 0,
+              const c = count(v.child),
+                t = count(v.teen),
+                p = count(v.parent),
                 amount = R.fuyou.child * (c + t) + R.fuyou.teenAdd * t + R.fuyou.parent * p;
               return { amount, text: `月額 ${yen(amount)}（子 ${c + t}人・父母等 ${p}人）` };
             },
@@ -48,7 +63,7 @@
           住居手当: {
             fields: [{ k: "rent", label: "家賃（月額）", max: 1000000, unit: "円" }],
             compute: (v) => {
-              const rent = Number(v.rent) || 0,
+              const rent = count(v.rent),
                 h = R.house,
                 raw = rent <= h.floor ? 0 : rent <= h.step ? rent - h.floor : h.base + Math.min(h.maxAdd, (rent - h.step) / 2),
                 amount = Math.floor(raw / 100) * 100;
@@ -68,7 +83,7 @@
             // 電車と車を両方使う場合（人事院規則9-24第8条の4）：車の距離が2km以上なら定期代と車の額の両方、
             // 2km未満なら定期代と車の額（最も短い区分の2,000円）の高い方だけ。車だけで2km未満は支給されない
             compute: (v) => {
-              const pass = Math.floor(Number(v.pass) || 0),
+              const pass = count(v.pass),
                 shortCar = R.commute.car[0][1],
                 both = v.car !== "none" && v.car !== "short",
                 car = both ? band(R.commute.car, Number(v.car)) : v.car === "short" && pass > 0 && shortCar > pass ? shortCar : 0,
@@ -105,7 +120,7 @@
             ],
             compute: (v) => {
               const k = R.kanreichi,
-                full = k.rates[v.grade][Number(v.household)],
+                full = k.rates[v.grade]?.[Number(v.household)] ?? 0,
                 month = v.barracks === "yes" ? Math.floor(full / 2) : full,
                 amount = Math.floor((month * k.months) / 12);
               return { amount, text: `11〜3月に月 ${yen(month)}（年 ${yen(month * k.months)}）→ 12か月にならして月額 ${yen(amount)}` };
@@ -133,19 +148,47 @@
           }
           if ([...select.options].some((x) => x.value === previous)) select.value = previous;
         }
-        // saved：保存・共有から復元するときの値 [手当名, 計算方法, 金額, 日数, 開始, 終了]
-        function create(kind = $("allowanceKind").value, saved) {
-          const container = document.createElement("div");
+        // saved：保存・共有から復元するときの値（fields の順。[手当名, 計算方法, 金額, 日数, 開始, 終了, …, kind]）
+        // pick：一覧で選んだ手当（「その他（自由入力）」は kind "その他" にする）
+        function create(pick = $("allowanceKind").value, saved) {
+          const kind = toKind(pick),
+            uid = `al${++rowSeq}`,
+            container = document.createElement("div");
           container.className = "allowance-item";
+          container.dataset.kind = kind;
           container.innerHTML =
-            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
-          const name = container.querySelector(".a-name");
-          name.value = kind === "その他（自由入力）" ? "その他の手当" : kind;
+            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><small class="fixed-note a-branch-note" hidden></small><input class="a-kind" type="hidden"><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
+          container.querySelector(".a-kind").value = kind;
+          const name = container.querySelector(".a-name"),
+            title = () => name.value.trim() || "手当";
+          name.value = kind === OTHER ? "その他の手当" : kind;
           container.querySelector(".allowance-title").textContent = name.value;
-          name.addEventListener(
-            "input",
-            () => (container.querySelector(".allowance-title").textContent = name.value || "手当"),
-          );
+          // 入力欄のラベル：行ごとに一意の id を振って label と結び、aria-label に手当名を入れる（「住居手当：金額・割合」）。
+          // 入れ替わる欄（.a-end）や文言が変わるラベルがあるので、syncKind・手当名の入力のたびに付け直す
+          const relabel = () => {
+            const t = title();
+            for (const label of container.querySelectorAll("label")) {
+              let control = label.htmlFor ? container.querySelector(`#${CSS.escape(label.htmlFor)}`) : null;
+              if (!control)
+                control = [...label.parentElement.querySelectorAll("input:not([type=hidden]), select")].find(
+                  (el) => label.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
+                );
+              if (!control) continue;
+              if (!control.id)
+                control.id = `${uid}-${control.dataset.k ? "calc-" + control.dataset.k : control.className.split(" ")[0] || "f"}`;
+              label.htmlFor = control.id;
+              control.dataset.base = label.textContent;
+            }
+            for (const el of container.querySelectorAll("input:not([type=hidden]), select")) {
+              if (el.dataset.base == null) el.dataset.base = el.getAttribute("aria-label") || "";
+              el.setAttribute("aria-label", el.dataset.base ? `${t}：${el.dataset.base}` : t);
+            }
+            container.querySelector(".allowance-remove").setAttribute("aria-label", `${t}を削除`);
+          };
+          name.addEventListener("input", () => {
+            container.querySelector(".allowance-title").textContent = title();
+            relabel();
+          });
           // 支給終了の初期値は定年まで（広域異動手当は最長3年）
           const serviceYears = Number($("retireAge").value) - Number($("startAge").value);
           container.querySelector(".a-end").value =
@@ -164,6 +207,11 @@
           const showPeriod = () => {
             const s = Math.round(Number(container.querySelector(".a-start").value) * 12),
               e = Math.round(Number(container.querySelector(".a-end").value) * 12);
+            // 年が空・入隊より前の開始のときは説明文を出さない（エラーは read() が出す）
+            if (!/^[0-9]{4}$/.test(startY.value.trim()) || s < 0) {
+              periodOut.textContent = "";
+              return;
+            }
             periodOut.textContent =
               e > s ? `${ymText(entryYm() + s)}から${ymText(entryYm() + e - 1)}まで（${monthsText(e - s)}。${s ? `入隊から${monthsText(s)}後に開始` : "入隊と同時に開始"}）` : "支給期間を1か月以上にしてください。";
           };
@@ -259,8 +307,11 @@
           }
           // 地域の選択肢：値は市町村名（"" は「その他の地域」）。割合は年度で変わるので、今年度と経過措置後（令和10年度から）を並べて出す
           const RR = window.RULES,
+            // 今日の日付（日本時間）の年度。選択肢の「令和N年度◯％」と金額欄の割合に使う
             todayFy = (() => {
-              const [y, mo] = RR.checkedOn.split("-").map(Number);
+              const jst = new Date(Date.now() + 9 * 3600 * 1000),
+                y = jst.getUTCFullYear(),
+                mo = jst.getUTCMonth() + 1;
               return mo < 4 ? y - 1 : y;
             })(),
             afterFy = RR.allowances.regionalTransition.untilFy + 1,
@@ -293,7 +344,8 @@
             calcBox = container.querySelector(".a-calc"),
             calcOut = container.querySelector(".a-calc-out"),
             calcState = container.querySelector(".a-calc-state"),
-            calcOn = () => !!calc && calcMode.value === "auto" && name.value === kind;
+            // 手当名を書き換えても、行の種類（kind）が「条件から計算」の手当なら計算を続ける
+            calcOn = () => !!calc && calcMode.value === "auto";
           const calcValues = () =>
             Object.fromEntries([...calcBox.querySelectorAll("[data-k]")].map((el) => [el.dataset.k, el.value]));
           const runCalc = () => {
@@ -314,7 +366,7 @@
                 const input =
                   f.options != null
                     ? `<select data-k="${f.k}">${f.options.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select>`
-                    : `<div class="unit"><input data-k="${f.k}" type="number" min="0" max="${f.max}" step="1" value="0"><span>${f.unit}</span></div>`;
+                    : `<div class="unit"><input data-k="${f.k}" type="number" min="0" max="${f.max}" step="1" inputmode="numeric" value="0"><span>${f.unit}</span></div>`;
                 return `<div><label>${f.label}</label>${input}</div>`;
               })
               .join("");
@@ -326,9 +378,9 @@
             amountLabel = amountWrap.querySelector("label"),
             daysLabel = daysWrap.querySelector("label");
           const syncKind = () => {
-            const regional = name.value === "地域手当",
-              wide = name.value === "広域異動手当",
-              fixedMethod = groups.some((g) => g.names.includes(name.value)) && name.value !== "その他（自由入力）";
+            const regional = kind === "地域手当",
+              wide = kind === "広域異動手当",
+              fixedMethod = kind !== OTHER;
             prefectureWrap.hidden = !regional;
             regionWrap.hidden = !regional;
             distanceWrap.hidden = !wide;
@@ -337,7 +389,7 @@
             methodFixedWrap.hidden = !fixedMethod;
             // 階級で額が決まる区分を選んでいるときも、金額の欄は出さない（container.syncRate）
             amountWrap.hidden = regional || wide || (container.querySelector(".a-rate")?.value || "").startsWith("rank:");
-            if (fixedMethod) method.value = defaultMethod(name.value);
+            if (fixedMethod) method.value = defaultMethod(kind);
             methodFixed.textContent =
               method.value === "daily"
                 ? "日額・1回当たり × 支給日数・回数"
@@ -348,7 +400,7 @@
               amountInput.value =
                 region.value === "custom" ? regionCustom.value : String(RR.regionalRate(prefecture.value, region.value, todayFy));
             if (wide) amountInput.value = distance.value;
-            if (calc) calcWrap.hidden = name.value !== kind;
+            if (calc) calcWrap.hidden = false;
             amountInput.readOnly = regional || wide || calcOn();
             // 広域異動手当：支給開始は1年単位、支給終了は3年ごと（3〜36年）の選択にする。
             // 地域手当も支給終了を同じ選択肢にし、定年までの年数（初期値）や保存済みの値は選択肢に足してそのまま使う
@@ -403,7 +455,17 @@
                     ? "割合（％）"
                     : "月額（円）";
             daysLabel.textContent = "支給日数・回数";
+            relabel();
           };
+          // 選んでいる所属が対象にならない手当（branchOnly）は、行に小さく知らせる（計算では read() がエラーにする）
+          const branchNote = container.querySelector(".a-branch-note");
+          container.syncBranch = () => {
+            const only = branchOnly[kind],
+              out = only && !only.includes($("branch").value);
+            branchNote.hidden = !out;
+            branchNote.textContent = out ? `この所属では対象外です（${only.map((b) => branchNames[b]).join("・")}の手当）。` : "";
+          };
+          container.syncBranch();
           prefecture.addEventListener("change", () => {
             rebuildRegionOptions();
             syncKind();
@@ -412,37 +474,43 @@
           regionCustom.addEventListener("input", syncKind);
           distance.addEventListener("change", syncKind);
           container.querySelector(".a-start").addEventListener("input", syncKind);
-          name.addEventListener("input", syncKind);
           method.addEventListener("change", syncKind);
-          container
-            .querySelector(".allowance-remove")
-            .addEventListener("click", () => container.remove());
+          // 削除したら、次の行の削除ボタン（無ければ「＋ 手当を追加」）にフォーカスを移す
+          container.querySelector(".allowance-remove").addEventListener("click", () => {
+            let next = container.nextElementSibling;
+            while (next && !next.classList.contains("allowance-item")) next = next.nextElementSibling;
+            container.remove();
+            (next?.querySelector(".allowance-remove") || $("addAllowance"))?.focus();
+          });
           if (saved) {
             if (saved[9] != null && Object.hasOwn(regionalAreas, saved[9])) {
               prefecture.value = saved[9];
               rebuildRegionOptions(saved[6]);
+            } else if (saved[6] === "custom") {
+              // 都道府県なしの「官署指定割合」：割合は下の fields で .a-region-custom（8番目）に戻る
+              region.value = "custom";
             }
             // 地域（6番目）は上の rebuildRegionOptions で選び直したので、ここでは上書きしない
             fields.forEach((sel, i) => {
               const el = container.querySelector(sel);
-              if (saved[i] != null && i !== 6 && el) el.value = saved[i];
+              if (saved[i] != null && i !== 6 && sel !== ".a-kind" && el) el.value = saved[i];
             });
             container.syncRate?.();
             container.syncPeriodFrom?.();
             // 旧データは都道府県を保存していないため、保存済み率を「官署指定」に移して引き継ぐ。
-            if (saved[9] == null && name.value === "地域手当") {
+            if (saved[9] == null && kind === "地域手当") {
               const oldCustom = saved[6] === "custom" ? saved[8] : null,
                 oldRate = String(oldCustom ?? saved[6] ?? saved[2] ?? "0");
               region.value = "custom";
               regionCustom.value = oldRate;
             }
-            if (name.value === "広域異動手当") {
+            if (kind === "広域異動手当") {
               // 以前の版の共有URLにある割合は、今の距離区分の割合へ移す（RULES.allowances.wideRateMigration）。
               const oldRate = String(saved[7] ?? saved[2] ?? "0"),
                 migrated = A.wideRateMigration[oldRate];
               if (migrated != null) distance.value = String(migrated);
             }
-            container.querySelector(".allowance-title").textContent = name.value || "手当";
+            container.querySelector(".allowance-title").textContent = title();
           }
           if (calc) {
             // 保存した条件を戻す。条件を保存していない以前のデータは、入力済みの金額をそのまま使う
@@ -454,7 +522,9 @@
             if (s) {
               calcMode.value = s.mode === "manual" ? "manual" : "auto";
               for (const el of calcBox.querySelectorAll("[data-k]"))
-                if (s.v?.[el.dataset.k] != null) el.value = s.v[el.dataset.k];
+                // 選択肢にない値（壊れた・古いURL）は戻さない
+                if (s.v?.[el.dataset.k] != null && (el.tagName !== "SELECT" || [...el.options].some((o) => o.value === String(s.v[el.dataset.k]))))
+                  el.value = s.v[el.dataset.k];
             }
             runCalc();
           }
@@ -463,7 +533,8 @@
           if (!saved) name.focus();
         }
         // 11番目の .a-rate（法令の額の区分）は、区分のある手当だけにある
-        const fields = [".a-name", ".a-method", ".a-amount", ".a-days", ".a-start", ".a-end", ".a-region", ".a-distance", ".a-region-custom", ".a-prefecture", ".a-calc-state", ".a-rate"];
+        // 13番目の .a-kind は手当の種類（行を作ったときに選んだ手当）。古いURLに無いときは手当名から推定する
+        const fields = [".a-name", ".a-method", ".a-amount", ".a-days", ".a-start", ".a-end", ".a-region", ".a-distance", ".a-region-custom", ".a-prefecture", ".a-calc-state", ".a-rate", ".a-kind"];
         // 追加した手当の入力値をそのまま取り出す（保存・共有用）
         function dump() {
           return [...document.querySelectorAll(".allowance-item")].map((row) =>
@@ -472,88 +543,150 @@
         }
         function restore(list) {
           $("allowanceList").replaceChildren();
-          for (const saved of list || []) create(saved[0], saved);
+          for (const saved of Array.isArray(list) ? list : [])
+            if (Array.isArray(saved))
+              create(saved[12] != null && (kindNames.includes(saved[12]) || saved[12] === OTHER) ? saved[12] : inferKind(saved[0]), saved);
         }
         // 扶養手当の行で「条件から計算」を使っているときの父母等の人数（金額を直接入力しているときは0）
         function calcParents(row) {
           try {
             const s = JSON.parse(row.querySelector(".a-calc-state")?.value || "null");
-            return s?.mode === "auto" ? Number(s.v?.parent) || 0 : 0;
+            return s?.mode === "auto" ? count(s.v?.parent) : 0;
           } catch {
             return 0;
           }
         }
+        // 0〜max の数か（readOnly の欄は checkValidity が効かないので、数値で確かめる）
+        function inRange(input) {
+          const v = input.value.trim(),
+            n = Number(v);
+          if (!v || !Number.isFinite(n)) return false;
+          if (input.min !== "" && n < Number(input.min)) return false;
+          if (input.max !== "" && n > Number(input.max)) return false;
+          return input.readOnly || input.checkValidity();
+        }
         function read() {
           const rows = [...document.querySelectorAll(".allowance-item")];
+          // 前回のエラーの印を外す
+          for (const row of rows) {
+            row.classList.remove("a-error");
+            for (const el of row.querySelectorAll("[aria-invalid]")) el.removeAttribute("aria-invalid");
+          }
+          // エラーのある行に印（class "a-error"・aria-invalid）を付けて知らせる
+          const fail = (list, message) => {
+            for (const row of list) {
+              row.classList.add("a-error");
+              for (const el of row.querySelectorAll(
+                ".a-period-wrap:not([hidden]) input, .a-start-wrap:not([hidden]) .a-start, .a-end-wrap:not([hidden]) .a-end",
+              ))
+                el.setAttribute("aria-invalid", "true");
+            }
+            return Error(message);
+          };
+          const branch = $("branch").value;
           const manual = rows.map((row, index) => {
             const val = (sel) => row.querySelector(sel).value.trim(),
               num = (sel) => Number(val(sel));
+            // 判定は行の種類（kind）で行う。手当名は表示とエラーの文にだけ使う
+            const kind = row.dataset.kind || inferKind(val(".a-name")),
+              regional = kind === "地域手当",
+              wide = kind === "広域異動手当";
             let name = val(".a-name"),
               method = val(".a-method"),
-              amount = name === "地域手当" ? (val(".a-region") === "custom" ? num(".a-region-custom") : num(".a-amount")) : name === "広域異動手当" ? num(".a-distance") : num(".a-amount"),
+              amount = regional
+                ? val(".a-region") === "custom"
+                  ? num(".a-region-custom")
+                  : num(".a-amount")
+                : wide
+                  ? num(".a-distance")
+                  : num(".a-amount"),
               days = num(".a-days"),
               start = num(".a-start"),
               end = num(".a-end");
-            if (!name) throw Error(`${index + 1}件目の手当名を入力してください。`);
+            if (!name) throw fail([row], `${index + 1}件目の手当名を入力してください。`);
+            // 所属に無い手当（航海手当・南極手当など）が、所属を変えたあとに残っていたら知らせる
+            const only = branchOnly[kind];
+            if (only && !only.includes(branch))
+              throw fail(
+                [row],
+                `「${name}」は${only.map((b) => branchNames[b]).join("・")}の手当です。所属を変えたときは、この手当を削除してください。`,
+              );
+            // 「条件から計算」の欄：0〜上限の整数か（金額の欄は readOnly なので checkValidity では確かめられない）
+            const calcWrap = row.querySelector(".a-calc-wrap");
+            if (calcWrap && !calcWrap.hidden && row.querySelector(".a-calc-mode").value === "auto")
+              for (const input of row.querySelectorAll(".a-calc input[data-k]")) {
+                const v = input.value.trim(),
+                  max = Number(input.max);
+                if (!/^[0-9]+$/.test(v) || Number(v) > max)
+                  throw fail(
+                    [row],
+                    `「${name}」の${input.dataset.base || "入力"}は0〜${max.toLocaleString("ja-JP")}の整数で入力してください。`,
+                  );
+              }
             // 年・月で打つ欄（地域手当・広域異動手当以外）：入隊より前・期間0か月を、わかる言葉で知らせる
             if (!row.querySelector(".a-period-wrap").hidden) {
               const sm = Math.round(start * 12),
                 em = Math.round(end * 12);
               if (!val(".a-start-y") || !/^[0-9]{4}$/.test(val(".a-start-y")))
-                throw Error(`「${name}」の支給開始の年を西暦4けたで入力してください。`);
-              if (sm < 0) throw Error(`「${name}」の支給開始（${ymText(entryYm() + sm)}）が入隊（${ymText(entryYm())}）より前です。`);
-              if (em <= sm) throw Error(`「${name}」の支給期間を1か月以上にしてください。`);
+                throw fail([row], `「${name}」の支給開始の年を西暦4けたで入力してください。`);
+              if (sm < 0) throw fail([row], `「${name}」の支給開始（${ymText(entryYm() + sm)}）が入隊（${ymText(entryYm())}）より前です。`);
+              if (em <= sm) throw fail([row], `「${name}」の支給期間を1か月以上にしてください。`);
             }
             for (const sel of [
               ".a-amount",
               ".a-start",
               ".a-end",
-              ...(name === "地域手当" && val(".a-region") === "custom" ? [".a-region-custom"] : []),
+              ...(regional && val(".a-region") === "custom" ? [".a-region-custom"] : []),
               ...(method === "daily" ? [".a-days"] : []),
             ]) {
-              const input = row.querySelector(sel);
-              if (!input.value.trim() || !input.checkValidity())
-                throw Error(`「${name}」の金額・日数・支給期間を確認してください。`);
+              if (!inRange(row.querySelector(sel))) throw fail([row], `「${name}」の金額・日数・支給期間を確認してください。`);
             }
-            if (start >= end) throw Error(`「${name}」の支給終了は開始より後にしてください。`);
-            if (method === "percent" && amount > 100)
-              throw Error(`「${name}」の割合は0〜100％で入力してください。`);
-            // 階級で額が決まる区分（本府省業務調整手当・航海手当）を選んだときは、列番号ごとの額の表を渡す
-            const rankTable = A.rankRates[name]?.[row.querySelector(".a-rate")?.value]?.byCol;
+            if (start >= end) throw fail([row], `「${name}」の支給終了は開始より後にしてください。`);
+            if (method === "percent" && amount > 100) throw fail([row], `「${name}」の割合は0〜100％で入力してください。`);
+            const rateValue = row.querySelector(".a-rate")?.value ?? "",
+              // 階級で額が決まる区分（本府省業務調整手当・航海手当）を選んだときは、列番号ごとの額の表を渡す
+              rankTable = A.rankRates[kind]?.[rateValue]?.byCol,
+              // 「1月に支給する額は◯円を超えない」区分（specialRates の4番目の値）
+              monthMax = /^[0-9]+$/.test(rateValue) ? A.specialRates[kind]?.[Number(rateValue)]?.[3] : undefined;
             // 地域手当で地域を選んだ場合は、割合を年度ごとに決める（model() で月ごとに RULES.regionalRate を引く）
             const area =
-              name === "地域手当" && val(".a-region") !== "custom"
+              regional && val(".a-region") !== "custom"
                 ? { pref: val(".a-prefecture"), name: row.querySelector(".a-region").value }
                 : null;
             return {
               name,
+              kind,
               method,
               amount,
               days,
               startMonth: Math.round(start * 12),
               endMonth: Math.round(end * 12),
-              bonusBase: bonusBaseNames.includes(name),
+              bonusBase: bonusBaseNames.includes(kind),
               // 扶養手当を「条件から計算」したときの父母等の人数（上位の階級で額が変わるので model() で月ごとに直す）
-              ...(name === "扶養手当" ? { parents: calcParents(row) } : {}),
+              ...(kind === "扶養手当" ? { parents: calcParents(row) } : {}),
               ...(area ? { area } : {}),
               ...(rankTable ? { rankTable } : {}),
+              ...(method === "daily" && monthMax ? { monthMax } : {}),
             };
           });
-          const seen = new Map();
+          // 同じ種類の手当の支給期間の重なり。区分（.a-rate）が空・無い行は、同じ種類のすべての行と確かめる
+          // （区分どうしが違う行の組だけを除く）。地域手当・広域異動手当は月ごとに1つを選ぶので除く
           manual.forEach((a, i) => {
-            if (a.name === "地域手当" || a.name === "広域異動手当") return;
-            const key = a.name + "|" + (rows[i].querySelector(".a-rate")?.value ?? "");
-            for (const j of seen.get(key) || []) {
-              const b = manual[j];
+            if (a.kind === "地域手当" || a.kind === "広域異動手当") return;
+            const ra = rows[i].querySelector(".a-rate")?.value ?? "";
+            for (let j = 0; j < i; j++) {
+              const b = manual[j],
+                rb = rows[j].querySelector(".a-rate")?.value ?? "";
+              if (b.kind !== a.kind || (ra !== "" && rb !== "" && ra !== rb)) continue;
               if (a.startMonth < b.endMonth && b.startMonth < a.endMonth) {
                 const from = Math.max(a.startMonth, b.startMonth),
                   to = Math.min(a.endMonth, b.endMonth) - 1;
-                throw Error(
+                throw fail(
+                  [rows[j], rows[i]],
                   `「${a.name}」の${j + 1}件目と${i + 1}件目の支給期間が重なっています（${ymText(entryYm() + from)}〜${ymText(entryYm() + to)}）。途中で止まる・また始まる手当は、期間が重ならないように分けて追加してください。`,
                 );
               }
             }
-            seen.set(key, [...(seen.get(key) || []), i]);
           });
           const auto = [];
           for (const key of branchAllowances[$("branch").value]) {
@@ -595,10 +728,13 @@
               return Math.floor(a.amount);
             case "annual":
               return Math.floor(a.amount / 12);
-            case "daily":
-              return Math.floor(a.amount * a.days);
+            case "daily": {
+              // 「1月に支給する額は◯円を超えない」区分は、その額までにする（施行令 別表第五）
+              const v = Math.floor(a.amount * a.days);
+              return a.monthMax ? Math.min(v, a.monthMax) : v;
+            }
             case "percent":
-              return Math.floor(((pay + (regionalNames.includes(a.name) ? extra : 0)) * a.amount) / 100);
+              return Math.floor(((pay + (regionalNames.includes(kindOf(a)) ? extra : 0)) * a.amount) / 100);
             case "percentFirst":
               return Math.floor((firstPay * a.amount) / 100);
             case "year_end":
@@ -611,12 +747,12 @@
         const extraBase = (list, pay, month, special) =>
           special +
           (list || [])
-            .filter((a) => a.name === "扶養手当")
+            .filter((a) => kindOf(a) === "扶養手当")
             .reduce((sum, a) => sum + amountOf(a, pay, month), 0);
         function combinedTotal(list, pay, month, firstPay, extra, include = () => true) {
           const rows = (list || []).filter(include),
-            regional = rows.filter((a) => a.name === "地域手当"),
-            wide = rows.filter((a) => a.name === "広域異動手当"),
+            regional = rows.filter((a) => kindOf(a) === "地域手当"),
+            wide = rows.filter((a) => kindOf(a) === "広域異動手当"),
             other = rows.filter((a) => !regional.includes(a) && !wide.includes(a));
           // 地域手当は各月に有効な勤務地を1つだけ採用（複数登録時は直近の開始分）。
           // 異動保障（guarantee）の割合の方が高い月は、保障の割合で支給する
@@ -651,7 +787,7 @@
             month,
             0,
             extra,
-            (a) => a.bonusBase && !(kinben && a.name === "扶養手当"),
+            (a) => a.bonusBase && !(kinben && kindOf(a) === "扶養手当"),
           );
         }
         window.allowanceSimulator = {
@@ -690,6 +826,7 @@
           for (const el of $("branchAllowances").children)
             el.hidden = el.dataset.branch !== $("branch").value;
           updateOptions();
+          for (const it of document.querySelectorAll(".allowance-item")) it.syncBranch?.();
         }
         $("branch").addEventListener("change", updateBranch);
         $("addAllowance").addEventListener("click", () => create());

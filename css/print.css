@@ -12,6 +12,8 @@
   }
   html.printing,
   html.printing body {
+    /* 画面は暗い配色（color-scheme: dark）なので、紙の余白まで黒くならないよう明るい配色に戻す */
+    color-scheme: light !important;
     background: #fff !important;
     color: #18302a !important;
     overflow: visible !important;
@@ -44,7 +46,7 @@
   }
   .pa-brand {
     margin: 0;
-    color: #a8792c !important;
+    color: #8a6220 !important;
     font: 700 8pt/1 Inter, sans-serif;
     letter-spacing: 0.2em;
   }
@@ -74,20 +76,35 @@
   }
   .pa-cond div {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 8px;
+    align-items: baseline;
+    gap: 0 8px;
+    min-width: 0;
     padding: 2px 0;
     border-bottom: 1px dotted #cfd8d3;
     break-inside: avoid;
   }
+  /* 値が長い行は2列ぶん・1行ぶんの幅を使う（print.js が pa-wide・pa-full を付ける） */
+  .pa-cond .pa-wide {
+    grid-column: span 2;
+  }
+  .pa-cond .pa-full {
+    grid-column: 1 / -1;
+  }
   .pa-cond dt {
+    flex: 0 1 auto;
+    min-width: 4em;
     color: #5d6d66 !important;
+    overflow-wrap: anywhere;
   }
   .pa-cond dd {
+    flex: 1 1 auto;
+    min-width: 0;
     margin: 0;
     font-weight: 700;
     text-align: right;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
   .pa-allowances {
     margin: 6px 0 0;
@@ -174,13 +191,48 @@
     border-collapse: collapse;
     font-size: 7.5pt;
   }
+  /* 表は紙の幅に収める：列幅を固定し、文字の列は折り返す。数値の列だけ折り返さない */
+  .print-area .sim-table {
+    table-layout: fixed;
+  }
   .print-area .sim-table th,
   .print-area .sim-table td {
     position: static !important;
     padding: 3px 5px;
     border-bottom: 1px solid #e1e7e3;
     background: none !important;
-    white-space: nowrap;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+  /* 年齢ごとの内訳（8列）：年齢・階級号俸は折り返し、金額の列は1行 */
+  .print-area .sim-table:has(> thead th:nth-child(8)) th:nth-child(1) {
+    width: 9%;
+  }
+  .print-area .sim-table:has(> thead th:nth-child(8)) th:nth-child(2) {
+    width: 19%;
+    text-align: left;
+  }
+  .print-area .sim-table:has(> thead th:nth-child(8)) td:nth-child(n + 3) {
+    white-space: nowrap !important;
+    text-align: right;
+  }
+  /* 退職時・退職後の給付（項目・金額・説明の3列） */
+  .print-area .sim-table:not(:has(thead)) th[scope="row"] {
+    width: 30%;
+    text-align: left;
+  }
+  .print-area .sim-table:not(:has(thead)) td:nth-of-type(1) {
+    width: 18%;
+    white-space: nowrap !important;
+    text-align: right;
+  }
+  .print-area .sim-table:not(:has(thead)) td:nth-of-type(2) {
+    text-align: left;
+  }
+  /* 条件を比べる表（項目・A・B・差） */
+  .print-area .sim-compare-table th:first-child {
+    width: 28%;
   }
   .print-area .sim-table thead th {
     border-bottom: 1.5px solid #0c271e;
@@ -193,6 +245,29 @@
     font-size: 7.5pt;
     color: #4c5d56 !important;
   }
+  /* 画面向けの案内（「押すと開きます」など）は紙には出さない */
+  .screen-only,
+  .print-area .screen-only {
+    display: none !important;
+  }
+  /* notes-page.js が「詳しい説明」のリンクに置き換えた補足は、元の文を紙に戻す */
+  .print-area .visually-hidden.note-full {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    white-space: normal !important;
+  }
+  .print-area .fixed-note {
+    display: block;
+    margin-top: 4px;
+    color: #4c5d56 !important;
+    font-size: 7.5pt;
+    line-height: 1.6;
+  }
   .print-area button,
   .print-area .sim-share,
   .print-area .note[data-note-title],
@@ -204,7 +279,7 @@
     margin-top: 14px;
     padding-top: 6px;
     border-top: 1px solid #cfd8d3;
-    color: #6c7c74 !important;
+    color: #5a6a62 !important;
     font-size: 7pt;
   }
 }

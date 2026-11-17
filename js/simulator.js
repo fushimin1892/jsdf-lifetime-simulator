@@ -48,6 +48,20 @@
           MANAGER_PAY = AL.managerPay,
           MANAGER_BONUS = B.managerAdd,
           FUYOU_PARENT = AL.calcRates.fuyouParentByCol;
+        // 生活の手当：勤務の内容によらないので教育期間中も支給する（配置手当・特殊勤務手当など勤務の手当は教育期間中は付けない）。
+        // 手当の行に kind（手当の種類）があれば kind、なければ名前で判定する
+        const LIVING_ALLOWANCES = [
+            "扶養手当",
+            "住居手当",
+            "通勤手当",
+            "単身赴任手当",
+            "寒冷地手当",
+            "地域手当",
+            "広域異動手当",
+            "在宅勤務等手当",
+          ],
+          REGIONAL_NAMES = ["地域手当", "広域異動手当"],
+          isLiving = (a) => LIVING_ALLOWANCES.includes(a.kind ?? a.name);
         // ---- 退職手当 ----
         const ART3 = RT.art3,
           ART4 = RT.art4,
@@ -199,7 +213,7 @@
             ymOfMonth = (m) => (c.entryYear || 2026) * 12 + c.entryMonth - 1 + m,
             fyOfYm = (ym) => Math.floor(ym / 12) - (ym % 12 < 3 ? 1 : 0),
             guarantees = c.allowances
-              .filter((a) => a.name === "地域手当" && a.endMonth < serviceMonths && a.endMonth - a.startMonth > 6)
+              .filter((a) => (a.kind ?? a.name) === "地域手当" && a.endMonth < serviceMonths && a.endMonth - a.startMonth > 6)
               .map((a) => ({
                 from: a.endMonth,
                 rate: a.area ? R.regionalRate(a.area.pref, a.area.name, fyOfYm(ymOfMonth(a.endMonth - 1))) : a.amount,
@@ -255,8 +269,8 @@
             // 3佐以上は防衛大臣が定める割合を掛ける
             const firstCol = rank === 0 ? 2 : rank,
               firstPay = Math.floor(table[available(firstCol)[0]][firstCol] * (SENIOR_RATE[firstCol] ?? 1)),
-              // 教育期間（教育隊・3曹昇任前の教育・幹部候補生学校）は基本給（俸給）だけで、毎月の手当は付けない。
-              // 賞与は支給するが、計算の基礎は俸給と階級による加算だけにする
+              // 教育期間（教育隊・3曹昇任前の教育・幹部候補生学校）は、勤務の内容に応じた手当（配置手当・特殊勤務手当など）と
+              // 営外手当・俸給の特別調整額を付けない。生活の手当（LIVING_ALLOWANCES）は教育期間中も支給し、賞与の基礎にも入れる
               inEducation = (c.education || []).some(([s, e]) => m >= s && m < e),
               eigai = !inEducation && c.eigaiStart != null && m >= c.eigaiStart && rank >= 12 ? EIGAI : 0,
               // 俸給の特別調整額（管理職）と賞与の管理職加算の割合
@@ -264,8 +278,11 @@
               // その月の年度（4月〜翌3月）。地域手当は年度ごとの割合（経過措置）を使う
               ymNow = (c.entryYear || 2026) * 12 + c.entryMonth - 1 + m,
               fyNow = Math.floor(ymNow / 12) - (ymNow % 12 < 3 ? 1 : 0),
-              // 年1回まとめて支給する分（指定場所生活調整金）は教育期間でも対象にする
-              list = (inEducation ? c.allowances.filter((a) => a.method === "year_end") : c.allowances.concat(guaranteesAt(m))).map((a) =>
+              // 教育期間は生活の手当と、年1回まとめて支給する分（指定場所生活調整金）だけを対象にする
+              list = c.allowances
+                .concat(guaranteesAt(m))
+                .filter((a) => !inEducation || a.method === "year_end" || isLiving(a))
+                .map((a) =>
                 a.area
                   ? { ...a, amount: R.regionalRate(a.area.pref, a.area.name, fyNow) }
                   : // 階級で額が決まる手当（本府省業務調整手当・航海手当）は、その月の階級の額
@@ -277,13 +294,24 @@
                     : a,
               ),
               managerRate = rank <= 1 ? B.generalManagerAdd : special ? (MANAGER_BONUS[c.manager] ?? 0) : 0,
-              // 地域手当・広域異動手当の計算の基礎に俸給へ加える額：俸給の特別調整額＋営外手当（扶養手当は手当側で加える）。
+              // 月例の地域手当・広域異動手当の計算の基礎に俸給へ加える額：俸給の特別調整額＋営外手当（扶養手当は手当側で加える）。
               // 自衛官は営外手当も基礎に入る（防衛省給与法第14条による一般職給与法第11条の3・第11条の8の読み替え）
               regionalExtra = special + eigai,
-              // 賞与の計算の基礎：俸給＋階級による加算＋管理職加算＋扶養・地域・広域異動手当＋営外手当（勤勉手当は扶養手当を除く）
-              added = pay + Math.floor(pay * bonusRate(rank)) + Math.floor(pay * managerRate) + eigai,
-              kimatsuBase = added + window.allowanceSimulator.bonusBase(list, pay, m, false, regionalExtra),
-              kinbenBase = added + window.allowanceSimulator.bonusBase(list, pay, m, true, regionalExtra);
+              AS = window.allowanceSimulator,
+              isRegional = (a) => REGIONAL_NAMES.includes(a.kind ?? a.name),
+              isFuyou = (a) => (a.kind ?? a.name) === "扶養手当",
+              // 賞与の基礎の地域手当・広域異動手当は「俸給・扶養手当・営外手当に対する分」だけで、俸給の特別調整額に対する分は含めない
+              // （一般職給与法第19条の4第4項・第19条の7第2項。営外手当は防衛省給与法第18条の2で俸給に加える）。
+              // 期末手当の基礎：俸給＋扶養手当＋営外手当＋それらに対する地域手当・広域異動手当
+              kimatsuAllow = AS.bonusBase(list, pay, m, false, eigai),
+              // 勤勉手当の基礎：扶養手当と、扶養手当に対する地域手当・広域異動手当を除く（一般職給与法第19条の7第2項）
+              kinbenAllow = AS.bonusBase(list.filter((a) => !isFuyou(a)), pay, m, true, eigai),
+              // 階級による加算（一般職給与法第19条の4第5項・防衛省給与法第18条の2）：
+              // （俸給＋営外手当＋それらに対する地域手当・広域異動手当）× 加算割合。管理職加算は俸給月額 × 割合
+              rankAddBase = pay + eigai + AS.bonusBase(list.filter(isRegional), pay, m, false, eigai),
+              added = pay + Math.floor(rankAddBase * bonusRate(rank)) + Math.floor(pay * managerRate) + eigai,
+              kimatsuBase = added + kimatsuAllow,
+              kinbenBase = added + kinbenAllow;
             let bonus = 0;
             // 入隊は月の初日とみなすので、基準日（6月1日・12月1日）までの在職期間は入隊からの月数になる
             if (month === 6 || month === 12) {
@@ -311,8 +339,8 @@
               allowances,
               lump,
               // 非課税の通勤手当、若年定年退職者給付金の計算に使う扶養手当・営外手当
-              nontax: Math.floor(sum((a) => a.name === "通勤手当")),
-              fuyou: sum((a) => a.name === "扶養手当"),
+              nontax: Math.floor(sum((a) => (a.kind ?? a.name) === "通勤手当")),
+              fuyou: sum((a) => (a.kind ?? a.name) === "扶養手当"),
               eigai,
               year: Math.floor(ym / 12),
               ym,
@@ -461,7 +489,8 @@
         function retirement(table, c, monthly) {
           // 任期制自衛官の任期満了の退職手当（防衛省給与法第28条第1項・第5項）：任期ごとに、満了時の俸給日額（月額÷30）×日数。
           // 退職所得として任期ごとに課税する（勤続年数はその任期の年数）
-          const terms = (c.ninki?.terms || []).map((t, i) => {
+          // 在職期間を超える任期は数えない（任期の途中で定年になる場合。run() では入力の案内を出す）
+          const terms = (c.ninki?.terms || []).filter((t) => t.end <= monthly.length).map((t, i) => {
             const pay = monthly[t.end - 1].basePay,
               amount = Math.floor((pay * t.days) / 30),
               years = t.months / 12,
@@ -486,14 +515,17 @@
               ninkiExit: true,
             };
           // 任期満了金を受けた任期は、その後の退職手当の勤続期間から除く（国家公務員退職手当法第7条第5項）
-          const paidMonths = c.ninki?.terms?.length ? c.ninki.terms.at(-1).end : 0,
+          const paidMonths = terms.length ? c.ninki.terms[terms.length - 1].end : 0,
             months = monthly.length - paidMonths,
             last = monthly.at(-1),
             P = last.basePay,
             n = Math.floor(months / 12) || (months >= 6 ? 1 : 0),
             // 若年定年退職者給付金の「自衛官として20年以上」は任期制の期間も含めて数える
             nAll = Math.floor(monthly.length / 12),
-            teinen = c.retireReason !== "self";
+            // 自己都合で勤続42年を超える場合は、定年退職（法第5条）・勤続35年として附則第6項の例により計算する
+            // （平成15年改正法（国家公務員退職手当法の一部を改正する法律）附則第4項）。調整額も定年退職と同じに扱う
+            selfLong = c.retireReason === "self" && n > RT.selfAdjustMaxYears,
+            teinen = c.retireReason !== "self" || selfLong;
           // 基本額（法第3条〜第5条、附則第6項〜第8項）。35年を超える定年退職は35年として計算し、83.7％を掛ける
           let rate;
           if (!teinen) rate = bandMonths(ART3, n) * (pick(RT.selfReduction, n)?.[1] ?? 1);
@@ -530,7 +562,13 @@
             const keys = Object.keys(rates).map(Number);
             return years < Math.min(...keys) ? [1, 1] : rates[Math.min(years, Math.max(...keys))];
           };
-          if (teinen && nAll >= YP.minYears && age < civil) {
+          // 若年定年退職者給付金は実際の定年退職だけ（自己都合で42年超を定年退職として計算する場合は対象外）
+          // 令和8年4月〜令和9年3月に退職した人は、経過措置の倍率（改正法 附則第3条。RULES.youngPension.transition）
+          const T = YP.transition,
+            // 退職日（最後に勤めた月の末日）の年月で判定する（retireYm は退職の翌月）
+            inTransition = T && last.ym >= T.from[0] * 12 + T.from[1] - 1 && last.ym <= T.to[0] * 12 + T.to[1] - 1,
+            YM = inTransition ? { ...YP, ...T } : YP;
+          if (c.retireReason !== "self" && nAll >= YP.minYears && age < civil) {
             // 俸給月額は3佐の最高号俸の額が上限
             const maxMajor = Math.max(...table.map((row) => row[YP.capCol] ?? 0)),
               Pc = Math.min(P, maxMajor),
@@ -538,8 +576,8 @@
               late = civil - Math.max(YP.splitAge, age);
             if (early > 0) {
               const [r1, r2] = yearRate(EARLY_RATE, early);
-              let first = Math.floor(Pc * early * YP.earlyMultiplier[0] * r1),
-                second = Math.floor(Pc * early * YP.earlyMultiplier[1] * r2);
+              let first = Math.floor(Pc * early * YM.earlyMultiplier[0] * r1),
+                second = Math.floor(Pc * early * YM.earlyMultiplier[1] * r2);
               // 所得による調整（法第27条の4）：退職の翌年の所得（給与収入の額）で2回目を減らし、上限以上なら1回目の一部を返納
               const I = c.reemployIncome || 0,
                 br = bonusRate(last.col),
@@ -548,8 +586,8 @@
                   base * 12 +
                   Math.floor(base + (P + last.eigai) * br) * YP.kimatsuMonths +
                   Math.floor((P + last.eigai) * (1 + br)) * YP.kinbenMonths,
-                L = G - Pc * YP.lowerMultiplier,
-                U = G - Pc * YP.upperMultiplier;
+                L = G - Pc * YM.lowerMultiplier,
+                U = G - Pc * YM.upperMultiplier;
               // 再就職の年収ごとの受け取り額のグラフ用（調整前の満額と、調整の境目）
               reemploy = { L, U, G, first, second };
               if (I > L) {
@@ -564,8 +602,8 @@
             if (late > 0) {
               const [r1, r2] = yearRate(LATE_RATE, late);
               payments.push(
-                { label: `${early > 0 ? "3回目（60歳以後" : "1回目（退職後"}）`, amount: Math.floor(Pc * late * YP.lateMultiplier[0] * r1), first: early === 0 },
-                { label: `${early > 0 ? "4回目" : "2回目"}（その翌々年）`, amount: Math.floor(Pc * late * YP.lateMultiplier[1] * r2) },
+                { label: `${early > 0 ? "3回目（60歳以後" : "1回目（退職後"}）`, amount: Math.floor(Pc * late * YM.lateMultiplier[0] * r1), first: early === 0 },
+                { label: `${early > 0 ? "4回目" : "2回目"}（その翌々年）`, amount: Math.floor(Pc * late * YM.lateMultiplier[1] * r2) },
               );
             }
           }
@@ -596,6 +634,7 @@
             years: n,
             basic,
             adjust,
+            selfLong,
             allowance: allowance + termTotal,
             terms,
             payments,
@@ -857,7 +896,10 @@
           const mark = (v, label, color, row) =>
             v > 0 && v < xMax
               ? `<line x1="${X(v)}" x2="${X(v)}" y1="${top}" y2="${Y(0)}" stroke="${color}" stroke-dasharray="4 3"/>` +
-                `<text x="${X(v) + 4}" y="${top + 12 + row * 14}" font-size="11" fill="${color}" font-weight="700">${label}</text>`
+                // 右半分の線は、文字を線の左側に置く（狭い画面でグラフの外へはみ出さないように）
+                (X(v) > (X(0) + X(xMax)) / 2
+                  ? `<text x="${X(v) - 4}" y="${top + 12 + row * 14}" text-anchor="end" font-size="11" fill="${color}" font-weight="700">${label}</text>`
+                  : `<text x="${X(v) + 4}" y="${top + 12 + row * 14}" font-size="11" fill="${color}" font-weight="700">${label}</text>`)
               : "";
           svg += mark(L, `満額の上限 ${man(L)}`, "#1f6b55", 0) + mark(U, `2回目0 ${man(U)}`, "#8a6a2f", 1) + mark(G, `全額返納 ${man(G)}`, "#a0453a", 2);
           // 入力した年収の位置
@@ -1122,6 +1164,14 @@
                 days: k === 0 ? E.ninkiDays.first[len] : (E.ninkiDays.byTerm[k - 1] ?? E.ninkiDays.later),
               });
             }
+            if (plan === "sgt") {
+              // 3曹へ昇任する場合の在職期間は定年まで。任期は在職期間の中だけにし、
+              // 定年までに3曹へ昇任できない（任期の途中で定年になる）入力は案内を出す
+              const serviceMonths = Math.round((c.retireAge - c.startAge) * 12);
+              if (sergeantMonths >= serviceMonths)
+                entryMessage = `入隊時の年齢が高く、定年（${c.retireAge}歳）までに3曹へ昇任できません。入隊時の年齢か任期の扱いを変えてください。`;
+              while (terms.length && terms.at(-1).end > serviceMonths) terms.pop();
+            }
             c.ninki = { terms, exit: plan !== "sgt" };
             if (plan !== "sgt") {
               // 満了で退職する：退職の年齢は任期の合計で決まり、3曹には昇任しない
@@ -1174,19 +1224,52 @@
           try {
             if (message) throw Error(message);
             c.allowances = window.allowanceSimulator.read();
-            const x = model(table, c);
+            let x = model(table, c);
             const target = $("targetRank").value,
-              reached = x.monthly.at(-1).rank,
+              targetAge = c.retireAge;
+            let ageRank = target;
+            // 予想階級に届かないときは、到達した階級の定年（RULES.promotion.retireAge）で退職する。
+            // 到達した階級の定年の方が早ければ、その年齢で計算し直す（早く辞めると到達階級がさらに下がることがあるので、定年が変わらなくなるまで繰り返す）
+            if (!c.ninki?.exit)
+              for (let k = 0; k < 5; k++) {
+                const rankNow = x.monthly.at(-1).rank,
+                  age = R.promotion.retireAge[rankNow];
+                if (age == null || age >= c.retireAge) break;
+                if (age <= c.startAge)
+                  throw Error(
+                    `入隊時の年齢が高く、予想階級の${target}に届きません。途中の${rankNow}の定年（${age}歳）を入隊時の年齢が超えるため計算できません。入隊時の年齢か予想階級を変えてください。`,
+                  );
+                c.retireAge = age;
+                ageRank = rankNow;
+                // 任期制から3曹へ昇任する場合も、早まった定年までに3曹へ昇任できるか確かめ、任期を在職期間の中にする
+                if (c.ninki) {
+                  const serviceMonths = Math.round((age - c.startAge) * 12);
+                  if (sergeantMonths >= serviceMonths)
+                    throw Error(
+                      `入隊時の年齢が高く、定年（${age}歳）までに3曹へ昇任できません。入隊時の年齢か任期の扱いを変えてください。`,
+                    );
+                  c.ninki.terms = c.ninki.terms.filter((t) => t.end <= serviceMonths);
+                }
+                x = model(table, c);
+              }
+            const reached = x.monthly.at(-1).rank,
               lastRank = `${reached}${x.monthly.at(-1).grade ? ` ${x.monthly.at(-1).grade}号俸` : ""}`;
             $("totalIncome").textContent = fmt(x.total);
             $("totalDetail").textContent =
               "いずれも額面の試算。在職中の給与の総額に、退職手当と若年定年退職者給付金は含みません" +
-              (reached === target ? "" : `。定年までに${target}へ届かないため、${reached}までで計算しています`);
+              (reached === target
+                ? ""
+                : c.retireAge < targetAge
+                  ? ageRank === reached || R.promotion.retireAge[reached] === c.retireAge
+                    ? `。予想階級の${target}に届かないため、到達した${reached}の定年（${c.retireAge}歳）で退職として計算しています`
+                    : `。予想階級の${target}に届かないため、${ageRank}の定年（${c.retireAge}歳）で退職として計算しています（その年齢までに${ageRank}へは昇任しないため、${reached}までで計算）`
+                  : `。定年までに${target}へ届かないため、${reached}までで計算しています`);
             $("serviceYears").textContent = Math.round((c.retireAge - c.startAge) * 10) / 10 + "年";
             $("lastRank").textContent = lastRank;
             $("lastYear").textContent = fmt(x.years.at(-1).total);
             $("stickyTotal").textContent = fmt(x.total);
             $("stickyRank").textContent = `${lastRank}・${c.retireAge}歳で${c.ninki?.exit ? "任期満了" : "定年"}`;
+            stickyError(false);
             $("simJump").hidden = false;
             // グラフは表示幅に合わせて描くので、先に結果欄を表示する
             $("simResult").hidden = false;
@@ -1276,7 +1359,7 @@
               row(
                 "退職手当（基本額）",
                 fmt(r.basic),
-                `勤続${r.years}年${r.terms?.length ? "（任期満了金を受けた任期を除く）" : ""}・${c.retireReason === "self" ? "自己都合" : "定年"}退職。退職日の俸給月額 ${fmt(x.monthly.at(-1).basePay)}`,
+                `勤続${r.years}年${r.terms?.length ? "（任期満了金を受けた任期を除く）" : ""}・${c.retireReason === "self" ? (r.selfLong ? "自己都合（勤続42年超のため定年退職・勤続35年として計算）" : "自己都合") : "定年"}退職。退職日の俸給月額 ${fmt(x.monthly.at(-1).basePay)}`,
               ) +
               row("退職手当（調整額）", fmt(r.adjust), "在職中の階級ごとの調整月額のうち多い順に60か月分") +
               (r.payments.length
@@ -1336,14 +1419,53 @@
             renderCompare();
             return true;
           } catch (e) {
-            $("simError").textContent = e.message;
+            // 入力の案内（Error で投げた文）はそのまま出し、JavaScript の内部エラー（TypeError など）は分かる文で包む
+            $("simError").textContent =
+              e && e.constructor === Error
+                ? e.message
+                : `計算できませんでした。入力を確かめてください（詳細：${e && e.message ? e.message : e}）`;
             $("simResult").hidden = true;
             $("stickyTotal").textContent = "—";
             $("stickyRank").textContent = "入力内容を確認してください";
+            stickyError(true);
             $("simJump").hidden = true;
             return false;
           }
         }
+        // エラーのとき、上部の帯の「入力内容を確認してください」を押すと、エラーの文の位置へ移ってフォーカスする
+        // （CSP でインラインのイベント属性は使えないので、ここで動きを付ける）
+        function stickyError(on) {
+          const el = $("stickyRank");
+          if (on) {
+            el.dataset.error = "";
+            el.setAttribute("role", "button");
+            el.tabIndex = 0;
+            el.title = "エラーの内容へ移動";
+            el.style.cursor = "pointer";
+            el.style.textDecoration = "underline";
+          } else {
+            delete el.dataset.error;
+            el.removeAttribute("role");
+            el.removeAttribute("tabindex");
+            el.removeAttribute("title");
+            el.style.cursor = "";
+            el.style.textDecoration = "";
+          }
+        }
+        function goToError() {
+          const err = $("simError");
+          if (!err.hasAttribute("tabindex")) err.tabIndex = -1;
+          err.scrollIntoView({ behavior: "smooth", block: "center" });
+          err.focus({ preventScroll: true });
+        }
+        $("stickyRank").addEventListener("click", () => {
+          if ("error" in $("stickyRank").dataset) goToError();
+        });
+        $("stickyRank").addEventListener("keydown", (e) => {
+          if (!("error" in $("stickyRank").dataset) || (e.key !== "Enter" && e.key !== " ")) return;
+          e.preventDefault();
+          goToError();
+        });
         // 共有URLで開いたときは、その条件でシミュレーターを開く
         function openShared() {
           if (load() && !$("simulatorDialog").open) $("simulatorDialog").showModal();

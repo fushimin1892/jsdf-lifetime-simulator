@@ -39,8 +39,22 @@
           link.href = `#${id}`;
           link.textContent = "詳しい説明";
           link.dataset.note = id;
-          el.replaceChildren(link);
+          // 元の文は見えない形で残す：読み上げ（aria-describedby）と印刷はこちらを使う
+          const full = document.createElement("span");
+          full.className = "visually-hidden note-full";
+          full.innerHTML = p.innerHTML;
+          // 見えない文の中のリンクには Tab で移らない（同じリンクは説明ページにある）
+          full.querySelectorAll("a, button, input, select, textarea").forEach((x) => (x.tabIndex = -1));
           el.dataset.noteMoved = "1";
+          el.replaceChildren(full, link);
+          if (el.id) {
+            full.id = `${el.id}-full`;
+            for (const ref of document.querySelectorAll("[aria-describedby]")) {
+              const ids = ref.getAttribute("aria-describedby").split(/\s+/);
+              if (ids.includes(el.id))
+                ref.setAttribute("aria-describedby", ids.map((x) => (x === el.id ? full.id : x)).join(" "));
+            }
+          }
         }
         const convertAll = (root) => root.querySelectorAll(selector).forEach(convert);
         convertAll(document);

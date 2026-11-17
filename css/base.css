@@ -416,7 +416,7 @@ a {
   font-size: 16px;
 }
 .sim-section-head span {
-  color: #84938a;
+  color: #5f6f67; /* 4.5:1 以上（白・紙色の上） */
   font-size: 12px;
 }
 .sim-scroll {
@@ -440,7 +440,7 @@ a {
 }
 @media (max-width: 600px) {
   .sim-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
   .sim-metrics {
     grid-template-columns: 1fr 1fr;
@@ -658,7 +658,14 @@ a {
   gap: 8px;
 }
 .allowance-item-head strong {
+  min-width: 0;
   font-size: 14px;
+  overflow-wrap: anywhere;
+}
+/* 手当名が長くても削除ボタンを潰さない */
+.allowance-item-head .allowance-remove {
+  flex: none;
+  white-space: nowrap;
 }
 .allowance-remove {
   padding: 5px 9px;
@@ -689,7 +696,8 @@ a {
 }
 .a-period-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* 年の欄は4けた＋「年」が必ず見える幅を確保し、狭いときは月の欄を下の行に回す */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.75rem), 1fr));
   gap: 6px;
 }
 .a-period-out {
@@ -778,7 +786,7 @@ a {
   margin-top: 12px;
   font-size: 12px;
   line-height: 1.7;
-  color: #6b7d70;
+  color: #5a6b60;
 }
 .branch-title {
   font-size: 13px;

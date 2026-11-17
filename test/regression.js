@@ -9,7 +9,7 @@
 // やること：
 //   1. このフォルダを 127.0.0.1 の一時サーバーで配信して開く
 //   2. 初期条件の結果（在職中の給与の総額・退職手当・若年給付金・生涯の手取り）を読む
-//   3. 「AI用/検証用スクリプト.js」（89通りの条件）を実行して hash を出す
+//   3. 「AI用/検証用スクリプト.js」（91通りの条件）を実行して hash を出す
 //   4. コンソールのエラー・CSP の違反・外部への通信がないこと、スマホ幅（375px）で横にはみ出さないことを確かめる
 "use strict";
 const fs = require("fs");
@@ -64,14 +64,18 @@ function serve() {
     console.log("NG " + m);
   };
   try {
+    // 読み込み・操作の待ち時間（Playwright の初期値 30秒では、遅い環境の初回読み込みで止まることがあるため延ばす）
+    const WAIT = 120 * 1000;
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    page.setDefaultTimeout(WAIT);
+    page.setDefaultNavigationTimeout(WAIT);
     page.on("console", (m) => m.type() === "error" && problems.push("console: " + m.text()));
     page.on("pageerror", (e) => problems.push("pageerror: " + e.message));
     page.on("request", (r) => !r.url().startsWith(base) && !r.url().startsWith("data:") && problems.push("外部への通信: " + r.url()));
     await page.addInitScript(() => {
       document.addEventListener("securitypolicyviolation", (e) => console.error(`CSP違反 ${e.violatedDirective} ${e.blockedURI}`));
     });
-    await page.goto(base, { waitUntil: "load" });
+    await page.goto(base, { waitUntil: "load", timeout: WAIT });
 
     // 初期条件の結果
     const initial = await page.evaluate(async () => {
@@ -86,7 +90,7 @@ function serve() {
     });
 
     console.log("初期条件：" + JSON.stringify(initial));
-    // 89通りの回帰（数分かかる）
+    // 91通りの回帰（数分かかる）
     console.log("検証用スクリプトを実行中…");
     const src = fs.readFileSync(path.join(ROOT, "AI用/検証用スクリプト.js"), "utf8").replace(/\(\{ hash: h, len: s\.length, n: out\.cases\.length \}\);\s*$/, "return { hash: h, len: s.length, n: out.cases.length };");
     const snap = await page.evaluate(`(async () => {\n${src}\n})()`);
@@ -96,7 +100,9 @@ function serve() {
 
     // スマホ幅
     const mobile = await browser.newPage({ viewport: { width: 375, height: 812 } });
-    await mobile.goto(base, { waitUntil: "load" });
+    mobile.setDefaultTimeout(WAIT);
+    mobile.setDefaultNavigationTimeout(WAIT);
+    await mobile.goto(base, { waitUntil: "load", timeout: WAIT });
     const overflow = await mobile.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     if (overflow > 0) fail(`スマホ幅（375px）で横に ${overflow}px はみ出す`);
 

@@ -20,7 +20,7 @@
   --edge-2: rgba(255, 255, 255, 0.16);
   --text: #eef4f0;
   --dim: #a3b6ac;
-  --faint: #6f857a;
+  --faint: #7d9488; /* 暗い背景の上で 4.5:1 以上 */
   --mint: #7ee2b4;
   --emerald: #1f7a57;
   --gold: #ebc77c;
@@ -380,8 +380,10 @@ html body .lookup select option {
 }
 html body .lookup select:hover,
 html body .lookup select:focus {
-  outline: 0;
   border-color: var(--gold);
+}
+html body .lookup select:focus:not(:focus-visible) {
+  outline: 0;
 }
 html body .lookup .result {
   margin-top: 24px;
@@ -789,13 +791,13 @@ html body #simulatorDialog .sub {
   color: #5d6d66;
 }
 html body #simulatorDialog .cap {
-  color: #a8792c;
+  color: #8a6220;
 }
 html body #simulatorDialog .cap::before {
   background: #a8792c;
 }
 html body #simulatorDialog .source {
-  color: #6c7c74;
+  color: #5a6a62;
 }
 html body #simulatorDialog .source a {
   color: #1f7a57;
@@ -828,7 +830,7 @@ html body #simulatorDialog .sim-metrics > div {
   box-shadow: none;
 }
 html body #simulatorDialog .sim-metrics small {
-  color: #6c7c74;
+  color: #5a6a62;
   font-size: 12px;
 }
 html body #simulatorDialog .sim-metrics strong {
@@ -1215,4 +1217,183 @@ html body #simulatorDialog .sim-compare-table th {
   .hero-facts dt {
     font-size: 11px;
   }
+}
+
+/* ===================================================================
+   使いやすさの手直し（2026-11 監査）：今のデザインのまま、
+   読み上げ・キーボード操作・スマホ幅・エラーの見え方を直す
+   =================================================================== */
+
+/* 見えないが読み上げには使う文（notes-page.js が移した説明の元の文など） */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* フォーカスの見え方をそろえる（キーボード操作で必ず枠が見えるように） */
+html body :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible {
+  outline: 3px solid var(--gold) !important;
+  outline-offset: 2px;
+}
+/* シミュレーターは明るい紙なので、濃い緑の枠にする（白地で 5:1 以上） */
+html body #simulatorDialog :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible,
+html body #notesPage :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible {
+  outline: 3px solid #1f7a57 !important;
+  outline-offset: 2px;
+}
+/* 単位つきの欄は、枠全体（入力＋単位）に線を出す */
+html body #simulatorDialog .unit input:focus-visible {
+  outline: 0 !important;
+}
+html body #simulatorDialog .unit:has(input:focus-visible) {
+  outline: 3px solid #1f7a57 !important;
+  outline-offset: 2px;
+}
+/* 上の濃い緑の帯（結果の要約）の上ではフォーカスの線を明るい色に */
+html body #simulatorDialog .sim-sticky :is(a, button):focus-visible {
+  outline-color: var(--gold) !important;
+}
+/* フォーカスした欄が上に固定した帯（sim-sticky）の下に隠れないようにする */
+html body #simulatorDialog {
+  scroll-padding-top: 96px;
+  scroll-padding-bottom: 24px;
+}
+
+/* 入力の誤り：重なった手当の行と、誤りのある欄（allowances.js が a-error・aria-invalid を付ける） */
+html body #simulatorDialog .allowance-item.a-error {
+  border-color: #b3261e;
+  box-shadow: 0 0 0 1px #b3261e, 0 6px 18px -12px rgba(179, 38, 30, 0.35);
+}
+html body #simulatorDialog .allowance-item.a-error .allowance-title::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #b3261e;
+  color: #fff;
+  font: 800 12px/1 var(--num);
+  vertical-align: 1px;
+}
+html body #simulatorDialog :is(input, select, textarea)[aria-invalid="true"],
+html body #simulatorDialog .unit:has([aria-invalid="true"]) {
+  border-color: #b3261e !important;
+  box-shadow: 0 0 0 1px #b3261e !important;
+  background-color: #fff7f6;
+}
+html body #simulatorDialog .unit [aria-invalid="true"] {
+  border: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent;
+}
+
+/* 手当の支給開始（年）：4けたの年が切れないように単位の余白を詰める */
+html body #simulatorDialog .a-period-row .unit input {
+  padding-left: 10px;
+  padding-right: 4px;
+}
+html body #simulatorDialog .a-period-row .unit span {
+  min-width: 0;
+  padding: 0 10px;
+}
+
+/* 狭いスマホ幅：入力欄は1列にして、選んだ文字が切れないようにする */
+@media (max-width: 420px) {
+  html body #simulatorDialog .sim-grid,
+  html body #simulatorDialog .allowance-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html body #simulatorDialog .sim-grid select,
+  html body #simulatorDialog .allowance-fields select,
+  html body #simulatorDialog .allowance-selector select {
+    padding-right: 32px;
+    padding-left: 12px;
+    background-position: right 12px center;
+  }
+}
+
+/* 条件を比べる表：狭い幅では項目ごとに A・B・差 を縦に並べる */
+@media (max-width: 560px) {
+  html body #simulatorDialog #compareWrap {
+    overflow: visible;
+    max-height: none;
+  }
+  html body #simulatorDialog #compareWrap .sim-compare-table {
+    width: 100%;
+    min-width: 0 !important;
+  }
+  html body #simulatorDialog #compareWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  html body #simulatorDialog #compareWrap tbody,
+  html body #simulatorDialog #compareWrap .sim-compare-table {
+    display: block;
+  }
+  html body #simulatorDialog #compareWrap tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e3e8e4;
+  }
+  html body #simulatorDialog #compareWrap tr > * {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  html body #simulatorDialog #compareWrap tbody th {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+  }
+  html body #simulatorDialog #compareWrap td {
+    text-align: left;
+  }
+  html body #simulatorDialog #compareWrap td::before {
+    display: block;
+    color: #5a6a62;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  html body #simulatorDialog #compareWrap td:nth-of-type(1)::before {
+    content: "A（保存）";
+  }
+  html body #simulatorDialog #compareWrap td:nth-of-type(2)::before {
+    content: "B（今）";
+  }
+  html body #simulatorDialog #compareWrap td:nth-of-type(3)::before {
+    content: "差（B−A）";
+  }
+}
+
+/* 見出しと補足が狭い幅で枠からはみ出さないように折り返す */
+html body #simulatorDialog .sim-section-head {
+  flex-wrap: wrap;
+}
+html body #simulatorDialog .sim-section-head h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 明るいシミュレーターの中では、選んだ文字（Tab で入った欄の値など）が白く消えないようにする */
+html body #simulatorDialog ::selection,
+html body #notesPage ::selection {
+  background: rgba(31, 122, 87, 0.24);
+  color: #0c271e;
 }

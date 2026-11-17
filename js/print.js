@@ -8,8 +8,9 @@
         // 画面に出ている入力欄を「項目名：値」で集める（選択欄は選んだ文字、数値は単位つき）
         function conditions() {
           const rows = [];
-          for (const box of document.querySelectorAll("#simulator .sim-grid > div, #branchAllowances .sim-grid > div")) {
-            if (!box.offsetParent) continue;
+          for (const box of document.querySelectorAll("#simulator .sim-grid > div, #branchAllowances > div")) {
+            // 隠れている欄（所属で出ない配置手当など）は載せない
+            if (box.hidden || box.closest("[hidden]") || !box.offsetParent) continue;
             const label = box.querySelector("label"),
               field = box.querySelector("select, input");
             if (!label || !field) continue;
@@ -47,7 +48,12 @@
           area.innerHTML =
             `<header class="pa-head"><div><p class="pa-brand">自衛官 給料表ナビ</p><h1>生涯年収シミュレーション</h1></div><p class="pa-date">作成日 ${esc(today)}</p></header>` +
             `<h2>入力した条件</h2><dl class="pa-cond">${conditions()
-              .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`)
+              // 長い値の行は2列ぶん・1行ぶんの幅を使い、項目名が縦に潰れないようにする
+              .map(([k, v]) => {
+                const len = k.length + v.length,
+                  wide = len > 34 ? " pa-full" : len > 20 ? " pa-wide" : "";
+                return `<div class="pa-row${wide}"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`;
+              })
               .join("")}</dl>` +
             (extra.length ? `<ul class="pa-allowances">${extra.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "") +
             "<h2>試算結果</h2>";

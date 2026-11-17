@@ -6,10 +6,14 @@
 //   node tools/egov-check.js paytable   … e-Gov の別表第二（自衛官俸給表）を全欄読み、data/pay-table.js と照合する
 //   node tools/egov-check.js promotion  … e-Gov の施行令 別表第一ロ（昇任後の号俸）を data/promotion-table.js と照合する
 //   node tools/egov-check.js values     … data/rules.js の手当・賞与・定年・退職手当・若年給付金の数値を、条文の文言と照合する
-//                                         （一覧は tools/value-checks.js。e-Gov にない値は最後に「人が確かめる一覧」として出す）
+//                                         （一覧は tools/value-checks.js。区分と値を組で、前後に数字が続かない形で照合する。
+//                                          e-Gov にない値は最後に「人が確かめる一覧」として出す）
 //   node tools/egov-check.js all        … 上の4つ（改正日・俸給表・昇任表・数値）を全部
 //   node tools/egov-check.js paytable --xml <保存したXML>  … ネットにつながず、保存済みの本文で照合する（promotion も同じ）
 //   node tools/egov-check.js values --cache <フォルダ>     … 取った本文をフォルダに保存し、次からはそれを使う
+//
+// 終了コード：0 一致・記録どおり／1 NG・要確認あり／2 道具のエラー（取得の失敗で止まった場合を含む）／3 取得できない法令があった。
+// 2 と 3 は「照合を終えていない」ので、データを変えず、lastMonthlyCheck も更新しない（手順書を参照）。
 //
 // e-Gov の本文は施行済みの版。改正法が公布されても施行日（さかのぼり適用でも公布日の施行が多い）までは
 // 古い表が返るので、公布直後は官報・防衛省の新旧対照表と照合する（手順書を参照）。
@@ -143,9 +147,17 @@ const plain = (s, spaced) =>
   spaced
     ? s.replace(/<Rt>[\s\S]*?<\/Rt>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
     : s.replace(/<Rt>[\s\S]*?<\/Rt>/g, "").replace(/<[^>]+>/g, "").replace(/\s+/g, "");
-// 条（Num）・別表（「別表第四」など）・法令全体（"*"）の本文を、タグを外した文字列で返す
+// 条（Num）・別表（「別表第四」など）・附則の本文を、タグを外した文字列で返す。
+//   "附則"                       … 制定時の附則（改正法の附則は含まない）
+//   "附則(平成一五年六月四日法律第六二号)" … その改正法の附則（e-Gov の AmendLawNum の文字列）
+//   "*"                          … 法令全体（照合を甘くするので value-checks.js では使わない）
 function scope(xml, article, spaced) {
   if (article === "*") return plain(xml, spaced);
+  const sup = article.match(/^附則(?:\((.+)\))?$/);
+  if (sup) {
+    const parts = [...xml.matchAll(/<SupplProvision( [^>]*)?>[\s\S]*?<\/SupplProvision>/g)].filter((m) => (sup[1] ? (m[1] || "").includes(`AmendLawNum="${sup[1]}"`) : !/AmendLawNum/.test(m[1] || "")));
+    return parts.length ? parts.map((m) => plain(m[0], spaced)).join(" ") : null;
+  }
   if (article.startsWith("別表")) {
     const t = [...xml.matchAll(/<AppdxTable[\s\S]*?<\/AppdxTable>/g)].map((m) => m[0]).find((s) => plain(s.slice(0, 400)).startsWith(article + "（") || plain(s.slice(0, 400)).startsWith(article));
     return t ? plain(t, spaced) : null;
@@ -205,13 +217,15 @@ function compareRegional(spaced, { areas, gradeRate }) {
 async function checkValues(cacheDir) {
   const W = loadData("data/rules.js");
   const S = loadData("data/sources.js").SOURCES;
-  const { build, manual } = require("./value-checks.js");
+  const { build, manual, P } = require("./value-checks.js");
   const laws = Object.fromEntries(S.laws.map((l) => [l.key, l]));
   if (cacheDir) fs.mkdirSync(cacheDir, { recursive: true });
   let ng = 0;
   let ok = 0;
+  let words = 0; // 照合した文言・組の数（1件に複数あることがある）
   const byArea = {};
   for (const c of build(W.RULES, W)) {
+    words += c.fail ? 0 : c.regional ? 1 : c.expect.reduce((n, e) => n + (e.seq ? e.seq.length : 1), 0);
     if (c.fail) {
       ng++;
       console.log(`NG [${c.area}] ${c.what}`);
@@ -225,9 +239,10 @@ async function checkValues(cacheDir) {
       text = scope(xml, c.article);
       spaced = scope(xml, c.article, true);
     } catch (e) {
-      console.log(`★取得失敗 ${law.title}：${e.message}`);
+      if (!fetchFailed.has(law.title)) console.log(`★取得失敗 ${law.title}：${e.message}`);
+      fetchFailed.add(law.title);
     }
-    const where = `${law.title} ${c.article === "*" ? "（全体）" : c.article.startsWith("別表") ? c.article : "第" + c.article.replace(/_/g, "条の").replace(/^(\d+)$/, "$1") + (c.article.includes("_") ? "" : "条")}`;
+    const where = `${law.title} ${c.article === "*" ? "（全体）" : /^(別表|附則)/.test(c.article) ? c.article : "第" + c.article.replace(/_/g, "条の").replace(/^(\d+)$/, "$1") + (c.article.includes("_") ? "" : "条")}`;
     if (c.regional) {
       const errs = text == null ? ["別表第一が見つからない"] : compareRegional(spaced, c.regional);
       byArea[c.area] = byArea[c.area] || { ok: 0, ng: 0 };
@@ -241,16 +256,37 @@ async function checkValues(cacheDir) {
       }
       continue;
     }
-    // row：別表の中で、その手当名から次の手当名までの範囲に text があるか
+    // 照合は表のセル・号の区切りを空白で残した本文（spaced）で行う。
+    // row：別表の中で、その手当名から次の手当名までの範囲
     const rowText = (name) => {
-      const i = text.indexOf(name);
+      const i = spaced.indexOf(name);
       if (i < 0) return "";
       const others = Object.keys(W.RULES.allowances.specialRates).concat(["駐留軍関係業務手当", "備考"]).filter((n) => n !== "小笠原手当").filter((n) => n !== name);
-      const ends = others.map((n) => text.indexOf(n, i + name.length)).filter((j) => j > i);
-      return text.slice(i, ends.length ? Math.min(...ends) : undefined);
+      const ends = others.map((n) => spaced.indexOf(n, i + name.length)).filter((j) => j > i);
+      return spaced.slice(i, ends.length ? Math.min(...ends) : undefined);
     };
-    const has = (e) => (typeof e === "string" ? text.includes(e) : e.row ? rowText(e.row).includes(e.text) : e.spaced.test(spaced));
-    const missing = text == null ? ["（条・表が見つからない）"] : c.expect.filter((e) => !has(e)).map((e) => (typeof e === "string" ? e : e.row ? `${e.row}の行に${e.text}` : String(e.spaced)));
+    // 文字列は前後に数字が続かない所だけ（P で境界つきの正規表現にする）。seq は書いた順に出てくること
+    const toRe = (e) => (typeof e === "string" ? P(e) : e instanceof RegExp ? e : e.spaced);
+    const findFrom = (hay, e, from) => {
+      const re = new RegExp(toRe(e).source, "g");
+      re.lastIndex = from;
+      const m = re.exec(hay);
+      return m ? m.index + m[0].length : -1;
+    };
+    const label = (e) => (typeof e === "string" ? e : String(toRe(e)).replace(/\(\?<!\[[^\]]*\]\)|\(\?!\[[^\]]*\]\)| \?/g, ""));
+    // 見つからなかったもの（なければ空）を返す
+    const miss = (e) => {
+      const hay = e.row ? rowText(e.row) : spaced;
+      const items = e.seq || [e.row ? e.text : e];
+      let pos = 0;
+      for (const it of items) {
+        const p = findFrom(hay, it, pos);
+        if (p < 0) return (e.row ? `${e.row}の行に` : "") + label(it) + (e.seq && pos ? "（この並びで）" : "");
+        pos = p;
+      }
+      return "";
+    };
+    const missing = text == null ? ["（条・表が見つからない）"] : c.expect.map(miss).filter(Boolean);
     byArea[c.area] = byArea[c.area] || { ok: 0, ng: 0 };
     if (missing.length) {
       ng++;
@@ -262,15 +298,19 @@ async function checkValues(cacheDir) {
     }
   }
   console.log("\n区分ごとの結果：" + Object.entries(byArea).map(([k, v]) => `${k} ${v.ok}件一致${v.ng ? `・${v.ng}件NG` : ""}`).join("、"));
-  console.log(`合計：一致 ${ok} 件 / NG ${ng} 件`);
+  console.log(`合計：一致 ${ok} 件 / NG ${ng} 件（照合した文言・区分と値の組 ${words} 個）`);
   console.log("\ne-Gov で確かめられない値（毎月、公表資料で確かめる）：");
   for (const [area, what, src] of manual) console.log(`- [${area}] ${what} … ${src}`);
   return ng === 0;
 }
 
+// 取れなかった法令（ネットワーク・e-Gov の障害など）。改正の「要確認」とは分け、最後に終了コード 3 で知らせる
+const fetchFailed = new Set();
+
 async function checkRevisions() {
   const S = loadData("data/sources.js").SOURCES;
   let changed = 0;
+  let failed = 0;
   for (const law of S.laws) {
     if (!law.egovId) {
       console.log(`- ${law.title}：e-Gov にないので手で確認（${law.url}）`);
@@ -280,7 +320,8 @@ async function checkRevisions() {
       const j = await getJson(`${API}/law_revisions/${law.egovId}?response_format=json`);
       const revs = (j.revisions || []).filter((r) => r.amendment_promulgate_date);
       revs.sort((x, y) => (x.amendment_promulgate_date < y.amendment_promulgate_date ? 1 : -1));
-      const latest = revs[0] || {};
+      const latest = revs[0];
+      if (!latest) throw new Error("改正の一覧が空");
       const same = latest.amendment_promulgate_date === law.egovRevision?.promulgated;
       if (!same) changed++;
       console.log(
@@ -288,12 +329,16 @@ async function checkRevisions() {
           (same ? "" : `（記録は ${law.egovRevision?.promulgated ?? "なし"}）`),
       );
     } catch (e) {
-      changed++;
+      failed++;
+      fetchFailed.add(law.title);
       console.log(`★取得失敗 ${law.title}：${e.message}`);
     }
   }
-  console.log(changed ? `\n要確認 ${changed} 件。改正の中身を読み、数値に関係があれば data を直す。関係がなければ data/sources.js の egovRevision だけ更新する。` : "\nすべて記録どおり。");
-  return changed === 0;
+  console.log("");
+  if (changed) console.log(`★要確認 ${changed} 件。改正の中身を読み、数値に関係があれば data を直す。関係がなければ data/sources.js の egovRevision だけ更新する。`);
+  if (failed) console.log(`★取得失敗 ${failed} 件。改正があったかどうか分からない（要確認とは別）。時間をおいてやり直す。取れるまで data も lastMonthlyCheck も変えない。`);
+  if (!changed && !failed) console.log("すべて記録どおり。");
+  return changed === 0 && failed === 0;
 }
 
 (async () => {
@@ -310,7 +355,9 @@ async function checkRevisions() {
           : cmd === "all"
             ? [await checkRevisions(), await checkPayTable(null), await checkPromotion(null), await checkValues(cacheDir)].every(Boolean)
             : await checkRevisions();
-  process.exitCode = ok ? 0 : 1;
+  // 終了コード：0 すべて一致・記録どおり、1 NG または要確認あり、2 道具のエラー、3 取得できない法令があった（照合を終えていない）
+  if (fetchFailed.size) console.log(`\n★取得失敗の法令 ${fetchFailed.size} 件（${[...fetchFailed].join("、")}）：照合を終えられていない（終了コード 3）`);
+  process.exitCode = fetchFailed.size ? 3 : ok ? 0 : 1;
 })().catch((e) => {
   console.error(e);
   process.exitCode = 2;
