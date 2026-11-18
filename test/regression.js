@@ -67,6 +67,8 @@ function serve() {
     // 読み込み・操作の待ち時間（Playwright の初期値 30秒では、遅い環境の初回読み込みで止まることがあるため延ばす）
     const WAIT = 120 * 1000;
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    // 日付で変わる初期値（入隊した年・地域手当の年度の表示）があるので、テストの日付を固定する
+    await page.clock.setFixedTime(new Date("2026-11-16T12:00:00+09:00"));
     page.setDefaultTimeout(WAIT);
     page.setDefaultNavigationTimeout(WAIT);
     page.on("console", (m) => m.type() === "error" && problems.push("console: " + m.text()));
@@ -100,6 +102,7 @@ function serve() {
 
     // スマホ幅
     const mobile = await browser.newPage({ viewport: { width: 375, height: 812 } });
+    await mobile.clock.setFixedTime(new Date("2026-11-16T12:00:00+09:00"));
     mobile.setDefaultTimeout(WAIT);
     mobile.setDefaultNavigationTimeout(WAIT);
     await mobile.goto(base, { waitUntil: "load", timeout: WAIT });

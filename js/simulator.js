@@ -1176,6 +1176,11 @@
             if (plan !== "sgt") {
               // 満了で退職する：退職の年齢は任期の合計で決まり、3曹には昇任しない
               c.retireAge = c.startAge + end / 12;
+              // 満了時の年齢が、曹の定年（3曹の55歳）を超える入力は計算しない（サイトの前提。士には定年の定めがないため、
+              // 曹の最も早い定年を目安の上限にする）
+              const limit = window.RULES.promotion.retireAge["3曹"];
+              if (c.retireAge > limit)
+                entryMessage = `任期満了のとき${Math.floor(c.retireAge)}歳になります。この試算では、任期満了の年齢が${limit}歳（3曹の定年）以下になる範囲で計算します。入隊時の年齢か任期の数を変えてください。`;
               c.promotions = c.promotions.filter((p) => p.month < end && p.col >= 16);
               c.education = [[0, value("eduRecruit")]];
             }
@@ -1470,6 +1475,12 @@
         function openShared() {
           if (load() && !$("simulatorDialog").open) $("simulatorDialog").showModal();
           if ($("simulatorDialog").open) run();
+        }
+        // 入隊した年の初期値は今年（日本時間）。入力欄の範囲（2000〜2060年）に収める
+        {
+          const y = Number(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" }).slice(0, 4)),
+            el = $("entryYear");
+          el.value = String(Math.min(Number(el.max), Math.max(Number(el.min), y)));
         }
         // 閉じたら入力を初期値に戻す（共有URLの条件も外す）
         const initial = state();

@@ -486,7 +486,7 @@ a {
   border: 0;
   padding: 0;
   border-radius: 14px;
-  width: min(1200px, calc(100vw - 40px));
+  width: min(1200px, calc(100% - 40px));
   max-width: none;
   max-height: min(94vh, 1200px);
   overflow: auto;
@@ -512,7 +512,7 @@ a {
   border: 0;
   padding: 0;
   border-radius: 14px;
-  width: min(820px, calc(100vw - 40px));
+  width: min(820px, calc(100% - 40px));
   max-width: none;
   max-height: min(94vh, 1200px);
   overflow: auto;
@@ -699,6 +699,12 @@ a {
   /* 年の欄は4けた＋「年」が必ず見える幅を確保し、狭いときは月の欄を下の行に回す */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.75rem), 1fr));
   gap: 6px;
+}
+/* 支給開始が退職より後の手当の知らせ（計算は止めない） */
+.allowance-fields .a-after-note {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 700;
 }
 .a-period-out {
   grid-column: 1 / -1;

@@ -157,7 +157,7 @@
           container.className = "allowance-item";
           container.dataset.kind = kind;
           container.innerHTML =
-            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><small class="fixed-note a-branch-note" hidden></small><input class="a-kind" type="hidden"><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="80" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
+            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><small class="fixed-note a-branch-note" hidden></small><input class="a-kind" type="hidden"><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="200" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
           container.querySelector(".a-kind").value = kind;
           const name = container.querySelector(".a-name"),
             title = () => name.value.trim() || "手当";
@@ -272,6 +272,9 @@
             };
             pick.addEventListener("change", () => {
               if (pick.value !== "" && !pick.value.startsWith("rank:")) amount.value = rates[Number(pick.value)][0];
+              // 「1月◯円（回数は1）」のように月単位の区分は、回数が0なら1にする
+              const days = container.querySelector(".a-days");
+              if (/回数は1/.test(rates[Number(pick.value)]?.[1] || "") && Number(days.value) === 0) days.value = "1";
               sync();
               amount.dispatchEvent(new Event("input", { bubbles: true }));
             });
@@ -437,7 +440,7 @@
               endField.replaceWith(select);
             } else if (!endSelect && endField.tagName === "SELECT") {
               const input = document.createElement("input");
-              Object.assign(input, { className: "a-end", type: "number", min: "0", max: "80", step: "any", value: endField.value });
+              Object.assign(input, { className: "a-end", type: "number", min: "0", max: "200", step: "any", value: endField.value });
               endField.replaceWith(input);
             }
             if (plainPeriod) {
@@ -631,7 +634,24 @@
                 throw fail([row], `「${name}」の支給開始の年を西暦4けたで入力してください。`);
               if (sm < 0) throw fail([row], `「${name}」の支給開始（${ymText(entryYm() + sm)}）が入隊（${ymText(entryYm())}）より前です。`);
               if (em <= sm) throw fail([row], `「${name}」の支給期間を1か月以上にしてください。`);
+              if (!/^[0-9]+$/.test(val(".a-len-y"))) throw fail([row], `「${name}」の支給期間の年は0以上の整数で入力してください。`);
             }
+            // 支給開始が退職より後だと、計算に何も入らない。黙って0円にせず、行に小さく知らせる（計算は止めない。
+            // 任期制などに切り替えたときに、前に足した手当が退職後になることがあるため）
+            const serviceMonths = Math.round((Number($("retireAge").value) - Number($("startAge").value)) * 12);
+            let afterNote = row.querySelector(".a-after-note");
+            if (serviceMonths > 0 && Math.round(start * 12) >= serviceMonths) {
+              if (!afterNote) {
+                afterNote = document.createElement("small");
+                afterNote.className = "a-after-note";
+                afterNote.setAttribute("role", "status");
+                row.querySelector(".allowance-fields").append(afterNote);
+              }
+              afterNote.textContent = `支給開始（${ymText(entryYm() + Math.round(start * 12))}）が退職（${ymText(entryYm() + serviceMonths - 1)}末）より後のため、この手当は計算に入りません。`;
+            } else afterNote?.remove();
+            // 管理職員特別勤務手当は、俸給の特別調整額を受ける管理職の手当（一般職給与法第19条の3）
+            if (kind === "管理職員特別勤務手当" && $("manager").value === "none")
+              throw fail([row], `「${name}」は、俸給の特別調整額を受ける管理職の手当です。「管理職」の欄で特別調整額の種別を選んでください。`);
             for (const sel of [
               ".a-amount",
               ".a-start",
@@ -639,7 +659,21 @@
               ...(regional && val(".a-region") === "custom" ? [".a-region-custom"] : []),
               ...(method === "daily" ? [".a-days"] : []),
             ]) {
-              if (!inRange(row.querySelector(sel))) throw fail([row], `「${name}」の金額・日数・支給期間を確認してください。`);
+              const input = row.querySelector(sel);
+              if (!inRange(input)) {
+                const what = { ".a-amount": "金額・割合", ".a-start": "支給開始", ".a-end": "支給終了", ".a-region-custom": "官署指定の割合", ".a-days": "支給日数・回数" }[sel];
+                const v = Number(input.value);
+                const why = !input.value.trim()
+                  ? "が空欄です"
+                  : input.min !== "" && v < Number(input.min)
+                    ? `は${input.min}以上にしてください`
+                    : input.max !== "" && v > Number(input.max)
+                      ? `は${Number(input.max).toLocaleString("ja-JP")}以下にしてください`
+                      : input.validity?.stepMismatch
+                        ? `は${input.step === "1" ? "1年" : input.step === "0.25" ? "0.25年（3か月）" : input.step}単位にしてください`
+                        : "を確かめてください";
+                throw fail([row], `「${name}」の${what}${why}。`);
+              }
             }
             if (start >= end) throw fail([row], `「${name}」の支給終了は開始より後にしてください。`);
             if (method === "percent" && amount > 100) throw fail([row], `「${name}」の割合は0〜100％で入力してください。`);

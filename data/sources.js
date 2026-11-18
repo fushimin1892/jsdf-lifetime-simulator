@@ -167,7 +167,16 @@ window.SOURCES = {
       url: "https://laws.e-gov.go.jp/law/325AC0000000226",
       egovRevision: { promulgated: "2026-07-17", enforced: "2027-04-16", by: "科学技術・イノベーション創出の活性化に関する法律の一部を改正する法律" },
     },
+    {
+      key: "kokkoKomuin",
+      title: "国家公務員法",
+      num: "昭和二十二年法律第百二十号",
+      egovId: "322AC0000000120",
+      url: "https://laws.e-gov.go.jp/law/322AC0000000120",
+      egovRevision: { promulgated: "2026-07-17", enforced: "2026-07-17", by: "防災庁設置法の施行に伴う関係法律の整備等に関する法律" },
+    },
   ],
+
 
   // e-Gov にない公表資料（法令ではないが値の確認に使う）
   pages: [
@@ -203,15 +212,27 @@ window.SOURCES = {
     { path: "RULES.afterRetire", law: "kokunen", where: "第二十七条・第八十七条（年額・保険料は日本年金機構の公表額）", checked: "2026-11-16" },
     { path: "RULES.kyosai", law: "kyosai", where: "掛金率は防衛省共済組合の公表資料", checked: "2026-11-16" },
     { path: "RULES.tax", law: "shotoku", where: "所得税法・租税特別措置法・地方税法", checked: "2026-11-16" },
+    { path: "RULES.tax（措置法の特例）", law: "sozei", where: "給与所得控除の最低額の特例・基礎控除の上乗せ・復興特別所得税以外の特例", checked: "2026-11-16" },
+    { path: "RULES.tax.resident", law: "chihozei", where: "個人住民税（所得割・均等割・控除）", checked: "2026-11-16" },
+    { path: "RULES.allowances.specialRates", law: "boeiKyuyoRei", where: "別表第五（特殊勤務手当）・附則第三項（小笠原手当）・第十二条の三（航海手当の南極）・第十一条の二（管理職員特別勤務手当）", checked: "2026-11-17", how: "node tools/egov-check.js values で区分の並びと額・月の上限を照合" },
+    { path: "RULES.allowances.rankRates", law: "boeiKyuyoRei", where: "別表第四の二（本府省業務調整手当）・別表第七（航海手当）", checked: "2026-11-17", how: "node tools/egov-check.js values で表の行ごとに照合" },
+    { path: "RULES.allowances.calcRates.commute", law: "jinjiin9_24", where: "第八条の二（自動車等の距離の区分と額）", checked: "2026-11-17" },
+    { path: "RULES.allowances.calcRates.tanshin", law: "jinjiin9_89", where: "第四条（交通距離の区分と加算額）", checked: "2026-11-17" },
+    { path: "RULES.allowances.calcRates.kanreichi", law: "kanreichi", where: "第二条（級地と世帯等の区分ごとの額）", checked: "2026-11-17" },
+    { path: "RULES.retirement.adjustMonthly（職員の区分）", law: "taishokuRei", where: "第六条の三ほか（自衛官の階級ごとの調整月額の区分）。区分の当てはめは目で確認、額は法第六条の四で照合", checked: "2026-11-17" },
+    { path: "RULES.kyosai.pensionCaps", law: "kosei", where: "第二十条（標準報酬月額の等級）・附則（上限の引上げ）", checked: "2026-11-16" },
+    { path: "RULES.afterRetire.hireiRate", law: "kosei", where: "第四十三条（報酬比例の年金額の乗率 千分の五・四八一）", checked: "2026-11-16" },
+    { path: "RULES.youngPension.civilRetireAge", law: "kokkoKomuin", where: "附則（定年の段階的な引上げ：令和5年度60歳→令和13年度65歳）", checked: "2026-11-16" },
+    { path: "RULES.youngPension.transition", law: "boeiKyuyo", where: "令和8年法律第53号 附則第三条（令和8年4月〜令和9年3月に退職した人の倍率）", checked: "2026-11-17", how: "node tools/egov-check.js values で照合" },
   ],
 
   // 出ているが、まだ法令になっていないもの（成立・公布したら data に入れる）
   pending: [
     {
       what: "令和8年人事院勧告（月例給の引上げ、賞与 年4.70か月、広域異動手当 8％・16％、営外手当の引上げ、転居に関する手当の新設は2027年4月）",
-      status: "防衛省の職員の給与等に関する法律の一部を改正する法律案を第222回国会（臨時）に令和8年10月9日提出。2026-11-16 時点で法律番号・公布日の記載なし（未公布）",
+      status: "一般職の職員の給与に関する法律等の一部を改正する法律は令和8年法律第79号として2026-11-18に公布・施行（官報 号外第251号。同日に人事院規則9-40-66も公布）。2026-11-18 時点で e-Gov の改正後の本文は未掲載。防衛省の職員の給与等に関する法律の一部を改正する法律案（第222回国会に令和8年10月9日提出。自衛官の俸給表など）は未公布。両方を官報・e-Gov の本文で確かめてから、俸給表・賞与・広域異動手当などを一度に入れる",
       url: "https://www.mod.go.jp/j/presiding/houan/index.html",
-      checked: "2026-11-16",
+      checked: "2026-11-18",
     },
     {
       what: "地域手当の令和9年度（2027年度）の支給割合（経過措置の表。allowances.regionalTransition.byFy に 2027 がまだない。令和9年4月1日までに足さないと test/check.js が NG になる）",
