@@ -712,6 +712,8 @@
               const b = manual[j],
                 rb = rows[j].querySelector(".a-rate")?.value ?? "";
               if (b.kind !== a.kind || (ra !== "" && rb !== "" && ra !== rb)) continue;
+              // 「その他（自由入力）」は名前が違えば別の手当なので、同じ名前どうしだけを比べる
+              if (a.kind === "その他" && a.name.trim() !== b.name.trim()) continue;
               if (a.startMonth < b.endMonth && b.startMonth < a.endMonth) {
                 const from = Math.max(a.startMonth, b.startMonth),
                   to = Math.min(a.endMonth, b.endMonth) - 1;
