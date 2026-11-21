@@ -100,7 +100,7 @@ const DEFAULTS = {
   entryMonth: 4,
   entryYear: 2026,
   raise: 4,
-  bonus: "4.65",
+  bonus: "4.7",
   manager: "none",
   colClass: "5",
   generalGrade: 1,

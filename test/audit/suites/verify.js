@@ -120,7 +120,8 @@ module.exports = async function verify(env, { quick, log }) {
     }
 
     // ---- 賞与：4月入隊で年の途中に昇任のない年は、6月・12月の俸給＝その年の4〜12月の俸給（1月に昇給）。
-    //      期末＝(俸給＋俸給×階級加算)×1.2625、勤勉＝同×1.0225（地域手当などの手当なし） ----
+    //      期末＝(俸給＋俸給×階級加算)×期末の割合、勤勉＝同×標準の成績率（地域手当などの手当なし）。
+    //      入隊（2026年4月）から1年目の行は令和8年度（6月・12月で違う割合）、2年目からは令和9年度以後の割合 ----
     const table = await h.page.evaluate(() => window.PAY_TABLE);
     let bonusRows = 0;
     for (const p of [
@@ -146,7 +147,12 @@ module.exports = async function verify(env, { quick, log }) {
         const p1 = (salary - 3 * p2) / 9; // 4〜12月の俸給月額（1〜3月は年末の号俸 p2）
         if (!Number.isInteger(p1) || !table.some((t) => t[col] === p1)) continue; // 教育期間・定年の年など、形が違う行は見ない
         const base = p1 + Math.floor(p1 * rankAddOf(col));
-        const exp = 2 * (Math.floor(base * LAW.bonus.kimatsuPer) + Math.floor(base * LAW.bonus.kinbenStandard));
+        const yearIndex = Number(row[0].match(/^(\d+)/)[1]) - (p.startAge ?? 18), // 入隊から何年目の行か（0＝令和8年度）
+          F = LAW.bonus.upToFy2026,
+          exp =
+            yearIndex === 0
+              ? Math.floor(base * F.kimatsu[0]) + Math.floor(base * F.kinben[0]) + Math.floor(base * F.kimatsu[1]) + Math.floor(base * F.kinben[1])
+              : 2 * (Math.floor(base * LAW.bonus.kimatsuPer) + Math.floor(base * LAW.bonus.kinbenStandard));
         bonusRows++;
         rep.expect(Math.abs(yen(row[3]) - exp) <= 1, "bonus", `賞与 ${row[0]}（${row[1]}、6月・12月の俸給${p1}円）：画面 ${yen(row[3])}円、検算 ${exp}円`, p);
       }

@@ -158,7 +158,7 @@ async function mono(h, rep, quick, retireAge) {
   const set1 = (key) => (base, v) => ({ ...base, [key]: v });
   for (const b of BASES) {
     await series("毎年の昇給", b, [...Array(21).keys()], ["total", "allowance", "lifetime"], 1, set1("raise"));
-    await series("賞与の月数", b, ["0", "1", "2", "3", "4", "4.65", "5", "6", "8", "10", "12"], ["total", "lifetime"], 1, set1("bonus"));
+    await series("賞与の月数", b, ["0", "1", "2", "3", "4", "4.7", "5", "6", "8", "10", "12"], ["total", "lifetime"], 1, set1("bonus"));
     if (!b.entryType.startsWith("kanko")) await series("2士の号俸", b, [...Array(17).keys()].map((i) => i + 1), ["total", "allowance", "lifetime"], 1, set1("initialGrade"));
     for (const [id, inf] of Object.entries(stepInfo)) {
       const opts = quick ? inf.options.filter((_, i, a) => i === 0 || i === a.length - 1 || i === Math.floor(a.length / 2) || a[i] === inf.def) : inf.options;

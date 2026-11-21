@@ -108,9 +108,31 @@
             compute: (v) => {
               const add = band(R.tanshin.add, Number(v.km)),
                 amount = R.tanshin.base + add;
-              return { amount, text: `月額 ${yen(amount)}（基本 30,000円＋距離の加算 ${yen(add)}）` };
+              return { amount, text: `月額 ${yen(amount)}（基本 30,000円＋距離の加算 ${yen(add)}。2027年4月からは基本の30,000円だけ）` };
             },
-            note: "異動で住居を移り、やむを得ない事情で配偶者と別居して単身で生活する場合に支給されます（元の住居から通勤するのが困難な場合。通勤距離60km以上が目安）。",
+            note: "異動で住居を移り、やむを得ない事情で配偶者と別居して単身で生活する場合に支給されます（元の住居から通勤するのが困難な場合。通勤距離60km以上が目安）。距離の加算は2027年3月までで、2027年4月からはなくなり、代わりに「転居手当」が距離の区分に応じて支給されます（令和8年法律第79号。2027年4月1日施行）。2027年4月以後も試算するときは、転居手当も追加してください。",
+          },
+          転居手当: {
+            fields: [
+              { k: "single", label: "単身赴任手当を受けるか", options: [["no", "受けない（上限 月43,000円）"], ["yes", "受ける（上限 月105,000円）"]] },
+              { k: "yen", label: "月額（往来距離の区分の額）", max: 105000, unit: "円" },
+            ],
+            compute: (v) => {
+              const cap = v.single === "yes" ? R.tenkyo.capSingle : R.tenkyo.cap,
+                amount = Math.min(count(v.yen), cap);
+              return { amount, text: `月額 ${yen(amount)}（2027年4月から支給。上限 ${yen(cap)}${count(v.yen) > cap ? "に合わせました" : ""}）` };
+            },
+            note: "2027年4月1日に新しくできる手当です（令和8年法律第79号。一般職給与法第12条の3、自衛官は防衛省給与法第14条）。異動に伴って住居を移し、元の住居から通勤するのが困難で、元の住居との往来距離が一定以上のときに、異動の翌月から3年間（単身赴任手当を受ける人はその間）支給されます。月額は往来距離の区分ごとに人事院規則で決まりますが、その規則はまだ公布されていないため、額を入力してください（法律の上限：月43,000円、単身赴任手当を受ける人は月105,000円）。2027年3月までの月は計算に入りません。",
+          },
+          特地勤務手当: {
+            fields: [
+              { k: "grade", label: "勤務する官署の級別区分（施行令 別表第六）", options: Object.entries(R.tokuchi.rates).map(([g, r]) => [g, `${g}級（${r}％）`]) },
+            ],
+            compute: (v) => {
+              const rate = R.tokuchi.rates[v.grade] ?? R.tokuchi.rates[1];
+              return { amount: rate, text: `俸給と扶養手当の月額の合計の ${rate}％（毎月の俸給に合わせて計算）` };
+            },
+            note: "離島など生活の著しく不便な地にある官署（施行令 別表第六）に勤務する場合の手当です。月額は、俸給と扶養手当の月額の合計に、官署の級別区分ごとの割合（自衛官は1級4％・2級7％・3級11％・4級15％・5級19％・6級23％。施行令第10条第2項）を掛けた額です。昇任・昇給で俸給が変わると額も変わります。",
           },
           寒冷地手当: {
             fields: [
@@ -157,7 +179,7 @@
           container.className = "allowance-item";
           container.dataset.kind = kind;
           container.innerHTML =
-            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><small class="fixed-note a-branch-note" hidden></small><input class="a-kind" type="hidden"><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">現行の法律（一般職給与法第11条の8）の割合です：60km以上300km未満は5％、300km以上は10％。令和8年人事院勧告の8％・16％は、給与法の改正が公布されてから反映します。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額5％・1％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％なら広域分も支給（差額10％・6％・2％）、12％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="200" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
+            '<div class="allowance-item-head"><strong class="allowance-title"></strong><button type="button" class="allowance-remove">削除</button></div><small class="fixed-note a-branch-note" hidden></small><input class="a-kind" type="hidden"><div class="allowance-fields"><div><label>手当名</label><input class="a-name" type="text" maxlength="80"></div><div class="a-calc-wrap" hidden><div class="a-calc-top"><label>月額の出し方</label><select class="a-calc-mode"><option value="auto">条件から計算</option><option value="manual">金額を直接入力</option></select></div><div class="a-calc"></div><p class="a-calc-out"></p><small class="fixed-note a-calc-note"></small><input class="a-calc-state" type="hidden"></div><div class="a-prefecture-wrap" hidden><label>都道府県（地域手当）</label><select class="a-prefecture"><option value="">都道府県を選択</option></select></div><div class="a-region-wrap" hidden><label>勤務地の区分</label><select class="a-region"></select><div class="a-region-custom-wrap" hidden><label>官署指定の支給割合</label><div class="unit"><input class="a-region-custom" type="number" min="0" max="100" step="any" value="0"><span>％</span></div></div><small class="fixed-note">割合は年度ごとに自動で切り替わります。令和10年3月までは経過措置（人事院規則9-49-57 附則別表第一）の市町村ごとの割合で、表に載っていない地域はこの期間0％です。令和8年度の表は令和8年2月13日の改正後のもので、令和9年度の表はまだ公布されていないため令和8年度と同じとしています。令和10年4月からは人事院規則9-49 別表第一（本則）の割合です。勤務先の官署に別の割合が指定されている場合は「一覧にない勤務地・官署指定割合」を選んで入力してください（その割合は全期間で同じとして計算します）。</small></div><div class="a-distance-wrap" hidden><label>異動前後の官署間距離（広域異動手当）</label><select class="a-distance"></select><small class="fixed-note">法律（一般職給与法第11条の8）の割合です：60km以上300km未満は8％、300km以上は16％（令和8年法律第79号による改正。2026年4月にさかのぼって適用）。地域手当と両方支給されるのは「地域手当率＜広域異動手当率」の場合だけで、広域分は差額です。60〜300kmでは地域手当が0％・4％なら広域分も支給（差額8％・4％）、8％以上なら広域分は0％。300km以上では地域手当が0％・4％・8％・12％なら広域分も支給（差額16％・12％・8％・4％）、16％以上なら広域分は0％です。合計率は高い方の率までで、単純加算しません。ここでは地域手当欄の選択率と比較します（異動保障率は未反映）。異動1回ごとに追加し、異動の時期を「支給開始」（1年単位）、「支給終了」を3年ごとの選択肢から選んでください（法律上、1回の異動で支給されるのは3年間です）。支給期間が重なる再異動分は合算せず、高い割合を適用します。</small></div><div class="a-method-fixed-wrap" hidden><label>計算方法（手当ごとに固定）</label><div class="a-method-fixed"></div></div><div class="a-method-wrap"><label>計算方法</label><select class="a-method"><option value="monthly">月額（円）</option><option value="annual">年額（円）</option><option value="daily">日額 × 支給日数・回数</option><option value="percent">俸給月額に対する割合（％）</option></select></div><div class="a-amount-wrap"><label>金額・割合</label><input class="a-amount" type="number" min="0" max="10000000" step="any" value="0"></div><div class="a-days-wrap" hidden><label>月平均の勤務日数</label><input class="a-days" type="number" min="0" max="31" step="any" value="0"></div><div class="a-start-wrap"><label>支給開始（入隊から何年後）</label><input class="a-start" type="number" min="0" max="80" step="0.25" value="0"></div><div class="a-end-wrap"><label>支給終了（入隊から何年後）</label><input class="a-end" type="number" min="0.25" max="200" step="0.25"></div><div class="a-period-wrap" hidden><div class="a-period-box"><label>支給開始（年・月）</label><div class="a-period-row"><div class="unit"><input class="a-start-y" type="number" min="1950" max="2150" step="1" inputmode="numeric"><span>年</span></div><select class="a-start-m" aria-label="支給開始の月"></select></div></div><div class="a-period-box"><label>支給期間</label><div class="a-period-row"><div class="unit"><input class="a-len-y" type="number" min="0" max="80" step="1" inputmode="numeric"><span>年</span></div><select class="a-len-m" aria-label="支給期間の月数"></select></div></div><p class="a-period-note a-period-out"></p></div></div>';
           container.querySelector(".a-kind").value = kind;
           const name = container.querySelector(".a-name"),
             title = () => name.value.trim() || "手当";
@@ -554,6 +576,15 @@
               create(saved[12] != null && (kindNames.includes(saved[12]) || saved[12] === OTHER) ? saved[12] : inferKind(saved[0]), saved);
         }
         // 扶養手当の行で「条件から計算」を使っているときの父母等の人数（金額を直接入力しているときは0）
+        // 単身赴任手当を「条件から計算」したときの距離の加算（2027年4月から加算がなくなるので、model() で年度ごとに外す）
+        function calcTanshinAdd(row) {
+          try {
+            const s = JSON.parse(row.querySelector(".a-calc-state")?.value || "null");
+            return s?.mode === "auto" ? band(R.tanshin.add, Number(s.v?.km) || 0) : 0;
+          } catch {
+            return 0;
+          }
+        }
         function calcParents(row) {
           try {
             const s = JSON.parse(row.querySelector(".a-calc-state")?.value || "null");
@@ -702,6 +733,7 @@
               bonusBase: bonusBaseNames.includes(kind),
               // 扶養手当を「条件から計算」したときの父母等の人数（上位の階級で額が変わるので model() で月ごとに直す）
               ...(kind === "扶養手当" ? { parents: calcParents(row) } : {}),
+              ...(kind === "単身赴任手当" ? { tanshinAdd: calcTanshinAdd(row) } : {}),
               ...(area ? { area } : {}),
               ...(rankTable ? { rankTable } : {}),
               ...(method === "daily" && monthMax ? { monthMax } : {}),
@@ -790,6 +822,16 @@
             .filter((a) => kindOf(a) === "扶養手当")
             .reduce((sum, a) => sum + amountOf(a, pay, month), 0);
         function combinedTotal(list, pay, month, firstPay, extra, include = () => true) {
+          // 特地勤務手当は（俸給＋扶養手当）× 割合（施行令第10条第2項）。扶養手当はその月の額
+          const fuyouNow = (list || [])
+            .filter((a) => kindOf(a) === "扶養手当")
+            .reduce((sum, a) => sum + amountOf(a, pay, month, firstPay), 0);
+          const amountWith = (a) =>
+            kindOf(a) === "特地勤務手当" && a.method === "percent"
+              ? month < a.startMonth || month >= a.endMonth
+                ? 0
+                : Math.floor(((pay + fuyouNow) * a.amount) / 100)
+              : amountOf(a, pay, month, firstPay, extra);
           const rows = (list || []).filter(include),
             regional = rows.filter((a) => kindOf(a) === "地域手当"),
             wide = rows.filter((a) => kindOf(a) === "広域異動手当"),
@@ -811,7 +853,7 @@
             );
           // 広域異動手当は地域手当の支給割合を差し引いた額を加える。
           const adjustedWide = Math.max(0, wideAmount - regionalAmount);
-          return other.reduce((sum, a) => sum + amountOf(a, pay, month, firstPay, extra), 0) + regionalAmount + adjustedWide;
+          return other.reduce((sum, a) => sum + amountWith(a), 0) + regionalAmount + adjustedWide;
         }
         function monthly(list, pay, month, firstPay, special = 0) {
           const extra = extraBase(list, pay, month, special);

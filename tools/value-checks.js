@@ -247,9 +247,19 @@ function build(R, W) {
     add("手当", `広域異動手当 ${label} allowances.wideRates`, "ippanKyuyo", "11_8", P(lawLabel, pct(rate / 100)));
   }
 
+  // 特地勤務手当の割合（施行令第10条第2項の表。「一級 百分の四 百分の四」の中欄が自衛官）
+  for (const [g, r] of Object.entries(A.calcRates.tokuchi.rates))
+    add("手当", `特地勤務手当 ${g}級 ${r}％ allowances.calcRates.tokuchi`, "boeiKyuyoRei", "10", P(CELL, `${kanjiInt(Number(g))}級`, pct(r / 100)));
+
   // 賞与
   // 期末手当（一般職給与法第19条の4第2項）：一般・特定管理職員・指定職の割合を組で
-  add("賞与", `期末手当の割合 一般 ${B.kimatsuPer.normal}・特定管理職員 ${B.kimatsuPer.tokutei}・指定職 ${B.kimatsuPer.shitei} bonus.kimatsuPer`, "ippanKyuyo", "19_4", P("期末手当基礎額に", pct(B.kimatsuPer.normal), "（", ANY(400), "「特定管理職員」という。）にあつては", pct(B.kimatsuPer.tokutei), "、指定職俸給表の適用を受ける職員にあつては", pct(B.kimatsuPer.shitei), "）"));
+  // 期末手当（一般職給与法第19条の4第2項）。e-Gov の本文が令和8年度の形（6月・12月で違う割合）なら bonus.split と、
+  // 令和9年度の形（1つの割合。令和9年4月1日施行の令和8年法律第79号第2条）なら bonus.kimatsuPer と照合する（どちらかの形で一致すればよい）
+  const either = (...res) => new RegExp(res.map((r) => `(?:${r.source})`).join("|"));
+  const S = B.split;
+  const kimatsuSplit = P("期末手当基礎額に、六月に支給する場合には", pct(S.kimatsuPer.normal[0]), "、十二月に支給する場合には", pct(S.kimatsuPer.normal[1]), "（", ANY(400), "「特定管理職員」という。）にあつては、六月に支給する場合には", pct(S.kimatsuPer.tokutei[0]), "、十二月に支給する場合には", pct(S.kimatsuPer.tokutei[1]), "、指定職俸給表の適用を受ける職員にあつては、六月に支給する場合には", pct(S.kimatsuPer.shitei[0]), "、十二月に支給する場合には", pct(S.kimatsuPer.shitei[1]), "）");
+  const kimatsuOne = P("期末手当基礎額に", pct(B.kimatsuPer.normal), "（", ANY(400), "「特定管理職員」という。）にあつては", pct(B.kimatsuPer.tokutei), "、指定職俸給表の適用を受ける職員にあつては", pct(B.kimatsuPer.shitei), "）");
+  add("賞与", `期末手当の割合（令和8年度 6月・12月 ${S.kimatsuPer.normal.join("・")}、令和9年度から ${B.kimatsuPer.normal}。特定管理職員・指定職も）bonus.split / bonus.kimatsuPer`, "ippanKyuyo", "19_4", either(kimatsuSplit, kimatsuOne));
   // 在職期間割合：「五箇月以上六箇月未満 百分の八十」の組
   const kagetsu = (n) => `${kanjiInt(n)}箇月`;
   B.kimatsuPeriod.forEach(([m, r], i) => {
@@ -257,11 +267,33 @@ function build(R, W) {
     const label = upper == null ? kagetsu(m) : m === 0 ? `${kagetsu(upper)}未満` : `${kagetsu(m)}以上${kagetsu(upper)}未満`;
     add("賞与", `期末手当の在職期間割合 ${label} ${r} bonus.kimatsuPeriod`, "ippanKyuyo", "19_4", P(CELL, label, pct(r)));
   });
-  add("賞与", `期末手当の年間月数 ${B.kimatsuMonths}（÷2 が第19条の4の一般の割合）bonus.kimatsuMonths`, "ippanKyuyo", "19_4", P("期末手当基礎額に", pct(B.kimatsuMonths / 2)));
-  add("賞与", "勤勉手当の総額の上限（年間月数の半分）bonus.kinbenMonths", "ippanKyuyo", "19_7", pct(B.kinbenMonths / 2));
+  // 年間月数は、令和8年度の6月＋12月と、令和9年度からの1回分×2が同じであること（どちらも法の割合から出す）
+  const sum2 = (a) => Math.round((a[0] + a[1]) * 1e6) / 1e6;
+  if (Math.abs(sum2(S.kimatsuPer.normal) - B.kimatsuMonths) > 1e-9 || Math.abs(B.kimatsuPer.normal * 2 - B.kimatsuMonths) > 1e-9)
+    fail("賞与", `期末手当の年間月数 ${B.kimatsuMonths} が bonus.split（${sum2(S.kimatsuPer.normal)}）・kimatsuPer×2（${B.kimatsuPer.normal * 2}）と違う bonus.kimatsuMonths`);
+  else add("賞与", `期末手当の年間月数 ${B.kimatsuMonths}（6月＋12月）bonus.kimatsuMonths`, "ippanKyuyo", "19_4", either(kimatsuSplit, kimatsuOne));
+  // 勤勉手当の総額の上限（第19条の7第2項第1号イ）：令和8年度は6月・12月で違う割合、令和9年度からは1つの割合。年の合計が kinbenMonths
+  const kinbenHalf = [Math.round((B.kinbenMonths / 2 - 0.0125) * 1e6) / 1e6, Math.round((B.kinbenMonths / 2 + 0.0125) * 1e6) / 1e6];
+  add("賞与", `勤勉手当の総額の上限 年${B.kinbenMonths}か月 bonus.kinbenMonths`, "ippanKyuyo", "19_7", either(
+    P("加算した額に、六月に支給する場合には", pct(kinbenHalf[0]), ANY(60), "、十二月に支給する場合には", pct(kinbenHalf[1])),
+    P("加算した額に", pct(B.kinbenMonths / 2), "（特定管理職員にあつては"),
+  ));
   // 勤勉手当の標準の成績率（人事院規則9-40第13条第1項第1号ハ・第3号ロ）
-  add("賞与", `勤勉手当の標準の成績率 一般 ${B.kinbenStandard.normal}・特定管理職員 ${B.kinbenStandard.tokutei} bonus.kinbenStandard`, "jinjiin9_40", "13", P("「良好」の段階である職員及び基準日以前における直近の人事評価の結果がない職員（ニの人事院の定める職員を除く。）", pct(B.kinbenStandard.normal), "（特定管理職員にあつては、", pct(B.kinbenStandard.tokutei), "）"));
-  add("賞与", `勤勉手当の標準の成績率（指定職）${B.kinbenStandard.shitei} bonus.kinbenStandard.shitei`, "jinjiin9_40", "13", P("中位の段階である職員及び基準日以前における直近の人事評価の結果がない職員（ハの人事院の定める職員を除く。）", pct(B.kinbenStandard.shitei)));
+  // 勤勉手当の標準の成績率（人事院規則9-40第13条第1項第1号ハ・第3号ロ）。人事院規則9-40-66（令和8年11月18日公布）で
+  // 令和8年度は6月・12月で違う割合に、令和9年度から1つの割合になる。e-Gov の本文が改正前（6月の割合だけ）・令和8年度の形・令和9年度の形のどれでも照合する
+  const GOOD = "「良好」の段階である職員及び基準日以前における直近の人事評価の結果がない職員（ニの人事院の定める職員を除く。）";
+  add("賞与", `勤勉手当の標準の成績率 一般 ${S.kinbenStandard.normal.join("・")}（令和9年度から ${B.kinbenStandard.normal}）・特定管理職員 ${S.kinbenStandard.tokutei.join("・")}（同 ${B.kinbenStandard.tokutei}）bonus.split / bonus.kinbenStandard`, "jinjiin9_40", "13", either(
+    P(GOOD, "六月に支給する場合には", pct(S.kinbenStandard.normal[0]), "（特定管理職員にあつては、", pct(S.kinbenStandard.tokutei[0]), "）、十二月に支給する場合には", pct(S.kinbenStandard.normal[1]), "（特定管理職員にあつては、", pct(S.kinbenStandard.tokutei[1]), "）"),
+    P(GOOD, pct(S.kinbenStandard.normal[0]), "（特定管理職員にあつては、", pct(S.kinbenStandard.tokutei[0]), "）"),
+    P(GOOD, pct(B.kinbenStandard.normal), "（特定管理職員にあつては、", pct(B.kinbenStandard.tokutei), "）"),
+  ));
+  const MID = "中位の段階である職員及び基準日以前における直近の人事評価の結果がない職員（ハの人事院の定める職員を除く。）";
+  add("賞与", `勤勉手当の標準の成績率（指定職）${S.kinbenStandard.shitei.join("・")}（令和9年度から ${B.kinbenStandard.shitei}）bonus.split / bonus.kinbenStandard.shitei`, "jinjiin9_40", "13", either(
+    P(MID, "六月に支給する場合には", pct(S.kinbenStandard.shitei[0]), "、十二月に支給する場合には", pct(S.kinbenStandard.shitei[1])),
+    P(MID, pct(S.kinbenStandard.shitei[0])),
+    P(MID, pct(B.kinbenStandard.shitei)),
+  ));
+
   // 勤勉手当の期間率（人事院規則9-40 別表第二）：半月刻み。i 番目は「i×15日以上 (i+1)×15日未満」
   const half = (n) => (n % 2 ? `${n > 1 ? kagetsu((n - 1) / 2) : ""}十五日` : kagetsu(n / 2));
   B.kinbenPeriod.forEach((r, i) => {
@@ -284,7 +316,9 @@ function build(R, W) {
   add("賞与", `管理職加算（将・将補（1））${B.generalManagerAdd} bonus.generalManagerAdd`, "boeiKyuyoRei", "12_6", P("前項第三号に掲げる職員", pct(B.generalManagerAdd)));
   // 若年給付金の給与年額相当額（施行令第24条）：期末手当は一般職給与法第19条の4第2項の割合（年2回）、
   // 勤勉手当は6月 百分の百五・12月 百分の百七・五（合計2.125か月）。改正されたら下の2つの数も直す
-  add("賞与", "若年給付金で使う期末手当の月数 youngPension.kimatsuMonths（÷2 が第19条の4の割合）", "ippanKyuyo", "19_4", P("期末手当基礎額に", pct(YP.kimatsuMonths / 2)));
+  // 施行令第24条第4号は一般職給与法第19条の4第2項の割合を使うので、6月＋12月の合計（令和8年度・令和9年度からとも同じ）
+  if (Math.abs(sum2(S.kimatsuPer.normal) - YP.kimatsuMonths) > 1e-9) fail("賞与", `youngPension.kimatsuMonths ${YP.kimatsuMonths} が期末手当の6月＋12月の割合 ${sum2(S.kimatsuPer.normal)} と違う`);
+  else add("賞与", "若年給付金で使う期末手当の月数 youngPension.kimatsuMonths（第19条の4の6月＋12月）", "ippanKyuyo", "19_4", either(kimatsuSplit, kimatsuOne));
   const kinbenSplit = [1.05, 1.075];
   add("賞与", `若年給付金で使う勤勉手当の6月・12月の割合 ${kinbenSplit.join("・")}`, "boeiKyuyoRei", "24", P("六月一日に係るものにあつては", pct(kinbenSplit[0]), "（", ANY(100), "十二月一日に係るものにあつては", pct(kinbenSplit[1]), "（"));
   if (Math.abs(kinbenSplit[0] + kinbenSplit[1] - YP.kinbenMonths) > 1e-9) fail("賞与", `youngPension.kinbenMonths ${YP.kinbenMonths} が施行令第24条の合計 ${kinbenSplit[0] + kinbenSplit[1]} と違う`);
@@ -381,6 +415,8 @@ const manual = [
   ["階級", "定年の特例（統合幕僚長等62歳、医師・音楽・情報・警務官の1佐以下60歳。自衛隊法施行令 別表第九 備考）", "試算では入れていない。備考が変わっていないかだけ確かめる"],
   ["階級", "一般幹部候補生の候補生の号俸と任官時の号俸 entry.candidate", "その年度の一般幹部候補生採用要項"],
   ["若年給付金", "自衛官以外の職員の定年 youngPension.civilRetireAge", "国家公務員法 附則（定年の段階的引上げ）"],
+  ["賞与", "令和9年度からの期末手当の割合 bonus.kimatsuPer、勤勉手当の標準の成績率 bonus.kinbenStandard（令和9年度から）・bonus.split の12月の割合", "官報 令和8年11月18日 号外第251号（令和8年法律第79号第2条・人事院規則9-40-66）で確認。e-Gov は施行・改正後に載る（令和9年4月以後に values で照合し直す）"],
+  ["手当", "単身赴任手当の距離の加算の廃止 calcRates.tanshin.addUntilFy と転居手当の上限 calcRates.tenkyo", "官報 令和8年11月18日 号外第251号（令和8年法律第79号第2条。令和9年4月1日施行）で確認。転居手当の距離区分ごとの額は人事院規則（未公布）"],
   ["年金・共済", "afterRetire（老齢基礎年金・国民年金保険料）、kyosai（掛金率・標準報酬・上限）", "日本年金機構・防衛省共済組合の公表資料"],
   ["税", "tax（給与所得控除・基礎控除・税率・住民税・退職所得）", "所得税法・租税特別措置法・地方税法、国税庁の公表資料"],
 ];

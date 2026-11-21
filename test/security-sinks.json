@@ -1,10 +1,10 @@
 {
-  "reviewedOn": "2026-11-18",
+  "reviewedOn": "2026-11-22",
   "sinks": [
     {
       "file": "js/allowances.js",
       "line": "container.innerHTML =",
-      "hash": "f6c8b4e25d1992fb"
+      "hash": "5a994d8b158555f3"
     },
     {
       "file": "js/allowances.js",

@@ -184,7 +184,7 @@ const DESC = [
   ["通勤手当の上限", /上限(\d+)万円/, [CR.commute.cap / 10000]],
   ["通勤手当（自動車等）の最初と最後の区分", /5km未満は([\d,]+)円〜100km以上は([\d,]+)円/, [CR.commute.car[0][1], CR.commute.car[CR.commute.car.length - 1][1]]],
   ["通勤手当（自動車等）の最も短い区分", /最も短い区分の([\d,]+)円/, [CR.commute.car[0][1]]],
-  // 広域異動手当の「5％・10％」は rules.js の wideRates の表示にあり、表示と値の一致は tools/egov-check.js values が確かめる
+  // 広域異動手当の「8％・16％」は rules.js の wideRates の表示にあり、表示と値の一致は tools/egov-check.js values が確かめる
   ["国民年金保険料", /令和8年度は月([\d,]+)円、令和9年度以後は([\d,]+)円/, R.afterRetire.kokuminPremium.map(([, v]) => v)],
   ["退職手当の調整率", /附則第6項の([\d.]+)％/, [r100(R.retirement.adjustFactor)]],
   ["昇給抑制の年齢", /(\d+)歳以降（全階級）/, [R.promotion.restrictAge]],

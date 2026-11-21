@@ -38,7 +38,14 @@
         // 勤勉手当の期間率：半月（15日）刻み
         const kinbenRate = (months, days) =>
           months >= 6 ? 1 : B.kinbenPeriod[months * 2 + (days >= 15 ? 1 : 0)];
-        // 賞与の区分（指定職・特定管理職員・一般）。1回あたりの割合は RULES.bonus.kimatsuPer / kinbenStandard
+        // 賞与の1回あたりの割合 [期末手当, 勤勉手当の標準の成績率]。令和8年度までは6月期と12月期で違い（RULES.bonus.split）、
+        // 令和9年度からは同じ（RULES.bonus.kimatsuPer / kinbenStandard）。fy はその月の年度、month は 6 か 12
+        const bonusPer = (cls, fy, month) => {
+          const sp = B.split && fy <= B.split.untilFy ? B.split : null,
+            i = month === 6 ? 0 : 1;
+          return sp ? [sp.kimatsuPer[cls][i], sp.kinbenStandard[cls][i]] : [B.kimatsuPer[cls], B.kinbenStandard[cls]];
+        };
+        // 賞与の区分（指定職・特定管理職員・一般）
         const bonusClass = (rank, special, manager) =>
           rank <= B.shiteiCols ? "shitei" : special && B.tokuteiManagers.includes(manager) ? "tokutei" : "normal";
         // 賞与の階級による加算割合（俸給表の列番号ごと。表にない列は0）
@@ -55,6 +62,7 @@
             "住居手当",
             "通勤手当",
             "単身赴任手当",
+            "転居手当",
             "寒冷地手当",
             "地域手当",
             "広域異動手当",
@@ -291,6 +299,12 @@
                     : // 上位の階級では父母等の扶養手当が減る（施行令第8条の7・第8条の8）
                     a.parents && FUYOU_PARENT[rank] != null
                     ? { ...a, amount: a.amount - a.parents * (AL.calcRates.fuyou.parent - FUYOU_PARENT[rank]) }
+                    : // 単身赴任手当の距離の加算は2027年3月まで（令和8年法律第79号第2条。2027年4月1日施行）
+                    a.tanshinAdd && fyNow > AL.calcRates.tanshin.addUntilFy
+                    ? { ...a, amount: Math.max(0, a.amount - a.tanshinAdd) }
+                    : // 転居手当は2027年4月から（同法第2条で新設）
+                    (a.kind ?? a.name) === "転居手当" && fyNow < AL.calcRates.tenkyo.fromFy
+                    ? { ...a, amount: 0 }
                     : a,
               ),
               managerRate = rank <= 1 ? B.generalManagerAdd : special ? (MANAGER_BONUS[c.manager] ?? 0) : 0,
@@ -315,12 +329,13 @@
             let bonus = 0;
             // 入隊は月の初日とみなすので、基準日（6月1日・12月1日）までの在職期間は入隊からの月数になる
             if (month === 6 || month === 12) {
-              // 入力した年間月数が法律の合計（4.65か月）と違うときは、同じ比率で増減する
+              // 入力した年間月数が法律の合計（4.70か月）と違うときは、同じ比率で増減する
               const scale = c.bonus / B.annualMonths,
-                cls = bonusClass(rank, special, c.manager);
+                cls = bonusClass(rank, special, c.manager),
+                [kimatsuPer, kinbenPer] = bonusPer(cls, fyNow, month);
               bonus =
-                Math.floor(kimatsuBase * B.kimatsuPer[cls] * scale * kimatsuRate(m)) +
-                Math.floor(kinbenBase * B.kinbenStandard[cls] * scale * kinbenRate(m, 0));
+                Math.floor(kimatsuBase * kimatsuPer * scale * kimatsuRate(m)) +
+                Math.floor(kinbenBase * kinbenPer * scale * kinbenRate(m, 0));
             }
             const sum = (filter) =>
                 window.allowanceSimulator.monthly(list.filter(filter), pay, m, firstPay, regionalExtra),
@@ -1193,7 +1208,7 @@
             startAge: "入隊時の年齢は16〜60歳の整数で入力してください。",
             initialGrade: "入隊時の2士の号俸は1〜17号俸の整数で入力してください。",
             raise: "毎年の昇給は0〜20号俸の整数で入力してください。",
-            bonus: "賞与は金額ではなく年間の月数を入力してください。例：4.65（0〜12か月）",
+            bonus: "賞与は金額ではなく年間の月数を入力してください。例：4.7（0〜12か月）",
             entryYear: "入隊した年は2000〜2060年の整数で入力してください。",
             dependents: "扶養親族の人数は0〜10人の整数で入力してください。",
             specificDependents: "特定扶養親族の人数は0〜10人の整数で入力してください。",
