@@ -1543,8 +1543,7 @@
           stepDefaults = Object.fromEntries(PRESET_STEPS.map((id) => [id, $(id).value])),
           PRESETS = {
             sotsu: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "def" },
-            sotsuFast: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "min" },
-            bunai: { entryType: "sotsu", targetRank: "3佐", startAge: 18, steps: "def" },
+            bunai: { entryType: "sotsu", targetRank: "1尉", startAge: 18, steps: "def" },
             kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def" },
           };
         for (const button of document.querySelectorAll(".sim-preset"))

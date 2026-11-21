@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-6" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-6" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-6" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-6" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-7" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-7" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-7" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-7" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -141,12 +141,11 @@
           <div class="sim-presets" role="group" aria-labelledby="presetLabel">
             <span id="presetLabel" class="sim-presets-label">よくある経歴のひな形</span>
             <button type="button" class="sim-preset" data-preset="sotsu">一般曹候補生（標準）</button>
-            <button type="button" class="sim-preset" data-preset="sotsuFast">一般曹候補生（最短）</button>
-            <button type="button" class="sim-preset" data-preset="bunai">部内幹部（3曹から3尉）</button>
+            <button type="button" class="sim-preset" data-preset="bunai">部内幹部（1尉まで）</button>
             <button type="button" class="sim-preset" data-preset="kanko">防大・大卒の幹部</button>
           </div>
           <small class="fixed-note sim-presets-note"
-            >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。最短は法令の最短期間（自衛隊法施行規則 別表第七など）で、実際の昇任時期を示すものではありません。</small
+            >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。昇任までの期間は初期値で、実際の昇任時期を示すものではありません。</small
           >
           <h3 class="sim-group">所属</h3>
           <div class="sim-grid">
@@ -886,9 +885,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-6"></script>
-    <script src="data/promotion-table.js?v=20261122-6"></script>
-    <script src="js/pay-lookup.js?v=20261122-6"></script>
+    <script src="data/pay-table.js?v=20261122-7"></script>
+    <script src="data/promotion-table.js?v=20261122-7"></script>
+    <script src="js/pay-lookup.js?v=20261122-7"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -899,11 +898,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-6"></script>
-    <script src="js/regional-rate.js?v=20261122-6"></script>
-    <script src="js/allowances.js?v=20261122-6"></script>
-    <script src="js/simulator.js?v=20261122-6"></script>
-    <script src="js/simulator-dialog.js?v=20261122-6"></script>
+    <script src="data/rules.js?v=20261122-7"></script>
+    <script src="js/regional-rate.js?v=20261122-7"></script>
+    <script src="js/allowances.js?v=20261122-7"></script>
+    <script src="js/simulator.js?v=20261122-7"></script>
+    <script src="js/simulator-dialog.js?v=20261122-7"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -912,9 +911,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-6"></script>
-    <script src="js/effects.js?v=20261122-6"></script>
-    <script src="js/scroll-lock.js?v=20261122-6"></script>
-    <script src="js/print.js?v=20261122-6"></script>
+    <script src="js/notes-page.js?v=20261122-7"></script>
+    <script src="js/effects.js?v=20261122-7"></script>
+    <script src="js/scroll-lock.js?v=20261122-7"></script>
+    <script src="js/print.js?v=20261122-7"></script>
   </body>
 </html>
