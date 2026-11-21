@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-7" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-7" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-7" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-7" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-8" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-8" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-8" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-8" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -141,11 +141,12 @@
           <div class="sim-presets" role="group" aria-labelledby="presetLabel">
             <span id="presetLabel" class="sim-presets-label">よくある経歴のひな形</span>
             <button type="button" class="sim-preset" data-preset="sotsu">一般曹候補生（標準）</button>
+            <button type="button" class="sim-preset" data-preset="koka">高等工科学校（最短）</button>
             <button type="button" class="sim-preset" data-preset="bunai">部内幹部（1尉まで）</button>
             <button type="button" class="sim-preset" data-preset="kanko">防大・大卒の幹部</button>
           </div>
           <small class="fixed-note sim-presets-note"
-            >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。昇任までの期間は初期値で、実際の昇任時期を示すものではありません。</small
+            >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。昇任までの期間は初期値（高等工科学校（最短）は3曹から先を法令の最短期間）で、実際の昇任時期を示すものではありません。</small
           >
           <h3 class="sim-group">所属</h3>
           <div class="sim-grid">
@@ -169,8 +170,9 @@
                 <option value="kanko">幹部候補生（大卒・防大卒）</option>
                 <option value="kankoM">幹部候補生（修士課程修了等）</option>
                 <option value="kankoD">幹部候補生（院卒者試験）</option>
+                <option value="koka">高等工科学校の卒業生（陸士長で任官）</option>
               </select>
-              <small id="entryTypeNote" class="fixed-note">一般曹候補生・任期制は2士で入隊します。幹部候補生（一般幹部候補生）は幹部候補生学校を出て3尉（院卒は2尉）に任官します。区分を変えると入隊時の年齢の目安も変わります</small>
+              <small id="entryTypeNote" class="fixed-note">一般曹候補生・任期制は2士で入隊します。幹部候補生（一般幹部候補生）は幹部候補生学校を出て3尉（院卒は2尉）に任官します。区分を変えると入隊時の年齢の目安も変わります。高等工科学校の卒業生は、卒業の日（4月1日）に陸士長1号俸で任官した時から計算し（入隊時の年齢は任官時の年齢）、1年後に3曹へ昇任します。在校3年間の生徒手当・期末手当は含めません。退職手当の勤続期間には、生徒の期間（3年）の2分の1を加えます（防衛省給与法第28条の2第4項）</small>
             </div>
             <div id="ninkiPlanWrap" hidden>
               <label for="ninkiPlan">任期の扱い</label
@@ -885,9 +887,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-7"></script>
-    <script src="data/promotion-table.js?v=20261122-7"></script>
-    <script src="js/pay-lookup.js?v=20261122-7"></script>
+    <script src="data/pay-table.js?v=20261122-8"></script>
+    <script src="data/promotion-table.js?v=20261122-8"></script>
+    <script src="js/pay-lookup.js?v=20261122-8"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -898,11 +900,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-7"></script>
-    <script src="js/regional-rate.js?v=20261122-7"></script>
-    <script src="js/allowances.js?v=20261122-7"></script>
-    <script src="js/simulator.js?v=20261122-7"></script>
-    <script src="js/simulator-dialog.js?v=20261122-7"></script>
+    <script src="data/rules.js?v=20261122-8"></script>
+    <script src="js/regional-rate.js?v=20261122-8"></script>
+    <script src="js/allowances.js?v=20261122-8"></script>
+    <script src="js/simulator.js?v=20261122-8"></script>
+    <script src="js/simulator-dialog.js?v=20261122-8"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -911,9 +913,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-7"></script>
-    <script src="js/effects.js?v=20261122-7"></script>
-    <script src="js/scroll-lock.js?v=20261122-7"></script>
-    <script src="js/print.js?v=20261122-7"></script>
+    <script src="js/notes-page.js?v=20261122-8"></script>
+    <script src="js/effects.js?v=20261122-8"></script>
+    <script src="js/scroll-lock.js?v=20261122-8"></script>
+    <script src="js/print.js?v=20261122-8"></script>
   </body>
 </html>

@@ -131,6 +131,8 @@ function checkResult(p, r, retireAge, { mustComputeCheck = false } = {}) {
 // 案内のエラーが出てはいけない入力（入隊時の年齢が若く、どの経路でも予想階級の前の階級の定年より前に入隊している）
 function mustCompute(p) {
   if (p.entryType === "kankoD" && p.targetRank === "3尉") return false;
+  // 高等工科学校の卒業生は陸上自衛官だけ（海・空を選ぶと案内のエラーにする）
+  if (p.entryType === "koka" && p.branch && p.branch !== "ground") return false;
   if (p.entryType?.startsWith("kanko") && !["3尉", "2尉", "1尉", "3佐", "2佐", "1佐", "将補", "将"].includes(p.targetRank)) return false;
   return Number(p.startAge) <= 40;
 }

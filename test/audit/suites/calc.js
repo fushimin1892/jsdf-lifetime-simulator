@@ -21,7 +21,7 @@ function rng(seed) {
 function gridCases(quick, retireAge) {
   const cases = [];
   const AGES = quick ? [16, 18, 22, 30, 36, 45, 53, 55, 59] : [16, 17, 18, 20, 22, 24, 26, 30, 33, 35, 36, 38, 40, 45, 50, 53, 54, 55, 56, 57, 59];
-  for (const entryType of ["sotsu", "ninki", "kanko", "kankoM", "kankoD"])
+  for (const entryType of ["sotsu", "ninki", "kanko", "kankoM", "kankoD", "koka"])
     for (const branch of BRANCHES) {
       let k = 0; // --quick：所属の外側の組み合わせの通し番号（所属ごとに同じ並び）で、所属と退職理由を1つずつ選ぶ
       const plans = entryType === "ninki" ? ["1", "2", "3", "4", "sgt"] : [null];
@@ -49,7 +49,7 @@ function randomCases(n, retireAge, stepInfo) {
   const R = rng(20261116);
   const cases = [];
   for (let i = 0; i < n; i++) {
-    const entryType = R.pick(["sotsu", "sotsu", "ninki", "kanko", "kankoM", "kankoD"]);
+    const entryType = R.pick(["sotsu", "sotsu", "ninki", "kanko", "kankoM", "kankoD", "koka"]);
     const ninkiPlan = entryType === "ninki" ? R.pick(["1", "2", "3", "4", "sgt", "sgt"]) : null;
     let ranks = entryType.startsWith("kanko") ? OFFICER : RANKS;
     if (entryType === "kankoD") ranks = ranks.filter((r) => r !== "3尉");
@@ -132,6 +132,7 @@ async function mono(h, rep, quick, retireAge) {
     { entryType: "ninki", ninkiPlan: "sgt", targetRank: "1曹", startAge: 18 },
     { entryType: "sotsu", targetRank: "3曹", startAge: 35 },
     { entryType: "sotsu", targetRank: "1曹", startAge: 18, retireReason: "self" },
+    { entryType: "koka", branch: "ground", targetRank: "曹長", startAge: 18 },
   ].filter((_, i) => !quick || [0, 2, 4, 7].includes(i));
   const stepInfo = h.stepInfo;
   const found = [];
@@ -159,7 +160,7 @@ async function mono(h, rep, quick, retireAge) {
   for (const b of BASES) {
     await series("毎年の昇給", b, [...Array(21).keys()], ["total", "allowance", "lifetime"], 1, set1("raise"));
     await series("賞与の月数", b, ["0", "1", "2", "3", "4", "4.7", "5", "6", "8", "10", "12"], ["total", "lifetime"], 1, set1("bonus"));
-    if (!b.entryType.startsWith("kanko")) await series("2士の号俸", b, [...Array(17).keys()].map((i) => i + 1), ["total", "allowance", "lifetime"], 1, set1("initialGrade"));
+    if (!b.entryType.startsWith("kanko") && b.entryType !== "koka") await series("2士の号俸", b, [...Array(17).keys()].map((i) => i + 1), ["total", "allowance", "lifetime"], 1, set1("initialGrade"));
     for (const [id, inf] of Object.entries(stepInfo)) {
       const opts = quick ? inf.options.filter((_, i, a) => i === 0 || i === a.length - 1 || i === Math.floor(a.length / 2) || a[i] === inf.def) : inf.options;
       await series(`昇任までの期間 ${id}`, b, opts, ["total"], -1, (base, v) => ({ ...base, steps: { [id]: v } }));

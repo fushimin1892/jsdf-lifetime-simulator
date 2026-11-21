@@ -32,7 +32,13 @@
             kankoD: { payCol: 14, payGrade: 12, col: 9, grade: 11 },
           },
           // 入隊区分を選んだときの入隊時の年齢の目安
-          defaultAge: { sotsu: 18, ninki: 18, kanko: 22, kankoM: 24, kankoD: 24 },
+          defaultAge: { sotsu: 18, ninki: 18, kanko: 22, kankoM: 24, kankoD: 24, koka: 18 },
+          // 陸上自衛隊高等工科学校の卒業生（試算は卒業の日（4月1日）の陸士長任官から。在校3年間の生徒手当・期末手当は含めない）
+          //   任官：陸士長、3曹昇任：任官から sergeantMonths か月後（公式の案内「卒業後約1年間の教育を経た後に3等陸曹に昇任」）
+          //   号俸：陸士長 grade 号俸（サイトの前提。初任の号俸は防衛大臣の定めで、公表資料では確かめていない）
+          //   教育：任官直後の生徒陸曹候補生課程 約3か月（公式の案内）
+          //   退職手当：生徒の在職期間（3年）の2分の1を自衛官としての在職期間に通算（防衛省給与法第28条の2第4項）
+          koka: { rank: 16, grade: 1, sergeantMonths: 12, eduMonths: 3, studentMonths: 36, branch: "ground" },
         },
 
         promotion: {

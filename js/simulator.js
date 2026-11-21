@@ -544,7 +544,8 @@
             };
           // 任期満了金を受けた任期は、その後の退職手当の勤続期間から除く（国家公務員退職手当法第7条第5項）
           const paidMonths = terms.length ? c.ninki.terms[terms.length - 1].end : 0,
-            months = monthly.length - paidMonths,
+            // 高等工科学校の卒業生は、生徒の期間の2分の1を勤続期間に通算する（自衛官として6か月以上在職した場合。防衛省給与法第28条の2第4項）
+            months = monthly.length - paidMonths + (c.studentCreditMonths && monthly.length >= 6 ? c.studentCreditMonths : 0),
             last = monthly.at(-1),
             P = last.basePay,
             n = Math.floor(months / 12) || (months >= 6 ? 1 : 0),
@@ -742,7 +743,8 @@
           if (!kanko && path.some((p) => p.name === "3尉")) names.push("3尉route");
           for (const el of document.querySelectorAll("[data-step]"))
             el.hidden = !names.includes(el.dataset.step);
-          for (const el of document.querySelectorAll("[data-enlisted]")) el.hidden = kanko;
+          // 高等工科学校の卒業生は陸士長で任官するので、2士・1士・3曹昇任前の欄も出さない
+          for (const el of document.querySelectorAll("[data-enlisted]")) el.hidden = kanko || type === "koka";
           // 任期制で満了退職する場合は3曹へ昇任しないので、3曹昇任の欄と3曹昇任前の教育の欄も出さない
           if (ninkiExit)
             for (const id of ["stepSgt", "eduSgt"]) $(id).closest("[data-enlisted]").hidden = true;
@@ -1186,6 +1188,23 @@
               m2 += Math.round(value(p.step) * 12);
               c.promotions.push({ month: m2, col: p.col ?? value("colClass") });
             }
+          } else if (entryType === "koka") {
+            // 高等工科学校の卒業生：卒業の日（4月1日）に陸士長で任官し、1年後に3曹へ昇任（RULES.entry.koka）
+            const K = E.koka;
+            if (branchNow !== K.branch) entryMessage = "高等工科学校の卒業生は陸上自衛官です。所属を陸上自衛隊にしてください。";
+            c.initialRank = K.rank;
+            c.initialGrade = K.grade;
+            c.promotions = [{ month: K.sergeantMonths, col: 15 }];
+            let m3 = K.sergeantMonths;
+            for (const p of pathTo($("targetRank").value)) {
+              m3 += Math.round(value(p.step) * 12);
+              c.promotions.push({ month: m3, col: p.col ?? value("colClass") });
+            }
+            const ofc = c.promotions.find((p) => p.col === 10)?.month;
+            c.education = [[0, K.eduMonths], ...(ofc != null ? [[ofc - value("eduOcs"), ofc]] : [])];
+            if ($("eigaiStart").value === "sergeant") c.eigaiStart = K.sergeantMonths;
+            // 退職手当の勤続期間に通算する生徒の期間（2分の1。自衛官として6か月以上在職した場合。防衛省給与法第28条の2第4項）
+            c.studentCreditMonths = K.studentMonths / 2;
           } else if (entryType === "ninki") {
             // 任期制自衛官：任期ごとに任期満了の退職手当（防衛省給与法第28条）
             const first = E.ninkiFirstMonths[branchNow],
@@ -1543,6 +1562,7 @@
           stepDefaults = Object.fromEntries(PRESET_STEPS.map((id) => [id, $(id).value])),
           PRESETS = {
             sotsu: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "def" },
+            koka: { entryType: "koka", targetRank: "曹長", startAge: 18, steps: "min", branch: "ground" },
             bunai: { entryType: "sotsu", targetRank: "1尉", startAge: 18, steps: "def" },
             kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def" },
           };
@@ -1550,6 +1570,10 @@
           button.addEventListener("click", () => {
             const p = PRESETS[button.dataset.preset];
             if (!p) return;
+            if (p.branch && $("branch").value !== p.branch) {
+              $("branch").value = p.branch;
+              $("branch").dispatchEvent(new Event("change", { bubbles: true }));
+            }
             $("entryType").value = p.entryType;
             $("entryType").dispatchEvent(new Event("change", { bubbles: true }));
             $("targetRank").value = p.targetRank;
