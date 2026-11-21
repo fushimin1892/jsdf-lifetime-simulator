@@ -120,6 +120,14 @@ window.SOURCES = {
       egovRevision: { promulgated: "2024-12-25", enforced: "2024-12-25", by: "一般職の職員の給与に関する法律等の一部を改正する法律" },
     },
     {
+      key: "kanreichiBoei",
+      title: "防衛省の職員に対する寒冷地手当支給規則",
+      num: "昭和三十九年総理府令第三十五号",
+      egovId: "339M50000002035",
+      url: "https://laws.e-gov.go.jp/law/339M50000002035",
+      egovRevision: { promulgated: "2026-09-30", enforced: "2026-10-01", by: "防衛省設置法等の一部を改正する法律の一部の施行に伴う関係省令の整理に関する省令" },
+    },
+    {
       key: "kyosai",
       title: "国家公務員共済組合法",
       num: "昭和三十三年法律第百二十八号",
@@ -221,6 +229,8 @@ window.SOURCES = {
     { path: "RULES.allowances.calcRates.tanshin", law: "jinjiin9_89", where: "第四条（交通距離の区分と加算額）。加算は令和8年法律第79号第2条で令和9年4月1日に廃止（addUntilFy）", checked: "2026-11-22" },
     { path: "RULES.allowances.calcRates.tenkyo", law: "ippanKyuyo", where: "第十二条の三（令和8年法律第79号第2条で新設。令和9年4月1日施行）第二項の上限", checked: "2026-11-22", how: "官報 令和8年11月18日 号外第251号で確認（e-Gov 未掲載）" },
     { path: "RULES.allowances.calcRates.kanreichi", law: "kanreichi", where: "第二条（級地と世帯等の区分ごとの額）", checked: "2026-11-17" },
+    { path: "RULES.allowances.calcRates.kanreichi.barracksRates", law: "kanreichiBoei", where: "第四条（営内者等の額）", checked: "2026-11-22" },
+    { path: "RULES.allowances.calcRates.kanreichi.bases", law: "jieitaiRei", where: "別表第七・別表第八・別表第二の二・別表第三（駐屯地・基地の位置）と、寒冷地手当法 別表（級地）・寒冷地手当支給規則 別表（高田駐屯地）", checked: "2026-11-22", how: "node tools/egov-check.js values で照合。北海道の振興局の管内（上富良野町・別海町）は北海道庁の振興局の一覧で確認" },
     { path: "RULES.retirement.adjustMonthly（職員の区分）", law: "taishokuRei", where: "第六条の三ほか（自衛官の階級ごとの調整月額の区分）。区分の当てはめは目で確認、額は法第六条の四で照合", checked: "2026-11-17" },
     { path: "RULES.kyosai.pensionCaps", law: "kosei", where: "第二十条（標準報酬月額の等級）・附則（上限の引上げ）", checked: "2026-11-16" },
     { path: "RULES.afterRetire.hireiRate", law: "kosei", where: "第四十三条（報酬比例の年金額の乗率 千分の五・四八一）", checked: "2026-11-16" },

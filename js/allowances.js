@@ -144,18 +144,39 @@
           },
           寒冷地手当: {
             fields: [
-              { k: "grade", label: "勤務地の級地", options: [["1", "1級地"], ["2", "2級地"], ["3", "3級地"], ["4", "4級地（指定官署を含む）"]] },
+              {
+                k: "base",
+                label: "勤務する駐屯地・基地",
+                options: [
+                  ["", "一覧にない（下で級地を選ぶ）"],
+                  ...R.kanreichi.bases.map(([kind, name, pos, g], i) => [
+                    String(i),
+                    `${kind}・${name}（${pos}・${g ? `${g}級地` : "支給地域外"}）`,
+                  ]),
+                ],
+              },
+              { k: "grade", label: "勤務地の級地（一覧にない官署）", options: [["1", "1級地"], ["2", "2級地"], ["3", "3級地"], ["4", "4級地（指定官署を含む）"]] },
               { k: "household", label: "世帯の区分", options: [["0", "世帯主で扶養親族あり"], ["1", "世帯主で扶養親族なし"], ["2", "世帯主ではない"]] },
-              { k: "barracks", label: "営内居住・世帯主でない乗組員", options: [["no", "あてはまらない"], ["yes", "あてはまる（半額）"]] },
+              { k: "barracks", label: "営内居住・世帯主でない乗組員（営内者等）", options: [["no", "あてはまらない"], ["yes", "あてはまる"]] },
             ],
             compute: (v) => {
               const k = R.kanreichi,
-                full = k.rates[v.grade]?.[Number(v.household)] ?? 0,
-                month = v.barracks === "yes" ? Math.floor(full / 2) : full,
+                base = v.base === "" || v.base == null ? null : k.bases[Number(v.base)],
+                grade = base ? base[3] : Number(v.grade),
+                // 営内者等は扶養親族の有無で決まる額（支給規則第4条）。それ以外は世帯等の区分の額（法第2条第1項）
+                month = !grade
+                  ? 0
+                  : v.barracks === "yes"
+                    ? (k.barracksRates[grade]?.[v.household === "0" ? 0 : 1] ?? 0)
+                    : (k.rates[grade]?.[Number(v.household)] ?? 0),
                 amount = Math.floor((month * k.months) / 12);
-              return { amount, text: `11〜3月に月 ${yen(month)}（年 ${yen(month * k.months)}）→ 12か月にならして月額 ${yen(amount)}` };
+              if (base && !grade) return { amount: 0, text: `${base[1]}（${base[2]}）は寒冷地手当の支給地域外です` };
+              return {
+                amount,
+                text: `${base ? `${base[1]}は${grade}級地。` : ""}11〜3月に月 ${yen(month)}（年 ${yen(month * k.months)}）→ 12か月にならして月額 ${yen(amount)}`,
+              };
             },
-            note: "北海道・東北などの指定地域で、11月から3月までの5か月に支給されます。この試算では年額を12か月にならして毎月加えます。営内居住の自衛官と世帯主でない乗組員は、表の額の半分を上限に防衛大臣が定める額のため、半額として計算します。",
+            note: "北海道・東北などの指定地域で、11月から3月までの5か月に支給されます。この試算では年額を12か月にならして毎月加えます。駐屯地・基地を選ぶと、所在地（自衛隊法施行令 別表第七・第八など）から級地（国家公務員の寒冷地手当に関する法律 別表）を自動で決めます。一覧にない分屯基地などは、級地を選んでください。営内に住む自衛官と、扶養親族を定係港の地に持たない乗組員（営内者等）は、扶養親族があれば1級地14,700円〜4級地9,900円、なければ5,750円〜4,100円です（防衛省の職員に対する寒冷地手当支給規則第4条）。",
           },
         };
         function updateOptions() {

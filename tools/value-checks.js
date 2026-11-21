@@ -224,6 +224,37 @@ function build(R, W) {
   const KG = { 1: "一級地", 2: "二級地", 3: "三級地", 4: "四級地" };
   for (const [g, vals] of Object.entries(CR.kanreichi.rates))
     add("手当", `寒冷地手当 ${KG[g]} ${vals.join("・")}円 calcRates.kanreichi`, "kanreichi", "2", { spaced: new RegExp(`${KG[g]} ${vals.map(digitYen).join(" ")}`) });
+  // 営内者等の額（防衛省の職員に対する寒冷地手当支給規則第4条の表）
+  for (const [g, vals] of Object.entries(CR.kanreichi.barracksRates || {}))
+    add("手当", `寒冷地手当 営内者等 ${KG[g]} ${vals.join("・")}円 calcRates.kanreichi.barracksRates`, "kanreichiBoei", "4", { spaced: new RegExp(`${KG[g]} ${vals.map(digitYen).join(" ")}`) });
+  // 駐屯地・基地の位置（自衛隊法施行令の別表）と級地（寒冷地手当法 別表）
+  const BASE_TABLE = { 陸: "別表第七", 空: "別表第八" },
+    SEA_TABLE = { 大湊地区総監部: "別表第二の二", 函館基地隊本部: "別表第三" },
+    // 北海道の振興局の管内で級地が決まるもの（郡が振興局をまたぐため。北海道庁の振興局の一覧で確認）
+    BY_BUREAU = { 上富良野駐屯地: "上川総合振興局管内", 別海駐屯地: "根室振興局管内" },
+    // 郡のうち町村名まで書かれているもの（郡の全体ではない）。ほかの郡の町は郡の全体が載っている
+    TOWN_LISTED = ["倶知安駐屯地", "遠軽駐屯地", "北富士駐屯地"];
+  for (const [kind, name, pos, g] of CR.kanreichi.bases || []) {
+    add("手当", `寒冷地手当 ${name}の位置 ${pos} calcRates.kanreichi.bases`, "jieitaiRei", kind === "海" ? SEA_TABLE[name] : BASE_TABLE[kind], { spaced: new RegExp(`(^| )${name} ${pos}( |$)`) });
+    if (!g) continue;
+    if (name === "高田駐屯地") {
+      add("手当", "寒冷地手当 高田駐屯地は支給規則 別表の官署（4級地の額）calcRates.kanreichi.bases", "kanreichiBoei", "別表", "高田駐屯地に所在する陸上自衛隊の部隊");
+      continue;
+    }
+    const m = pos.match(/^(?:北海道|..[県府都])?(?:(.+?郡))?(.+?[市町村区])$/),
+      gun = m?.[1],
+      town = m?.[2];
+    // 級地の区切り（「一級地 …」から次の「◯級地」まで）の中に、市・町村名（郡のうち◯町、を含む）か郡名か振興局の管内があること
+    const inGrade = (re) => ({ spaced: new RegExp(`${KG[g]}(?:(?!級地).)*?${re}`) });
+    const target = BY_BUREAU[name]
+      ? `(^| )${BY_BUREAU[name]}( |$)`
+      : gun
+        ? TOWN_LISTED.includes(name)
+          ? `( |のうち|、|及び)${town}(、|及び| |$)`
+          : `(^| )${gun}( |$)`
+        : `(^| )${town}( |$)`;
+    add("手当", `寒冷地手当 ${name}（${pos}）は${KG[g]} calcRates.kanreichi.bases`, "kanreichi", "別表", inGrade(target));
+  }
   // 地域手当の級地ごとの割合（一般職給与法第11条の3第2項）。都道府県・市ごとの級地は regional で照合する
   const GR = { 1: 20, 2: 16, 3: 12, 4: 8, 5: 4 };
   for (const [g, r] of Object.entries(GR)) add("手当", `地域手当 ${g}級地 ${r}％`, "ippanKyuyo", "11_3", P(`${kanjiInt(Number(g))}級地`, pct(r / 100)));
@@ -416,7 +447,7 @@ const manual = [
   ["手当", "3佐以上の配置手当の割合 allowances.seniorRate（上限94.2％だけは照合）、航空手当の乗員の区分の割合、配置手当の区分（だれがどの率か）", "防衛大臣の訓令・防衛省職員給与施行細則"],
   ["手当", "特殊勤務手当の［上限額］の区分の実際の額 allowances.specialRates（種類 max）", "防衛大臣の定め（訓令）。法令にあるのは上限だけ"],
   ["手当", "地域手当の経過措置 allowances.regionalTransition（令和10年3月まで）と空港の区域", "人事院規則9-49-57 附則別表第一（人事院の改正通知。e-Gov の9-49本則には載らない）・9-49第4条"],
-  ["手当", "寒冷地手当の支給地域・級地（どこが何級地か）", "寒冷地手当法 別表（画面では利用者が級地を選ぶ）"],
+  ["手当", "寒冷地手当の支給地域・級地（駐屯地・基地の一覧にない官署）、北海道の振興局の管内（上富良野町＝上川総合振興局、別海町＝根室振興局）", "寒冷地手当法 別表（一覧にない官署は利用者が級地を選ぶ）。振興局の管内は北海道庁の振興局の一覧"],
   ["退職手当", "調整月額のどの階級がどの号区分か retirement.adjustMonthly（照合は額と並びだけ）", "国家公務員退職手当法施行令 別表第一"],
   ["階級", "士長→3曹の最短（一般曹候補生）・3曹→3尉の最短（部内幹部の受験資格）・1士→士長の6か月（運用） promotion.choices / fixedMonths", "採用・試験の案内（別表第七によらない前提）"],
   ["階級", "定年の特例（統合幕僚長等62歳、医師・音楽・情報・警務官の1佐以下60歳。自衛隊法施行令 別表第九 備考）", "試算では入れていない。備考が変わっていないかだけ確かめる"],
