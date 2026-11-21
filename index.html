@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-3" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-3" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-3" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-3" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-6" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-6" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-6" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-6" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -138,6 +138,16 @@
           <p class="sub">
             昇給・昇任の時期を変えて、入隊から退職までの給与を試算します。条件を変えると自動で計算し直します。
           </p>
+          <div class="sim-presets" role="group" aria-labelledby="presetLabel">
+            <span id="presetLabel" class="sim-presets-label">よくある経歴のひな形</span>
+            <button type="button" class="sim-preset" data-preset="sotsu">一般曹候補生（標準）</button>
+            <button type="button" class="sim-preset" data-preset="sotsuFast">一般曹候補生（最短）</button>
+            <button type="button" class="sim-preset" data-preset="bunai">部内幹部（3曹から3尉）</button>
+            <button type="button" class="sim-preset" data-preset="kanko">防大・大卒の幹部</button>
+          </div>
+          <small class="fixed-note sim-presets-note"
+            >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。最短は法令の最短期間（自衛隊法施行規則 別表第七など）で、実際の昇任時期を示すものではありません。</small
+          >
           <h3 class="sim-group">所属</h3>
           <div class="sim-grid">
             <div>
@@ -306,6 +316,31 @@
                 >
               </div>
               <small class="fixed-note">昇任は年2回のため半年ごと。一般曹候補生は最短で入隊後2年9か月（士長昇任から1年9か月）</small>
+            </div>
+            <div data-step="3尉route" hidden>
+              <label for="ofcRoute">3尉への昇任のしかた</label
+              ><select id="ofcRoute" aria-describedby="ofcRouteNote">
+                <option value="sgt" selected>3曹から（部内幹部候補生）</option>
+                <option value="sgm">曹長から</option>
+                <option value="wo">准尉から</option>
+              </select>
+              <small id="ofcRouteNote" class="fixed-note"
+                >曹長・准尉からは、2曹・1曹・曹長（・准尉）を経て3尉に昇任するものとして計算します。選考の条件は年度ごとの採用・選考の案内で確かめてください</small
+              >
+            </div>
+            <div data-step="3尉sgm" hidden>
+              <label for="stepOfcSgm">曹長から3尉まで</label>
+              <div class="unit">
+                <input id="stepOfcSgm" type="number" min="2" max="30" step="1" value="4" /><span>年</span>
+              </div>
+              <small class="fixed-note">最短は曹長の在職期間2年（自衛隊法施行規則 別表第七）</small>
+            </div>
+            <div data-step="3尉wo" hidden>
+              <label for="stepOfcWo">准尉から3尉まで</label>
+              <div class="unit">
+                <input id="stepOfcWo" type="number" min="1" max="30" step="1" value="3" /><span>年</span>
+              </div>
+              <small class="fixed-note">准尉の在職期間は別表第七に定めがないため、1年から選べます</small>
             </div>
             <div data-step="3尉" hidden>
               <label for="stepOfc">3曹から3尉まで（部内幹部）</label>
@@ -768,6 +803,7 @@
             <div class="sim-share">
               <button type="button" id="shareLink" class="allowance-add">共有用のURLをコピー</button>
               <button type="button" id="printSim" class="allowance-add">印刷・PDFで保存</button>
+              <button type="button" id="csvSim" class="allowance-add">年ごとの表をCSVで保存</button>
               <input
                 id="shareUrl"
                 class="sim-share-url"
@@ -803,11 +839,25 @@
         </div>
         <div class="source">
           出典：<a
-            href="https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/21920251224095.htm"
+            href="https://laws.e-gov.go.jp/law/327AC0000000266"
             target="_blank"
             rel="noopener"
-            >衆議院「防衛省の職員の給与等に関する法律の一部を改正する法律」別表第二</a
-          ><br />2026年11月20日に公布された改正（防衛省の職員の給与等に関する法律の一部を改正する法律、令和8年法律第89号。2026年4月にさかのぼって適用）の俸給表を掲載しています。正式な金額・適用条件は法令等をご確認ください。
+            >e-Gov法令検索「防衛省の職員の給与等に関する法律」別表第二</a
+          ><br />2026年11月20日に公布された改正（防衛省の職員の給与等に関する法律の一部を改正する法律、令和8年法律第89号。2026年4月にさかのぼって適用）の俸給表を掲載しています。
+          <details class="update-log">
+            <summary>対応している法令と更新履歴</summary>
+            <p>
+              対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
+            </p>
+            <ul>
+              <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。スマホ幅の表示と文字の大きさの設定を改善</li>
+              <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
+              <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
+              <li>2026-11-16：手当の額を法令から選べるようにし、すべての数値を e-Gov の条文と照合する仕組みを追加</li>
+              <li>2026-11-06：退職後の国民年金保険料の免除（退職の特例）を試算できるようにする</li>
+              <li>2026-11-02：公開（2025年12月公布の改正の俸給表）</li>
+            </ul>
+          </details>正式な金額・適用条件は法令等をご確認ください。
         </div>
       </section>
     </main>
@@ -836,9 +886,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-3"></script>
-    <script src="data/promotion-table.js?v=20261122-3"></script>
-    <script src="js/pay-lookup.js?v=20261122-3"></script>
+    <script src="data/pay-table.js?v=20261122-6"></script>
+    <script src="data/promotion-table.js?v=20261122-6"></script>
+    <script src="js/pay-lookup.js?v=20261122-6"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -849,11 +899,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-3"></script>
-    <script src="js/regional-rate.js?v=20261122-3"></script>
-    <script src="js/allowances.js?v=20261122-3"></script>
-    <script src="js/simulator.js?v=20261122-3"></script>
-    <script src="js/simulator-dialog.js?v=20261122-3"></script>
+    <script src="data/rules.js?v=20261122-6"></script>
+    <script src="js/regional-rate.js?v=20261122-6"></script>
+    <script src="js/allowances.js?v=20261122-6"></script>
+    <script src="js/simulator.js?v=20261122-6"></script>
+    <script src="js/simulator-dialog.js?v=20261122-6"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -862,9 +912,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-3"></script>
-    <script src="js/effects.js?v=20261122-3"></script>
-    <script src="js/scroll-lock.js?v=20261122-3"></script>
-    <script src="js/print.js?v=20261122-3"></script>
+    <script src="js/notes-page.js?v=20261122-6"></script>
+    <script src="js/effects.js?v=20261122-6"></script>
+    <script src="js/scroll-lock.js?v=20261122-6"></script>
+    <script src="js/print.js?v=20261122-6"></script>
   </body>
 </html>

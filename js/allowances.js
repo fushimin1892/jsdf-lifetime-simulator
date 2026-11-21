@@ -50,15 +50,23 @@
               { k: "child", label: "中学生までの子", max: 10, unit: "人" },
               { k: "teen", label: "高校生〜22歳の年度末までの子", max: 10, unit: "人" },
               { k: "parent", label: "60歳以上の父母・祖父母など", max: 10, unit: "人" },
+              { k: "b1", label: "生まれた年度で入れる子（1人目。0はなし）", max: 2100, unit: "年度" },
+              { k: "b2", label: "同（2人目）", max: 2100, unit: "年度" },
+              { k: "b3", label: "同（3人目）", max: 2100, unit: "年度" },
+              { k: "b4", label: "同（4人目）", max: 2100, unit: "年度" },
             ],
             compute: (v) => {
               const c = count(v.child),
                 t = count(v.teen),
                 p = count(v.parent),
+                born = childFysOf(v).length,
                 amount = R.fuyou.child * (c + t) + R.fuyou.teenAdd * t + R.fuyou.parent * p;
-              return { amount, text: `月額 ${yen(amount)}（子 ${c + t}人・父母等 ${p}人）` };
+              return {
+                amount,
+                text: `月額 ${yen(amount)}（子 ${c + t}人・父母等 ${p}人）${born ? `＋生まれた年度で入れた子 ${born}人の分は年度ごとに自動` : ""}`,
+              };
             },
-            note: "令和8年4月からの額：子1人13,000円（15歳になった後の4月1日から22歳の年度末までの子は5,000円を加算）、父母等1人6,500円。配偶者の扶養手当は令和8年3月で廃止されました。将補（2）欄・1佐（1）欄の間は父母等の分は支給されず、1佐（2）欄の間は1人3,500円になります（施行令第8条の7・第8条の8。階級に合わせて自動で計算します）。子の年齢で額が変わるときは、期間を分けて追加してください。",
+            note: "令和8年4月からの額：子1人13,000円（15歳になった後の4月1日から22歳の年度末までの子は5,000円を加算）、父母等1人6,500円。配偶者の扶養手当は令和8年3月で廃止されました。将補（2）欄・1佐（1）欄の間は父母等の分は支給されず、1佐（2）欄の間は1人3,500円になります（施行令第8条の7・第8条の8。階級に合わせて自動で計算します）。子の年齢で額が変わるときは、「生まれた年度」の欄に子の生まれた年度（4月2日〜翌年4月1日生まれを1つの年度とします。例：2030年5月生まれは2030、2031年3月生まれも2030）を入れると、生まれた年度の4月から22歳の年度末まで1人13,000円、15歳になった後の4月（生まれた年度＋16年度）からは5,000円を加えて、年度ごとに自動で計算します（一般職給与法第11条第2項・第4項。実際の支給は届出の翌月からなので、生まれた年度の初めの数か月は多めに出ます）。人数の欄と同じ子を重ねて入れないでください。",
           },
           住居手当: {
             fields: [{ k: "rent", label: "家賃（月額）", max: 1000000, unit: "円" }],
@@ -576,6 +584,18 @@
               create(saved[12] != null && (kindNames.includes(saved[12]) || saved[12] === OTHER) ? saved[12] : inferKind(saved[0]), saved);
         }
         // 扶養手当の行で「条件から計算」を使っているときの父母等の人数（金額を直接入力しているときは0）
+        // 扶養手当の「生まれた年度」で入れた子の年度の一覧（0・空欄・1950より前は除く）
+        function childFysOf(v) {
+          return ["b1", "b2", "b3", "b4"].map((k) => count(v?.[k])).filter((y) => y >= 1950);
+        }
+        function calcChildFys(row) {
+          try {
+            const s = JSON.parse(row.querySelector(".a-calc-state")?.value || "null");
+            return s?.mode === "auto" ? childFysOf(s.v) : [];
+          } catch {
+            return [];
+          }
+        }
         // 単身赴任手当を「条件から計算」したときの距離の加算（2027年4月から加算がなくなるので、model() で年度ごとに外す）
         function calcTanshinAdd(row) {
           try {
@@ -732,7 +752,7 @@
               endMonth: Math.round(end * 12),
               bonusBase: bonusBaseNames.includes(kind),
               // 扶養手当を「条件から計算」したときの父母等の人数（上位の階級で額が変わるので model() で月ごとに直す）
-              ...(kind === "扶養手当" ? { parents: calcParents(row) } : {}),
+              ...(kind === "扶養手当" ? { parents: calcParents(row), childFys: calcChildFys(row) } : {}),
               ...(kind === "単身赴任手当" ? { tanshinAdd: calcTanshinAdd(row) } : {}),
               ...(area ? { area } : {}),
               ...(rankTable ? { rankTable } : {}),

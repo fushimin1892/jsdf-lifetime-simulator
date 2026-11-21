@@ -1414,3 +1414,43 @@ html body #notesPage ::selection {
   background: rgba(31, 122, 87, 0.24);
   color: #0c271e;
 }
+
+/* よくある経歴のひな形（シミュレーターの上）：枠線だけのボタンを横に並べ、狭い幅では折り返す */
+html body #simulatorDialog .sim-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+html body #simulatorDialog .sim-presets-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #17312d;
+  margin-right: 4px;
+}
+html body #simulatorDialog .sim-preset {
+  border-radius: 999px;
+  padding: 8px 14px;
+  border: 1px solid #0c271e;
+  background: #fff;
+  color: #0c271e;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+html body #simulatorDialog .sim-preset:hover {
+  background: #eef3ef;
+}
+/* 更新履歴（俸給表の下の出典の中） */
+html body .update-log {
+  margin-top: 10px;
+}
+html body .update-log summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+html body .update-log ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+}

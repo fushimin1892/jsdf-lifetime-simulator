@@ -297,8 +297,21 @@
                     a.rankTable
                     ? { ...a, amount: a.rankTable[rank] ?? 0 }
                     : // 上位の階級では父母等の扶養手当が減る（施行令第8条の7・第8条の8）
-                    a.parents && FUYOU_PARENT[rank] != null
-                    ? { ...a, amount: a.amount - a.parents * (AL.calcRates.fuyou.parent - FUYOU_PARENT[rank]) }
+                    (a.parents && FUYOU_PARENT[rank] != null) || a.childFys?.length
+                    ? {
+                        ...a,
+                        amount:
+                          a.amount -
+                          (a.parents && FUYOU_PARENT[rank] != null ? a.parents * (AL.calcRates.fuyou.parent - FUYOU_PARENT[rank]) : 0) +
+                          // 生まれた年度で入れた子：生まれた年度〜22歳の年度末は1人13,000円、生まれた年度＋16年度からは5,000円を加算（一般職給与法第11条第2項・第4項）
+                          (a.childFys || []).reduce(
+                            (sum, fy) =>
+                              fyNow >= fy && fyNow <= fy + 22
+                                ? sum + AL.calcRates.fuyou.child + (fyNow >= fy + 16 ? AL.calcRates.fuyou.teenAdd : 0)
+                                : sum,
+                            0,
+                          ),
+                      }
                     : // 単身赴任手当の距離の加算は2027年3月まで（令和8年法律第79号第2条。2027年4月1日施行）
                     a.tanshinAdd && fyNow > AL.calcRates.tanshin.addUntilFy
                     ? { ...a, amount: Math.max(0, a.amount - a.tanshinAdd) }
@@ -701,10 +714,17 @@
           input.closest(".unit").replaceWith(select);
         }
         // 予想階級までにたどる昇任（3曹より後）。3尉以上なら部内幹部の経路になる
-        function pathTo(target) {
+        // 3尉への昇任のしかた（ofcRoute）：3曹から（部内幹部候補生）、曹長から、准尉から。曹長・准尉からは曹の階級を順に経る
+        // 幹部候補生（一般幹部候補生）は曹を経ないので route は "sgt"（3尉から先だけ）で呼ぶ
+        function pathTo(target, route = $("ofcRoute")?.value || "sgt") {
           const e = enlistedPath.findIndex((p) => p.name === target),
             o = officerPath.findIndex((p) => p.name === target);
-          return e >= 0 ? enlistedPath.slice(0, e + 1) : o >= 0 ? officerPath.slice(0, o + 1) : [];
+          if (e >= 0) return enlistedPath.slice(0, e + 1);
+          if (o < 0) return [];
+          const officers = officerPath.slice(0, o + 1);
+          if (route === "sgm") return [...enlistedPath.slice(0, 3), { ...officers[0], step: "stepOfcSgm", key: "3尉sgm" }, ...officers.slice(1)];
+          if (route === "wo") return [...enlistedPath.slice(0, 4), { ...officers[0], step: "stepOfcWo", key: "3尉wo" }, ...officers.slice(1)];
+          return officers;
         }
         function updateRetirement() {
           const type = $("entryType").value,
@@ -716,7 +736,10 @@
           if ($("targetRank").selectedOptions[0].disabled) $("targetRank").value = type === "kankoD" ? "2尉" : "3尉";
           // 幹部候補生は3尉（院卒は2尉）に任官するので、そこまでの昇任の欄は出さない
           const skip = kanko ? (type === "kankoD" ? ["3尉", "2尉"] : ["3尉"]) : [];
-          const names = ninkiExit ? [] : pathTo($("targetRank").value).map((p) => p.name).filter((n) => !skip.includes(n));
+          const path = ninkiExit ? [] : pathTo($("targetRank").value, kanko ? "sgt" : undefined),
+            names = path.map((p) => p.key || p.name).filter((n) => !skip.includes(n));
+          // 3尉以上（部内幹部）を目指すときだけ、3尉への昇任のしかたを選べる
+          if (!kanko && path.some((p) => p.name === "3尉")) names.push("3尉route");
           for (const el of document.querySelectorAll("[data-step]"))
             el.hidden = !names.includes(el.dataset.step);
           for (const el of document.querySelectorAll("[data-enlisted]")) el.hidden = kanko;
@@ -742,7 +765,7 @@
           $("startAge").value = String(window.RULES.entry.defaultAge[$("entryType").value] ?? 18);
           updateRetirement();
         });
-        for (const id of ["targetRank", "ninkiPlan", "branch", "startAge"]) $(id).addEventListener("change", updateRetirement);
+        for (const id of ["targetRank", "ninkiPlan", "branch", "startAge", "ofcRoute"]) $(id).addEventListener("change", updateRetirement);
         $("startAge").addEventListener("input", updateRetirement);
         updateRetirement();
         $("simJump").addEventListener("click", (e) => {
@@ -1159,7 +1182,7 @@
             c.education = [[0, cand]];
             const skip = k.col === 9 ? ["3尉", "2尉"] : ["3尉"];
             let m2 = cand;
-            for (const p of pathTo(target.value).filter((p) => !skip.includes(p.name))) {
+            for (const p of pathTo(target.value, "sgt").filter((p) => !skip.includes(p.name))) {
               m2 += Math.round(value(p.step) * 12);
               c.promotions.push({ month: m2, col: p.col ?? value("colClass") });
             }
@@ -1514,4 +1537,56 @@
         // 開いたときや画面幅が変わったときは、グラフを幅に合わせて描き直す
         $("simLaunch").addEventListener("click", () => requestAnimationFrame(() => run()));
         window.addEventListener("resize", schedule);
+
+        // ---- よくある経歴のひな形：入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変える（手当などほかの入力はそのまま） ----
+        const PRESET_STEPS = ["stepSgt", "stepOfc", "stepOfcSgm", "stepOfcWo", "first", "stepSgt2", "stepSgt1", "stepSgm", "stepWo", "stepMaj", "stepLtc", "stepCol", "stepMg", "stepGen"],
+          stepDefaults = Object.fromEntries(PRESET_STEPS.map((id) => [id, $(id).value])),
+          PRESETS = {
+            sotsu: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "def" },
+            sotsuFast: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "min" },
+            bunai: { entryType: "sotsu", targetRank: "3佐", startAge: 18, steps: "def" },
+            kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def" },
+          };
+        for (const button of document.querySelectorAll(".sim-preset"))
+          button.addEventListener("click", () => {
+            const p = PRESETS[button.dataset.preset];
+            if (!p) return;
+            $("entryType").value = p.entryType;
+            $("entryType").dispatchEvent(new Event("change", { bubbles: true }));
+            $("targetRank").value = p.targetRank;
+            $("startAge").value = String(p.startAge);
+            $("ofcRoute").value = "sgt";
+            // 選択欄の最初の選択肢が法令の最短期間、初期値は画面を開いたときの値
+            for (const id of PRESET_STEPS) {
+              const el = $(id);
+              el.value = p.steps === "min" && el.tagName === "SELECT" ? el.options[0].value : stepDefaults[id];
+            }
+            $("targetRank").dispatchEvent(new Event("change", { bubbles: true }));
+            $("shareStatus").textContent = `ひな形「${button.textContent}」を入れました。`;
+          });
+
+        // ---- 年ごとの表を CSV で保存する（この端末の中だけで作り、どこにも送らない） ----
+        $("csvSim")?.addEventListener("click", () => {
+          const table = $("simRows").closest("table"),
+            rows = [...table.querySelectorAll("tr")].map((tr) => [...tr.cells].map((cell) => cell.textContent.trim()));
+          if (rows.length < 2 || $("simResult").hidden) {
+            $("shareStatus").textContent = "計算結果がありません。入力を確かめてください。";
+            return;
+          }
+          // 表計算ソフトが式として読まないよう、= + @ で始まる値は ' を付ける。, " 改行を含む値は "" で囲む
+          const cell = (v) => {
+            const s = /^[=+@]/.test(v) ? "'" + v : v;
+            return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+          };
+          const csv = "\uFEFF" + rows.map((r) => r.map(cell).join(",")).join("\r\n"),
+            url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })),
+            link = document.createElement("a");
+          link.href = url;
+          link.download = "自衛官_生涯給与_年ごとの表.csv";
+          document.body.append(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          $("shareStatus").textContent = "年ごとの表をCSVで保存しました（金額は円。表計算ソフトで開けます）。";
+        });
       })();

@@ -3,7 +3,7 @@
 const { openPage } = require("./common");
 
 // 昇任までの期間の入力欄（3曹以上。2士→1士・1士→士長・3尉→2尉は読み取り専用で固定）
-const STEP_IDS = ["stepSgt", "stepOfc", "first", "stepSgt2", "stepSgt1", "stepSgm", "stepWo", "stepMaj", "stepLtc", "stepCol", "stepMg", "stepGen"];
+const STEP_IDS = ["stepSgt", "stepOfc", "stepOfcSgm", "stepOfcWo", "first", "stepSgt2", "stepSgt1", "stepSgm", "stepWo", "stepMaj", "stepLtc", "stepCol", "stepMg", "stepGen"];
 
 // ページ側で実行する（文字列にして渡すので、外の変数は使わない）
 function pageSetup(STEP_IDS) {
