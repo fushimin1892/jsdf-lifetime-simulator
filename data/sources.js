@@ -224,6 +224,7 @@ window.SOURCES = {
     { path: "RULES.retirement.adjustMonthly（職員の区分）", law: "taishokuRei", where: "第六条の三ほか（自衛官の階級ごとの調整月額の区分）。区分の当てはめは目で確認、額は法第六条の四で照合", checked: "2026-11-17" },
     { path: "RULES.kyosai.pensionCaps", law: "kosei", where: "第二十条（標準報酬月額の等級）・附則（上限の引上げ）", checked: "2026-11-16" },
     { path: "RULES.afterRetire.hireiRate", law: "kosei", where: "第四十三条（報酬比例の年金額の乗率 千分の五・四八一）", checked: "2026-11-16" },
+    { path: "RULES.entry.koka（退職手当の通算）", law: "boeiKyuyo", where: "第二十八条の二第四項（生徒の在職期間の2分の1を通算）", checked: "2026-11-22", how: "node tools/egov-check.js values で照合。号俸・3曹昇任までの期間は公式Q&A とサイトの前提（tools/value-checks.js の manual）" },
     { path: "RULES.youngPension.civilRetireAge", law: "kokkoKomuin", where: "附則（定年の段階的な引上げ：令和5年度60歳→令和13年度65歳）", checked: "2026-11-16" },
     { path: "RULES.youngPension.transition", law: "boeiKyuyo", where: "令和8年法律第53号 附則第三条（令和8年4月〜令和9年3月に退職した人の倍率）", checked: "2026-11-17", how: "node tools/egov-check.js values で照合" },
   ],

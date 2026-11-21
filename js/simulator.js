@@ -1562,7 +1562,7 @@
           stepDefaults = Object.fromEntries(PRESET_STEPS.map((id) => [id, $(id).value])),
           PRESETS = {
             sotsu: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "def" },
-            koka: { entryType: "koka", targetRank: "曹長", startAge: 18, steps: "min", branch: "ground" },
+            koka: { entryType: "koka", targetRank: "曹長", startAge: 18, steps: "def", branch: "ground" },
             bunai: { entryType: "sotsu", targetRank: "1尉", startAge: 18, steps: "def" },
             kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def" },
           };
