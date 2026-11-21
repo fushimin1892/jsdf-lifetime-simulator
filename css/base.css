@@ -36,7 +36,7 @@ header {
 .brand {
   font-weight: 800;
   letter-spacing: 0.08em;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .brand span {
   color: #547d6f;
@@ -68,14 +68,14 @@ header {
   z-index: 1;
 }
 .hero h1 {
-  font-size: clamp(29px, 5vw, 43px);
+  font-size: clamp(1.8125rem, 5vw, 2.6875rem);
   letter-spacing: 0.06em;
   line-height: 1.4;
   margin: 14px 0;
 }
 .hero p {
   color: #d5e3dc;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.8;
   margin: 0;
 }
@@ -95,16 +95,16 @@ header {
 }
 .cap {
   color: #906e39;
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: 0.15em;
   font-weight: 800;
 }
 .section-title {
-  font-size: 20px;
+  font-size: 1.25rem;
   margin: 8px 0 7px;
 }
 .sub {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #687870;
   line-height: 1.8;
   margin: 0;
@@ -117,7 +117,7 @@ header {
 }
 label {
   display: block;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -128,7 +128,7 @@ select {
   border-radius: 7px;
   color: #213b32;
   background: #fff;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .result {
   margin-top: 20px;
@@ -145,17 +145,17 @@ select {
   color: #5b7365;
 }
 .result strong {
-  font-size: 31px;
+  font-size: 1.9375rem;
   letter-spacing: 0.02em;
 }
 .result strong span {
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .result .empty {
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .note {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #637068;
   line-height: 1.8;
   margin-top: 14px;
@@ -168,7 +168,7 @@ select {
 }
 .hint {
   color: #6b786f;
-  font-size: 12px;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 .scroll {
@@ -183,7 +183,7 @@ table {
   border-spacing: 0;
   min-width: 1700px;
   width: 100%;
-  font-size: 12px;
+  font-size: 0.75rem;
   text-align: right;
 }
 th,
@@ -226,7 +226,7 @@ td.highlight {
   margin: auto;
   padding: 0 24px 35px;
   color: #647169;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.8;
 }
 a {
@@ -236,7 +236,7 @@ a {
   border-top: 1px solid #e9eee9;
   padding-top: 17px;
   margin-top: 20px;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.8;
   color: #667b70;
 }
@@ -245,7 +245,7 @@ a {
     padding: 16px;
   }
   .brand {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
   .hero-in {
     padding: 42px 20px 70px;
@@ -265,7 +265,7 @@ a {
     flex-direction: column;
   }
   .result strong {
-    font-size: 27px;
+    font-size: 1.6875rem;
   }
   .titleline {
     display: block;
@@ -295,7 +295,7 @@ a {
 .fixed-note {
   display: block;
   color: #617068;
-  font-size: 11px;
+  font-size: 0.6875rem;
   margin-top: 5px;
 }
 .unit {
@@ -311,7 +311,7 @@ a {
   width: 100%;
   border: 0;
   padding: 14px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #213b32;
   outline: none;
 }
@@ -320,13 +320,13 @@ a {
 }
 .unit span {
   padding-right: 13px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #617068;
   white-space: nowrap;
 }
 .sim-error {
   color: #a23d33;
-  font-size: 13px;
+  font-size: 0.8125rem;
   margin-top: 10px;
 }
 .sim-total {
@@ -346,7 +346,7 @@ a {
   padding-left: 16px;
 }
 .sim-split div:not(:first-child) strong {
-  font-size: clamp(20px, 2.6vw, 26px);
+  font-size: clamp(1.25rem, 2.6vw, 1.625rem);
 }
 @media (max-width: 600px) {
   .sim-split {
@@ -363,12 +363,12 @@ a {
 .sim-total span,
 .sim-total small {
   display: block;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #cbe0d3;
 }
 .sim-total strong {
   display: block;
-  font-size: clamp(26px, 4vw, 36px);
+  font-size: clamp(1.625rem, 4vw, 2.25rem);
   margin: 8px 0;
 }
 .sim-metrics {
@@ -387,12 +387,12 @@ a {
   display: block;
 }
 .sim-metrics small {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #72867a;
 }
 .sim-metrics strong {
   margin-top: 6px;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .sim-metrics .sim-net {
   grid-column: 1 / -1;
@@ -413,11 +413,11 @@ a {
   margin-top: 26px;
 }
 .sim-section-head h3 {
-  font-size: 16px;
+  font-size: 1rem;
 }
 .sim-section-head span {
   color: #5f6f67; /* 4.5:1 以上（白・紙色の上） */
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .sim-scroll {
   overflow: auto;
@@ -466,7 +466,7 @@ a {
   cursor: pointer;
   font-family: inherit;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1.25;
 }
 .sim-launch:hover {
@@ -479,7 +479,7 @@ a {
   outline-offset: 3px;
 }
 .sim-launch-icon {
-  font-size: 21px;
+  font-size: 1.3125rem;
   line-height: 1;
 }
 #simulatorDialog {
@@ -500,7 +500,7 @@ a {
 .note-link {
   display: inline-block;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #1a5fb4;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -537,7 +537,7 @@ a {
 }
 .notes-head h2 {
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625rem;
 }
 .notes-back {
   border: 0;
@@ -546,7 +546,7 @@ a {
   background: #fff;
   color: #1c5143;
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -560,12 +560,12 @@ a {
 }
 .notes-body h3 {
   margin: 0 0 6px;
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #1c5143;
 }
 .notes-body p {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.8;
 }
 @media (max-width: 600px) {
@@ -594,7 +594,7 @@ a {
   border-radius: 50%;
   background: #edf3ee;
   color: #36584a;
-  font-size: 25px;
+  font-size: 1.5625rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -625,7 +625,7 @@ a {
 }
 .allowance-panel h3 {
   margin: 8px 0;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .allowance-selector {
   display: grid;
@@ -659,7 +659,7 @@ a {
 }
 .allowance-item-head strong {
   min-width: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   overflow-wrap: anywhere;
 }
 /* 手当名が長くても削除ボタンを潰さない */
@@ -669,7 +669,7 @@ a {
 }
 .allowance-remove {
   padding: 5px 9px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .allowance-fields {
   display: grid;
@@ -678,7 +678,7 @@ a {
   margin-top: 12px;
 }
 .allowance-fields label {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 /* 法令の額の区分は文言が長いので、1行ぶんの幅を使う */
 .allowance-fields .a-rate-wrap {
@@ -703,13 +703,13 @@ a {
 /* 支給開始が退職より後の手当の知らせ（計算は止めない） */
 .allowance-fields .a-after-note {
   grid-column: 1 / -1;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .a-period-out {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   opacity: 0.8;
 }
 @media (max-width: 520px) {
@@ -724,12 +724,12 @@ a {
   border: 1px solid #cdd9d1;
   border-radius: 6px;
   padding: 10px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background: #fff;
   color: #213b32;
 }
 .allowance-source {
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.8;
 }
 /* 条件から月額を出す欄：手当の入力欄の上に、淡い緑の枠でまとめる */
@@ -756,7 +756,7 @@ a {
 .a-calc-out {
   margin: 12px 0 6px;
   color: #0c5a3d;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 .allowance-fields .a-amount:read-only {
@@ -790,12 +790,12 @@ a {
 }
 .auto-sources {
   margin-top: 12px;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.7;
   color: #5a6b60;
 }
 .branch-title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #1c5143;
   margin: 18px 0 0;
 }
@@ -805,7 +805,7 @@ a {
   padding-top: 13px;
 }
 .manual-allowances summary {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #265d49;
   font-weight: 700;
   cursor: pointer;
@@ -837,19 +837,19 @@ a {
   gap: 4px 10px;
 }
 .sim-sticky-text small {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #cbe0d3;
 }
 .sim-sticky-text strong {
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 .sim-sticky-text span {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #cbe0d3;
 }
 .sim-jump {
   color: #fff;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
   border: 1px solid #ffffff60;
@@ -863,14 +863,14 @@ a {
 }
 /* 入力欄のまとまり */
 .sim-group {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #1c5143;
   margin: 26px 0 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 .sim-group-note {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #617068;
   margin: 8px 0 0;
 }
@@ -948,7 +948,7 @@ a {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: #e8f1ec;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.5;
   white-space: nowrap;
   box-shadow: 0 10px 24px #0c241d40;
@@ -965,7 +965,7 @@ a {
 }
 .chart-tip b {
   color: #fff;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .chart-tip em {
   font-style: normal;
@@ -986,7 +986,7 @@ a {
   border-left: 3px solid #c39a54;
   background: #fbf6ea;
   border-radius: 0 7px 7px 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.7;
 }
 .reemploy-summary b {
@@ -1012,7 +1012,7 @@ a {
   border: 1px solid #cdd9d1;
   border-radius: 6px;
   padding: 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #213b32;
 }
 @media (max-width: 600px) {
@@ -1021,7 +1021,7 @@ a {
     padding: 8px 10px 8px 17px;
   }
   .sim-sticky-text strong {
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 /* 入力欄・ボタンの操作性 */
@@ -1044,7 +1044,7 @@ summary {
   .unit input,
   .allowance-fields input,
   .allowance-fields select {
-    font-size: 16px;
+    font-size: 1rem;
   }
   .foot {
     padding-bottom: 104px;

@@ -373,7 +373,10 @@
                 return `<div><label>${f.label}</label>${input}</div>`;
               })
               .join("");
-            container.querySelector(".a-calc-note").textContent = calc.note;
+            const calcNote = container.querySelector(".a-calc-note");
+            calcNote.textContent = calc.note;
+            // 説明ページの見出し（ラベルの直下にないので、手当名を付けて指定する）
+            calcNote.dataset.noteTitle = `${kind}：条件から計算するしかた`;
             calcWrap.addEventListener("input", runCalc);
             calcWrap.addEventListener("change", runCalc);
           }

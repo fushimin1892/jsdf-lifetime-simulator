@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122" />
-    <link rel="stylesheet" href="css/design.css?v=20261122" />
-    <link rel="stylesheet" href="css/print.css?v=20261122" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-2" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-2" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-2" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-2" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -581,16 +581,16 @@
               <label for="retireReason">退職の理由</label
               ><select id="retireReason">
                 <option value="teinen" selected>定年退職</option>
-                <option value="self">自己都合で退職（定年の年齢で）</option>
+                <option value="self">自己都合（定年の年齢で）</option>
               </select>
             </div>
             <div>
               <label for="spouse">配偶者控除</label
               ><select id="spouse" aria-describedby="spouseNote">
                 <option value="no" selected>なし</option>
-                <option value="yes">あり（配偶者の所得が62万円以下）</option>
+                <option value="yes">あり（所得62万円以下）</option>
               </select>
-              <small id="spouseNote" class="fixed-note">扶養手当は「ほかの手当を追加する」で、子・父母等の人数から計算できます</small>
+              <small id="spouseNote" class="fixed-note">「あり」は、配偶者の所得が62万円以下のときです。扶養手当は「ほかの手当を追加する」で、子・父母等の人数から計算できます</small>
             </div>
             <div>
               <label for="dependents">扶養親族（16歳以上・一般）</label>
@@ -626,7 +626,7 @@
               ><select id="afterPension" aria-describedby="afterPensionNote">
                 <option value="employee" selected>再就職して厚生年金に入る</option>
                 <option value="kokumin">国民年金を自分で納める</option>
-                <option value="exempt">国民年金の免除（退職の特例）</option>
+                <option value="exempt">国民年金の免除（特例）</option>
               </select>
               <small class="fixed-note" id="afterPensionNote"
                 >再就職して厚生年金に入るときの保険料は給与から引かれます。自分で納めるのは自営業・無職などの場合です。免除は、退職を理由に本人の前年所得を除いて審査する特例です。配偶者・世帯主の所得も審査され、家族に一定の収入があると免除にならないことがあります。免除した期間は老齢基礎年金に半分だけ反映され、10年以内なら追納で満額に戻せます（国民年金法第27条・第90条・第94条）。申請は年金事務所か市区町村の国民年金窓口へ（退職辞令の写しなどで退職を証明）</small
@@ -635,7 +635,7 @@
             <div>
               <label for="afterHealth">退職後の健康保険</label
               ><select id="afterHealth" aria-describedby="afterHealthNote">
-                <option value="none" selected>再就職先・家族の扶養（負担なし）</option>
+                <option value="none" selected>再就職先・扶養（0円）</option>
                 <option value="nini">共済の任意継続（最長2年）</option>
                 <option value="kokuho">国民健康保険</option>
               </select>
@@ -757,13 +757,13 @@
               </div>
               <p class="reemploy-summary" id="reemploySummary"></p>
               <div class="sim-chart" id="reemployChart"></div>
-              <small class="fixed-note"
+              <small class="fixed-note" data-note-title="再就職の年収と若年定年退職者給付金のグラフ"
                 >◯は「退職の翌年の年収見込み」に入力した年収です。年収が下限額を超えると2回目が減り、上限額以上で2回目は0、さらに1回目の一部を返納します（給与法第27条の4）。年収は再就職先の給与の額（額面）で、事業所得がある場合はそれも加えます。年の途中から勤めた場合は、ボーナスを除いた給与を12か月分に直した額にボーナスを足して入れてください（施行令第24条の2）。境目の計算に使う「給与年額相当額」は、退職時の俸給・扶養手当・営外手当が翌年も同じとして、期末手当2.525か月・勤勉手当2.125か月分（施行令第24条）を足した額です。60歳以後の分（3回目・4回目）は、このグラフに含みません。</small
               >
             </div>
-            <p class="note" data-note-title="退職手当・若年給付金・税・共済掛金の計算方法">
+            <p class="note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
               退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜・附則第12項・第13項と施行令第22条・附則第15項の率で計算します（俸給月額は3佐の最高号俸が上限）。60歳以後の分（後期）は所得による調整を含みません。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の2回目以降は、退職手当と勤続期間が重なるため、重なる年数分の退職所得控除を引き（前の退職手当等が控除額に満たないときは重なる期間を縮めて計算）、下限の80万円を控除して課税します（所得税法第30条第6項、施行令第70条）。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
-              <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年給付金の率・特別調整額） ↗</a>
+              <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>
             </p>
             <div class="sim-share">
               <button type="button" id="shareLink" class="allowance-add">共有用のURLをコピー</button>
@@ -836,9 +836,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122"></script>
-    <script src="data/promotion-table.js?v=20261122"></script>
-    <script src="js/pay-lookup.js?v=20261122"></script>
+    <script src="data/pay-table.js?v=20261122-2"></script>
+    <script src="data/promotion-table.js?v=20261122-2"></script>
+    <script src="js/pay-lookup.js?v=20261122-2"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -849,11 +849,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122"></script>
-    <script src="js/regional-rate.js?v=20261122"></script>
-    <script src="js/allowances.js?v=20261122"></script>
-    <script src="js/simulator.js?v=20261122"></script>
-    <script src="js/simulator-dialog.js?v=20261122"></script>
+    <script src="data/rules.js?v=20261122-2"></script>
+    <script src="js/regional-rate.js?v=20261122-2"></script>
+    <script src="js/allowances.js?v=20261122-2"></script>
+    <script src="js/simulator.js?v=20261122-2"></script>
+    <script src="js/simulator-dialog.js?v=20261122-2"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -862,9 +862,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122"></script>
-    <script src="js/effects.js?v=20261122"></script>
-    <script src="js/scroll-lock.js?v=20261122"></script>
-    <script src="js/print.js?v=20261122"></script>
+    <script src="js/notes-page.js?v=20261122-2"></script>
+    <script src="js/effects.js?v=20261122-2"></script>
+    <script src="js/scroll-lock.js?v=20261122-2"></script>
+    <script src="js/print.js?v=20261122-2"></script>
   </body>
 </html>

@@ -61,7 +61,7 @@ body:has(#simulatorDialog[open]) {
   display: inline;
   margin-top: 4px;
   color: #547963;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.6;
   text-decoration: underline;
