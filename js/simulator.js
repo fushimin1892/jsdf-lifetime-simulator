@@ -1237,8 +1237,10 @@
             // 到達した階級の定年の方が早ければ、その年齢で計算し直す（早く辞めると到達階級がさらに下がることがあるので、定年が変わらなくなるまで繰り返す）
             if (!c.ninki?.exit)
               for (let k = 0; k < 5; k++) {
+                // 士（士長・1士・2士）には定年の定めがないので、曹の最も早い定年（3曹の55歳）を目安の上限にする（サイトの前提。
+                // 任期制の満了の年齢の上限と同じ）。これがないと、3曹に届かない高い年齢の入隊が予想階級の定年まで勤める計算になる
                 const rankNow = x.monthly.at(-1).rank,
-                  age = R.promotion.retireAge[rankNow];
+                  age = R.promotion.retireAge[rankNow] ?? (["士長", "1士", "2士"].includes(rankNow) ? R.promotion.retireAge["3曹"] : null);
                 if (age == null || age >= c.retireAge) break;
                 if (age <= c.startAge)
                   throw Error(

@@ -1388,6 +1388,8 @@ html body #simulatorDialog .sim-section-head {
 }
 html body #simulatorDialog .sim-section-head h3 {
   min-width: 0;
+  /* 長い見出し（再就職の年収と若年定年退職者給付金）が幅320pxで枠からはみ出さないよう折り返す */
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 

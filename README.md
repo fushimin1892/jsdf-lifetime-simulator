@@ -8,7 +8,7 @@
 
 リポジトリのルートで `python -m http.server 8000` を実行し、ブラウザで `http://localhost:8000/` を開きます。終了は Ctrl+C です。
 
-検査はリポジトリのルートで `node test/check.js`（データと、画面の説明文の数値が `data/rules.js` と同じか。NG 0 で合格）、`node tools/egov-check.js all`（e-Gov の条文との照合。区分と値を組で照合する。終了コード 3 は e-Gov を取得できず照合を終えていない）、`node test/regression.js`（計算結果の回帰。Playwright が必要）、`node test/security.js`（セキュリティ：危ない書き方・外部通信・秘密情報・HTML の差し込みの検査。Playwright が必要）。法令の改正を反映する手順は [改正対応の手順書](AI用/改正対応の手順書.md) にまとめています。
+検査はリポジトリのルートで `node test/check.js`（データと、画面の説明文の数値が `data/rules.js` と同じか。NG 0 で合格）、`node tools/egov-check.js all`（e-Gov の条文との照合。区分と値を組で照合する。終了コード 3 は e-Gov を取得できず照合を終えていない）、`node test/regression.js`（計算結果の回帰。Playwright が必要）、`node test/audit/run.js`（機能全体の点検：計算約2万件・手当・画面・検算。約3〜5分。`--quick` で短い版）、`node test/security.js`（セキュリティ：危ない書き方・外部通信・秘密情報・HTML の差し込みの検査。Playwright が必要）。法令の改正を反映する手順は [改正対応の手順書](AI用/改正対応の手順書.md) にまとめています。
 
 計算結果を変更前後で比べる手順は [AI向け改修ガイド](AI用/AI向け改修ガイド.md) と [検証用スクリプト](AI用/検証用スクリプト.js) を参照してください。検証用スクリプトはブラウザのコンソールで実行します。
 

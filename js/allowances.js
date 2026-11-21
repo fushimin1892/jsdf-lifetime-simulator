@@ -635,6 +635,7 @@
               if (sm < 0) throw fail([row], `「${name}」の支給開始（${ymText(entryYm() + sm)}）が入隊（${ymText(entryYm())}）より前です。`);
               if (em <= sm) throw fail([row], `「${name}」の支給期間を1か月以上にしてください。`);
               if (!/^[0-9]+$/.test(val(".a-len-y"))) throw fail([row], `「${name}」の支給期間の年は0以上の整数で入力してください。`);
+              if (Number(val(".a-len-y")) > 80) throw fail([row], `「${name}」の支給期間は80年以内で入力してください。`);
             }
             // 支給開始が退職より後だと、計算に何も入らない。黙って0円にせず、行に小さく知らせる（計算は止めない。
             // 任期制などに切り替えたときに、前に足した手当が退職後になることがあるため）
