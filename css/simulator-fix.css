@@ -46,32 +46,32 @@ body:has(#simulatorDialog[open]) {
   justify-content: center;
   min-width: 43px;
   padding: 0 13px 0 10px;
-  border-left: 1px solid #edf1ec;
-  background: linear-gradient(180deg, #fbfcfa, #f7f9f6);
+  border-left: 1px solid #eff1ec;
+  background: linear-gradient(180deg, #fbfbfa, #f8f9f6);
   font-weight: 650;
 }
 .unit:focus-within {
   outline: 0;
-  border-color: #679078;
-  box-shadow: 0 0 0 4px rgba(70, 125, 91, .13), 0 5px 14px rgba(23, 73, 59, .07);
+  border-color: #828b68;
+  box-shadow: 0 0 0 4px rgba(106, 118, 73, .13), 0 5px 14px rgba(59, 68, 32, .07);
 }
 .unit input:focus { box-shadow: none !important; }
 .sim-grid > div { min-width: 0; }
 .note-link {
   display: inline;
   margin-top: 4px;
-  color: #547963;
+  color: #6c7456;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.6;
   text-decoration: underline;
-  text-decoration-color: #b9cbbd;
+  text-decoration-color: #c4c8b9;
   text-underline-offset: 3px;
   transition: color .18s ease, text-decoration-color .18s ease;
 }
 .note-link:hover {
-  color: #17493b;
-  text-decoration-color: #547963;
+  color: #3b4420;
+  text-decoration-color: #6c7456;
 }
 #simulatorDialog[open] {
   animation: simulator-dialog-in .24s cubic-bezier(.2,.75,.25,1) both;
@@ -84,8 +84,8 @@ body:has(#simulatorDialog[open]) {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes simulator-backdrop-in {
-  from { background: rgba(8, 30, 23, 0); backdrop-filter: blur(0); }
-  to { background: rgba(8, 30, 23, .68); backdrop-filter: blur(8px); }
+  from { background: rgba(24, 28, 13, 0); backdrop-filter: blur(0); }
+  to { background: rgba(24, 28, 13, .68); backdrop-filter: blur(8px); }
 }
 @media (prefers-reduced-motion: reduce) {
   #simulatorDialog[open], #simulatorDialog[open]::backdrop { animation: none; }

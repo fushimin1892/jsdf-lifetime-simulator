@@ -65,7 +65,7 @@
   // ---------- 置き場所：画面の幅・高さに対する割合。par はスクロールに対する動きの速さ ----------
   // 文字の多い真ん中は空け、左右の端に寄せる（大きいものは「俸給を調べる」のすりガラスの後ろ）
   const LAYOUT = [
-    { kind: "sakura", x: 0.84, y: 0.36, s: 0.15, par: 0.35, spin: 0.22, tilt: 0.5, drift: -1 },
+    { kind: "sakura", hero: true, x: 0.84, y: 0.36, s: 0.15, par: 0.35, spin: 0.22, tilt: 0.5, drift: -1 },
     { kind: "sakura", x: 0.04, y: 0.86, s: 0.07, par: 0.6, spin: -0.3, tilt: -0.7, drift: 1 },
     { kind: "gem", x: 0.955, y: 0.72, s: 0.035, par: 0.9, spin: 0.6, tilt: 1.1, drift: -1 },
     { kind: "sakura", x: 0.95, y: 1.4, s: 0.08, par: 0.5, spin: 0.26, tilt: 0.9, drift: 1 },
@@ -75,7 +75,66 @@
   let W = 0,
     H = 0,
     dpr = 1,
-    items = [];
+    items = [],
+    petals = [];
+  // ---------- 舞う花びら：乱数は種を決めて毎回同じ並びにする ----------
+  function seeded(n) {
+    let x = n * 9301 + 49297;
+    return () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+  }
+  function makePetals(count) {
+    const r = seeded(7);
+    return Array.from({ length: count }, () => {
+      const depth = 0.45 + r() * 0.55; // 奥 0.45 〜 手前 1
+      return {
+        x: r(),
+        y: r(),
+        depth,
+        size: (13 + r() * 13) * depth,
+        fall: (14 + r() * 22) * depth, // 1秒に落ちる量（px）
+        sway: 18 + r() * 46,
+        swayF: 0.25 + r() * 0.45,
+        phase: r() * Math.PI * 2,
+        spin: (r() - 0.5) * 1.4,
+        flipF: 0.5 + r() * 1.3,
+        tint: r(),
+      };
+    });
+  }
+  // 花びら1枚：付け根から先へふくらみ、先に小さな切れ込み。flip で裏返る様子（横に縮む）を出す
+  function drawPetal(x, y, size, rot, flip, alpha, tint) {
+    const w = size * 0.62,
+      l = size * 1.25,
+      sx = Math.max(0.08, Math.abs(flip)),
+      back = flip < 0;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(sx, 1);
+    const g = ctx.createLinearGradient(0, l * 0.5, 0, -l * 0.5);
+    const base = back ? [214, 160, 166] : [232, 176, 182],
+      tip = back ? [240, 214, 214] : [252, 234, 234],
+      mixc = (a, b) => a.map((v, i) => Math.round(v + (b[i] - v) * tint * 0.35));
+    g.addColorStop(0, `rgba(${mixc(base, [214, 206, 180]).join(",")},${alpha})`);
+    g.addColorStop(1, `rgba(${mixc(tip, [244, 240, 226]).join(",")},${alpha})`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, l * 0.5);
+    ctx.bezierCurveTo(w, l * 0.25, w * 0.95, -l * 0.32, w * 0.28, -l * 0.5);
+    ctx.lineTo(0, -l * 0.38);
+    ctx.lineTo(-w * 0.28, -l * 0.5);
+    ctx.bezierCurveTo(-w * 0.95, -l * 0.32, -w, l * 0.25, 0, l * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    // 真ん中の細い筋
+    ctx.strokeStyle = `rgba(184,140,140,${alpha * 0.35})`;
+    ctx.lineWidth = 0.6 / sx;
+    ctx.beginPath();
+    ctx.moveTo(0, l * 0.45);
+    ctx.lineTo(0, -l * 0.3);
+    ctx.stroke();
+    ctx.restore();
+  }
   function resize() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     W = canvas.clientWidth;
@@ -91,6 +150,7 @@
       y: narrow && o.kind === "sakura" ? 0.2 : o.y,
       size: narrow ? W * o.s * 1.4 : Math.min(W, H) * o.s + W * o.s * 0.3,
     }));
+    petals = makePetals(narrow ? 10 : 24);
     if (calm) draw(0);
   }
 
@@ -189,18 +249,39 @@
       spread = Math.min(1, sc / Math.max(1, H)); // 1画面ぶんスクロールするまでに散る
     mx += (tx - mx) * 0.05;
     my += (ty - my) * 0.05;
-    const loop = H * 1.7;
+    const loop = H * 1.7,
+      // 本文の列の左端（ここより外側の余白だけに、端の立体を置く）
+      left = Math.max(0, document.querySelector("main.layout")?.getBoundingClientRect().left || 0) + 24,
+      gutter = left - 24; // 本文の外の余白の幅
     for (const o of items) {
+      // 最初の大きな桜はヒーローの「俸給を調べる」の後ろだけ（繰り返して本文に重ねない）
+      if (o.hero) {
+        const yh = o.y * H - sc * o.par;
+        if (yh < -o.size * 2) continue;
+      }
       const bob = Math.sin(t * 0.7 + o.x * 9) * 10;
       let y = o.y * H - sc * o.par + bob;
-      y = ((((y + H * 0.35) % loop) + loop) % loop) - H * 0.35; // 上へ出たら下から戻る
-      const x = o.x * W + o.drift * spread * W * 0.03 + mx * 14 * o.par;
+      if (!o.hero) {
+        y = ((((y + H * 0.35) % loop) + loop) % loop) - H * 0.35; // 上へ出たら下から戻る
+        // 端の余白が立体より狭いときは描かない（文字に重ねない）
+        if (gutter < o.size * 2.3) continue;
+      }
+      const x = (o.hero ? o.x * W : o.x < 0.5 ? (left - 24) / 2 + 12 : W - (left - 24) / 2 - 12) + (o.hero ? o.drift * spread * W * 0.03 + mx * 14 * o.par : 0);
       // 桜は正面を向けたまま面の中で回し、ゆらゆらと傾ける（横から見ると花の形がわからないため）。宝石は丸ごと回す
       const flower = o.kind === "sakura",
         ax = (flower ? 0.35 : 0.5) + Math.sin(t * 0.3 + o.tilt) * (flower ? 0.3 : 0.35) + my * 0.25 + sc * 0.0008 * o.drift,
         ay = flower ? Math.sin(t * 0.37 + o.x * 5) * 0.45 + mx * 0.3 + spread * 0.5 * o.drift : t * o.spin + sc * 0.002 * o.par + mx * 0.3,
         az = flower ? t * o.spin * 0.5 + sc * 0.0015 * o.drift : o.tilt * 0.4 + spread * 0.6 * o.drift;
       drawItem(MESH[o.kind], x, y, o.size, ax, ay, az);
+    }
+    // 花びら：ゆっくり落ちながら左右にゆれ、回りながら裏返る。スクロールすると少し速く流れる
+    const span = H + 60;
+    for (const p of petals) {
+      const yy = ((((p.y * span + t * p.fall + sc * 0.25 * p.depth) % span) + span) % span) - 30,
+        xx = p.x * W + Math.sin(t * p.swayF + p.phase) * p.sway + mx * 24 * p.depth,
+        rot = p.phase + t * p.spin + Math.sin(t * p.swayF + p.phase) * 0.6,
+        flip = Math.cos(t * p.flipF + p.phase);
+      drawPetal(xx, yy, p.size, rot, flip, 0.7 + p.depth * 0.28, p.tint);
     }
   }
 

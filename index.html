@@ -6,7 +6,7 @@
     <!-- 読み込めるのはこのサイトのファイルだけ（外部のスクリプト・フォント・通信なし。入力は送信しない） -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
     />
     <title>自衛官 給料表ナビ｜2025年改定 俸給表と生涯年収シミュレーター</title>
     <meta
@@ -17,7 +17,7 @@
     <meta name="format-detection" content="telephone=no" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c5143'/%3E%3Cpath d='M16 6l9 10-9 10-9-10z' fill='none' stroke='%23c39a54' stroke-width='2.5'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231b1e17'/%3E%3Cpath d='M16 6l9 10-9 10-9-10z' fill='none' stroke='%23d8c48a' stroke-width='2.5'/%3E%3C/svg%3E"
     />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
@@ -49,12 +49,13 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-23" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-23" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-23" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-23" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-27" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-27" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-27" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-27" />
   </head>
   <body>
+    <i class="scroll-progress" aria-hidden="true"></i>
     <!-- 背景：地図の方眼・縦の罫・四隅の十字と、浮かぶ桜の立体（js/crystals.js が描く。飾りなので読み上げない） -->
     <div class="bg-scene" aria-hidden="true"><i class="bg-grid"></i><i class="bg-cols"></i><i class="bg-mark m1"></i><i class="bg-mark m2"></i><i class="bg-mark m3"></i><i class="bg-mark m4"></i><canvas class="crystals"></canvas></div>
     <header class="site-head" id="pageTop">
@@ -74,7 +75,7 @@
     </header>
     <section class="hero" aria-label="俸給を調べる">
       <div class="hero-in">
-        <p class="hero-meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span></p>
+        <p class="hero-meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span><span>INDEX 01 — 04</span></p>
         <div class="hero-copy">
           <p class="hero-chip"><span class="chip-dot" aria-hidden="true"></span>2026年11月公布の改正俸給表に対応</p>
           <h1>階級と号俸から、<br /><em>俸給がすぐわかる。</em></h1>
@@ -122,6 +123,8 @@
         </section>
       </div>
     </section>
+    <!-- 流れる帯（飾り。動きを減らす設定では止まる） -->
+    <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span></div></div>
     <main class="layout">
       <dialog id="simulatorDialog" aria-labelledby="simulatorTitle">
         <section class="card simulator" id="simulator">
@@ -828,6 +831,7 @@
         <div class="titleline">
           <div>
             <div class="cap">PAY TABLE</div>
+            <p class="sec-meta" aria-hidden="true"><span>RANKS — 19</span><span>STEPS — 145</span><span>UNIT — JPY / MONTH</span></p>
             <h2 class="section-title">自衛官 俸給表</h2>
             <p class="sub">2026年11月公布法令の表をもとに作成</p>
           </div>
@@ -840,6 +844,7 @@
           </table>
         </div>
         <div class="source">
+          <div class="source-body">
           出典：<a
             href="https://laws.e-gov.go.jp/law/327AC0000000266"
             target="_blank"
@@ -860,6 +865,7 @@
               <li>2026-11-02：公開（2025年12月公布の改正の俸給表）</li>
             </ul>
           </details>正式な金額・適用条件は法令等をご確認ください。
+          </div>
         </div>
       </section>
     </main>
@@ -888,9 +894,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-23"></script>
-    <script src="data/promotion-table.js?v=20261122-23"></script>
-    <script src="js/pay-lookup.js?v=20261122-23"></script>
+    <script src="data/pay-table.js?v=20261122-27"></script>
+    <script src="data/promotion-table.js?v=20261122-27"></script>
+    <script src="js/pay-lookup.js?v=20261122-27"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -901,11 +907,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-23"></script>
-    <script src="js/regional-rate.js?v=20261122-23"></script>
-    <script src="js/allowances.js?v=20261122-23"></script>
-    <script src="js/simulator.js?v=20261122-23"></script>
-    <script src="js/simulator-dialog.js?v=20261122-23"></script>
+    <script src="data/rules.js?v=20261122-27"></script>
+    <script src="js/regional-rate.js?v=20261122-27"></script>
+    <script src="js/allowances.js?v=20261122-27"></script>
+    <script src="js/simulator.js?v=20261122-27"></script>
+    <script src="js/simulator-dialog.js?v=20261122-27"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -914,10 +920,10 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-23"></script>
-    <script src="js/effects.js?v=20261122-23"></script>
-    <script src="js/crystals.js?v=20261122-23"></script>
-    <script src="js/scroll-lock.js?v=20261122-23"></script>
-    <script src="js/print.js?v=20261122-23"></script>
+    <script src="js/notes-page.js?v=20261122-27"></script>
+    <script src="js/effects.js?v=20261122-27"></script>
+    <script src="js/crystals.js?v=20261122-27"></script>
+    <script src="js/scroll-lock.js?v=20261122-27"></script>
+    <script src="js/print.js?v=20261122-27"></script>
   </body>
 </html>

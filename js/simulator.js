@@ -821,13 +821,13 @@
             r = Math.min(4, barW / 2);
           // 色：俸給は深緑、賞与・手当は金のグラデーション。手取りは白い縁取りの線
           let svg =
-            `<defs><linearGradient id="gSal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7a62"/><stop offset="1" stop-color="#15402f"/></linearGradient>` +
-            `<linearGradient id="gExt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d59a"/><stop offset="1" stop-color="#c39a54"/></linearGradient>` +
-            `<linearGradient id="gNet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f9f86" stop-opacity=".22"/><stop offset="1" stop-color="#3f9f86" stop-opacity="0"/></linearGradient></defs>`;
+            `<defs><linearGradient id="gSal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#637437"/><stop offset="1" stop-color="#343c1c"/></linearGradient>` +
+            `<linearGradient id="gExt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfd8b9"/><stop offset="1" stop-color="#aaa175"/></linearGradient>` +
+            `<linearGradient id="gNet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#829748" stop-opacity=".22"/><stop offset="1" stop-color="#829748" stop-opacity="0"/></linearGradient></defs>`;
           for (let i = 0; i <= 4; i++) {
             const v = step * i;
-            svg += `<line x1="${left}" x2="${W - right}" y1="${y(v)}" y2="${y(v)}" stroke="${i ? "#e6ece7" : "#cfdad2"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
-            svg += `<text x="${left - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#7a8a80">${man(v)}</text>`;
+            svg += `<line x1="${left}" x2="${W - right}" y1="${y(v)}" y2="${y(v)}" stroke="${i ? "#e9ebe6" : "#d6d9cf"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
+            svg += `<text x="${left - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#84877a">${man(v)}</text>`;
           }
           const every = W < 480 ? 10 : 5;
           years.forEach((d, i) => {
@@ -841,21 +841,21 @@
               `<rect x="${x}" y="${yT}" width="${barW}" height="${yS - yT}" fill="url(#gExt)"/></g></g>`;
             // 年齢の目盛り（最初の年は、次の目盛りと重ならないときだけ出す）
             if (d.age % every === 0 || (i === 0 && every - (d.age % every) >= every / 2))
-              svg += `<text x="${cx(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#7a8a80">${d.age}歳</text>`;
+              svg += `<text x="${cx(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#84877a">${d.age}歳</text>`;
           });
           // 手取りの線と、その下のうっすらした面
           const pts = years.map((d, i) => `${cx(i).toFixed(1)},${y(d.net).toFixed(1)}`);
           svg +=
             `<path d="M${pts[0]} L${pts.join(" L")} L${cx(years.length - 1)},${y(0)} L${cx(0)},${y(0)} Z" fill="url(#gNet)" pointer-events="none"/>` +
             `<polyline points="${pts.join(" ")}" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>` +
-            `<polyline points="${pts.join(" ")}" fill="none" stroke="#2d8c72" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>`;
+            `<polyline points="${pts.join(" ")}" fill="none" stroke="#72853f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" pointer-events="none"/>`;
           // いちばん年収が高い年に目印
           const peakI = years.reduce((a, d, i) => (d.total > years[a].total ? i : a), 0),
             peak = years[peakI];
           svg +=
-            `<g pointer-events="none"><circle cx="${cx(peakI)}" cy="${y(peak.total) - 7}" r="3" fill="#c39a54"/>` +
-            `<text x="${Math.min(Math.max(cx(peakI), left + 34), W - right - 34)}" y="${y(peak.total) - 13}" text-anchor="middle" font-size="11" font-weight="700" fill="#8a6a2f">最高 ${man(peak.total)}円</text></g>` +
-            `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${y(0)}" stroke="#1c5143" stroke-opacity=".25" stroke-dasharray="3 3" visibility="hidden"/>`;
+            `<g pointer-events="none"><circle cx="${cx(peakI)}" cy="${y(peak.total) - 7}" r="3" fill="#aaa175"/>` +
+            `<text x="${Math.min(Math.max(cx(peakI), left + 34), W - right - 34)}" y="${y(peak.total) - 13}" text-anchor="middle" font-size="11" font-weight="700" fill="#777048">最高 ${man(peak.total)}円</text></g>` +
+            `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${y(0)}" stroke="#424d24" stroke-opacity=".25" stroke-dasharray="3 3" visibility="hidden"/>`;
           box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="年収の推移。${years[0].age}歳の${man(years[0].total)}円から、最高は${peak.age}歳の${man(peak.total)}円">${svg}</svg>`;
           // カーソル・指を乗せた年の内訳を吹き出しで出す
           const el = box.querySelector("svg"),
@@ -919,19 +919,19 @@
             Y = (v) => top + plotH - (v / yMax) * plotH,
             xs = [0, Math.max(0, L), U, G, xMax].filter((v, i, s) => v >= 0 && (i === 0 || v > s[i - 1]));
           let svg =
-            `<defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c39a54" stop-opacity=".55"/><stop offset="1" stop-color="#c39a54" stop-opacity=".05"/></linearGradient></defs>`;
+            `<defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aaa175" stop-opacity=".55"/><stop offset="1" stop-color="#aaa175" stop-opacity=".05"/></linearGradient></defs>`;
           for (let i = 0; i <= 4; i++) {
-            svg += `<line x1="${left}" x2="${W - right}" y1="${Y(yStep * i)}" y2="${Y(yStep * i)}" stroke="${i ? "#e6ece7" : "#cfdad2"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
-            svg += `<text x="${left - 6}" y="${Y(yStep * i) + 4}" text-anchor="end" font-size="11" fill="#7a8a80">${man(yStep * i)}</text>`;
+            svg += `<line x1="${left}" x2="${W - right}" y1="${Y(yStep * i)}" y2="${Y(yStep * i)}" stroke="${i ? "#e9ebe6" : "#d6d9cf"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
+            svg += `<text x="${left - 6}" y="${Y(yStep * i) + 4}" text-anchor="end" font-size="11" fill="#84877a">${man(yStep * i)}</text>`;
             const xv = (xMax / 4) * i;
-            svg += `<text x="${X(xv)}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === 4 ? "end" : "middle"}" font-size="11" fill="#7a8a80">${man(xv)}円</text>`;
+            svg += `<text x="${X(xv)}" y="${H - 10}" text-anchor="${i === 0 ? "start" : i === 4 ? "end" : "middle"}" font-size="11" fill="#84877a">${man(xv)}円</text>`;
           }
           // 満額の範囲（年収が下限額以下）を薄い緑で塗る
-          if (L > 0) svg += `<rect x="${X(0)}" y="${top}" width="${X(L) - X(0)}" height="${plotH}" fill="#2d8c72" fill-opacity=".07"/>`;
+          if (L > 0) svg += `<rect x="${X(0)}" y="${top}" width="${X(L) - X(0)}" height="${plotH}" fill="#72853f" fill-opacity=".07"/>`;
           const pts = xs.map((v) => `${X(v).toFixed(1)},${Y(got(v)).toFixed(1)}`);
           svg +=
             `<path d="M${X(0)},${Y(0)} L${pts.join(" L")} L${X(xMax)},${Y(0)} Z" fill="url(#gRe)"/>` +
-            `<polyline points="${pts.join(" ")}" fill="none" stroke="#a87b33" stroke-width="2.5" stroke-linejoin="round"/>`;
+            `<polyline points="${pts.join(" ")}" fill="none" stroke="#8d8452" stroke-width="2.5" stroke-linejoin="round"/>`;
           // 区切りの縦線と説明
           const mark = (v, label, color, row) =>
             v > 0 && v < xMax
@@ -941,13 +941,13 @@
                   ? `<text x="${X(v) - 4}" y="${top + 12 + row * 14}" text-anchor="end" font-size="11" fill="${color}" font-weight="700">${label}</text>`
                   : `<text x="${X(v) + 4}" y="${top + 12 + row * 14}" font-size="11" fill="${color}" font-weight="700">${label}</text>`)
               : "";
-          svg += mark(L, `満額の上限 ${man(L)}`, "#1f6b55", 0) + mark(U, `2回目0 ${man(U)}`, "#8a6a2f", 1) + mark(G, `全額返納 ${man(G)}`, "#a0453a", 2);
+          svg += mark(L, `満額の上限 ${man(L)}`, "#566530", 0) + mark(U, `2回目0 ${man(U)}`, "#777048", 1) + mark(G, `全額返納 ${man(G)}`, "#a0453a", 2);
           // 入力した年収の位置
           const ix = Math.min(income, xMax);
           svg +=
-            `<circle cx="${X(ix)}" cy="${Y(got(income))}" r="6" fill="#fff" stroke="#1c5143" stroke-width="3"/>` +
-            `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${Y(0)}" stroke="#1c5143" stroke-opacity=".3" visibility="hidden"/>` +
-            `<circle class="hover-dot" r="4" fill="#1c5143" visibility="hidden"/>`;
+            `<circle cx="${X(ix)}" cy="${Y(got(income))}" r="6" fill="#fff" stroke="#424d24" stroke-width="3"/>` +
+            `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${Y(0)}" stroke="#424d24" stroke-opacity=".3" visibility="hidden"/>` +
+            `<circle class="hover-dot" r="4" fill="#424d24" visibility="hidden"/>`;
           box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="退職の翌年の年収と若年定年退職者給付金の受け取り額。年収${man(L)}円以下なら満額の${man(full)}円">${svg}</svg>`;
           const el = box.querySelector("svg"),
             line = el.querySelector(".hover-line"),

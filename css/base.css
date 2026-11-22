@@ -1,12 +1,12 @@
 /* 骨組み：レイアウト・部品の基本の見た目（元は index.html の最初の <style>） */
 
 :root {
-  --ink: #17312d;
-  --muted: #60716a;
-  --forest: #1c5143;
-  --gold: #c39a54;
-  --paper: #f6f5ef;
-  --line: #e0e6df;
+  --ink: #292e19;
+  --muted: #6b6e60;
+  --forest: #424d24;
+  --gold: #aaa175;
+  --paper: #f6f5f2;
+  --line: #e4e5df;
 }
 * {
   box-sizing: border-box;
@@ -23,7 +23,7 @@ body {
 }
 header {
   background: #fff;
-  border-bottom: 1px solid #e1e6e0;
+  border-bottom: 1px solid #e4e6e0;
 }
 .top {
   max-width: 1160px;
@@ -39,10 +39,10 @@ header {
   font-size: 1.125rem;
 }
 .brand span {
-  color: #547d6f;
+  color: #6f7856;
 }
 .hero {
-  background: #1c5143;
+  background: #424d24;
   color: white;
   position: relative;
   overflow: hidden;
@@ -74,7 +74,7 @@ header {
   margin: 14px 0;
 }
 .hero p {
-  color: #d5e3dc;
+  color: #dee2d5;
   font-size: 0.875rem;
   line-height: 1.8;
   margin: 0;
@@ -94,7 +94,7 @@ header {
   margin-bottom: 22px;
 }
 .cap {
-  color: #906e39;
+  color: #7c7550;
   font-size: 0.6875rem;
   letter-spacing: 0.15em;
   font-weight: 800;
@@ -105,7 +105,7 @@ header {
 }
 .sub {
   font-size: 0.8125rem;
-  color: #687870;
+  color: #727669;
   line-height: 1.8;
   margin: 0;
 }
@@ -124,16 +124,16 @@ label {
 select {
   width: 100%;
   padding: 14px;
-  border: 1px solid #cdd9d1;
+  border: 1px solid #d5d8cd;
   border-radius: 7px;
-  color: #213b32;
+  color: #333823;
   background: #fff;
   font-size: 0.9375rem;
 }
 .result {
   margin-top: 20px;
-  background: #edf5ef;
-  border: 1px solid #dae9dc;
+  background: #f2f3ec;
+  border: 1px solid #e3e6d9;
   border-radius: 8px;
   padding: 20px 23px;
   display: flex;
@@ -142,7 +142,7 @@ select {
   gap: 12px;
 }
 .result small {
-  color: #5b7365;
+  color: #6a705c;
 }
 .result strong {
   font-size: 1.9375rem;
@@ -156,7 +156,7 @@ select {
 }
 .note {
   font-size: 0.75rem;
-  color: #637068;
+  color: #6c6e63;
   line-height: 1.8;
   margin-top: 14px;
 }
@@ -167,7 +167,7 @@ select {
   gap: 12px;
 }
 .hint {
-  color: #6b786f;
+  color: #74766b;
   font-size: 0.75rem;
   white-space: nowrap;
 }
@@ -189,13 +189,13 @@ table {
 th,
 td {
   padding: 11px 12px;
-  border-right: 1px solid #e6ece7;
-  border-bottom: 1px solid #e6ece7;
+  border-right: 1px solid #e9ebe6;
+  border-bottom: 1px solid #e9ebe6;
   white-space: nowrap;
 }
 thead th {
-  background: #e9f1eb;
-  color: #385849;
+  background: #eeefe8;
+  color: #4d553a;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -208,37 +208,37 @@ th:first-child,
 td:first-child {
   position: sticky;
   left: 0;
-  background: #f5f8f4;
+  background: #f7f8f4;
   text-align: center;
   font-weight: 700;
   z-index: 1;
 }
 tbody tr:nth-child(even) td:not(:first-child) {
-  background: #fafcf9;
+  background: #fbfcf9;
 }
 td.highlight {
-  background: #e1f0e1 !important;
-  color: #185c40;
+  background: #eaeee0 !important;
+  color: #4a5529;
   font-weight: 800;
 }
 .foot {
   max-width: 1160px;
   margin: auto;
   padding: 0 24px 35px;
-  color: #647169;
+  color: #6c6f64;
   font-size: 0.75rem;
   line-height: 1.8;
 }
 a {
-  color: #246a51;
+  color: #56642f;
 }
 .source {
-  border-top: 1px solid #e9eee9;
+  border-top: 1px solid #eceee9;
   padding-top: 17px;
   margin-top: 20px;
   font-size: 0.75rem;
   line-height: 1.8;
-  color: #667b70;
+  color: #747967;
 }
 @media (max-width: 600px) {
   .top {
@@ -288,20 +288,20 @@ a {
   display: none;
 }
 .unit input[readonly] {
-  background: #f2f5f1;
-  color: #617167;
+  background: #f4f4f1;
+  color: #6b6e61;
   cursor: default;
 }
 .fixed-note {
   display: block;
-  color: #617068;
+  color: #6b6e61;
   font-size: 0.6875rem;
   margin-top: 5px;
 }
 .unit {
   display: flex;
   align-items: center;
-  border: 1px solid #cdd9d1;
+  border: 1px solid #d5d8cd;
   border-radius: 7px;
   background: white;
   overflow: hidden;
@@ -312,16 +312,16 @@ a {
   border: 0;
   padding: 14px;
   font-size: 0.9375rem;
-  color: #213b32;
+  color: #333823;
   outline: none;
 }
 .unit:focus-within {
-  outline: 2px solid #579074;
+  outline: 2px solid #7d8a5a;
 }
 .unit span {
   padding-right: 13px;
   font-size: 0.8125rem;
-  color: #617068;
+  color: #6b6e61;
   white-space: nowrap;
 }
 .sim-error {
@@ -331,7 +331,7 @@ a {
 }
 .sim-total {
   margin-top: 20px;
-  background: #1c5143;
+  background: #424d24;
   color: white;
   border-radius: 8px;
   padding: 23px;
@@ -364,7 +364,7 @@ a {
 .sim-total small {
   display: block;
   font-size: 0.75rem;
-  color: #cbe0d3;
+  color: #d8ddcb;
 }
 .sim-total strong {
   display: block;
@@ -379,7 +379,7 @@ a {
 }
 .sim-metrics div {
   padding: 16px;
-  background: #f1f6f1;
+  background: #f4f6f1;
   border-radius: 7px;
 }
 .sim-metrics small,
@@ -388,7 +388,7 @@ a {
 }
 .sim-metrics small {
   font-size: 0.6875rem;
-  color: #72867a;
+  color: #7f8373;
 }
 .sim-metrics strong {
   margin-top: 6px;
@@ -396,7 +396,7 @@ a {
 }
 .sim-metrics .sim-net {
   grid-column: 1 / -1;
-  background: #e3eee5;
+  background: #eaece3;
 }
 #retireRows th,
 #retireRows td:last-child {
@@ -416,7 +416,7 @@ a {
   font-size: 1rem;
 }
 .sim-section-head span {
-  color: #5f6f67; /* 4.5:1 以上（白・紙色の上） */
+  color: #696d60; /* 4.5:1 以上（白・紙色の上） */
   font-size: 0.75rem;
 }
 .sim-scroll {
@@ -453,9 +453,9 @@ a {
   bottom: 24px;
   width: 76px;
   height: 76px;
-  border: 2px solid #d5bc80;
+  border: 2px solid #c5bf9f;
   border-radius: 50%;
-  background: #1c5143;
+  background: #424d24;
   color: white;
   box-shadow: 0 6px 22px #142d2690;
   display: flex;
@@ -470,12 +470,12 @@ a {
   line-height: 1.25;
 }
 .sim-launch:hover {
-  background: #2a6b55;
+  background: #576530;
   transform: translateY(-2px);
 }
 .sim-launch:focus-visible,
 .sim-close:focus-visible {
-  outline: 3px solid #c39a54;
+  outline: 3px solid #aaa175;
   outline-offset: 3px;
 }
 .sim-launch-icon {
@@ -518,7 +518,7 @@ a {
   overflow: auto;
   overflow-x: hidden;
   background: #fff;
-  color: #1d2b24;
+  color: #26291e;
 }
 #notesPage::backdrop {
   background: #102720c4;
@@ -532,7 +532,7 @@ a {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 20px;
-  background: #1c5143;
+  background: #424d24;
   color: #fff;
 }
 .notes-head h2 {
@@ -544,7 +544,7 @@ a {
   border-radius: 999px;
   padding: 8px 14px;
   background: #fff;
-  color: #1c5143;
+  color: #424d24;
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -555,13 +555,13 @@ a {
 }
 .notes-body section {
   padding: 16px 0;
-  border-bottom: 1px solid #e3e9e4;
+  border-bottom: 1px solid #e6e8e3;
   scroll-margin-top: 70px;
 }
 .notes-body h3 {
   margin: 0 0 6px;
   font-size: 0.9375rem;
-  color: #1c5143;
+  color: #424d24;
 }
 .notes-body p {
   margin: 0;
@@ -592,8 +592,8 @@ a {
   height: 36px;
   border: 0;
   border-radius: 50%;
-  background: #edf3ee;
-  color: #36584a;
+  background: #f0f2ed;
+  color: #4d5538;
   font-size: 1.5625rem;
   line-height: 1;
   cursor: pointer;
@@ -618,8 +618,8 @@ a {
 }
 .allowance-panel {
   margin-top: 24px;
-  border: 1px solid #dae6dc;
-  background: #f9fbf8;
+  border: 1px solid #e2e4da;
+  background: #fafbf8;
   border-radius: 9px;
   padding: 20px;
 }
@@ -636,9 +636,9 @@ a {
 }
 .allowance-add,
 .allowance-remove {
-  border: 1px solid #bdd0c3;
+  border: 1px solid #c9cebd;
   background: white;
-  color: #235743;
+  color: #475327;
   border-radius: 7px;
   padding: 13px;
   font-weight: 700;
@@ -646,7 +646,7 @@ a {
 }
 .allowance-item {
   background: #fff;
-  border: 1px solid #dbe5dd;
+  border: 1px solid #e1e3db;
   border-radius: 8px;
   padding: 16px;
   margin-top: 13px;
@@ -721,12 +721,12 @@ a {
 .allowance-fields select {
   width: 100%;
   min-width: 0;
-  border: 1px solid #cdd9d1;
+  border: 1px solid #d5d8cd;
   border-radius: 6px;
   padding: 10px;
   font-size: 0.875rem;
   background: #fff;
-  color: #213b32;
+  color: #333823;
 }
 .allowance-source {
   font-size: 0.75rem;
@@ -736,9 +736,9 @@ a {
 .a-calc-wrap {
   grid-column: 1 / -1;
   padding: 14px;
-  border: 1px solid #d5e6dc;
+  border: 1px solid #dfe3d4;
   border-radius: 10px;
-  background: #f4f9f6;
+  background: #f7f8f4;
 }
 .a-calc-top {
   max-width: 240px;
@@ -755,13 +755,13 @@ a {
 }
 .a-calc-out {
   margin: 12px 0 6px;
-  color: #0c5a3d;
+  color: #485428;
   font-size: 0.875rem;
   font-weight: 700;
 }
 .allowance-fields .a-amount:read-only {
-  background: #f1f4f2;
-  color: #5d6d66;
+  background: #f3f3f1;
+  color: #676b5e;
 }
 @media (max-width: 600px) {
   .a-calc {
@@ -792,21 +792,21 @@ a {
   margin-top: 12px;
   font-size: 0.75rem;
   line-height: 1.7;
-  color: #5a6b60;
+  color: #65685a;
 }
 .branch-title {
   font-size: 0.8125rem;
-  color: #1c5143;
+  color: #424d24;
   margin: 18px 0 0;
 }
 .manual-allowances {
   margin-top: 18px;
-  border-top: 1px solid #dce8de;
+  border-top: 1px solid #e4e6dc;
   padding-top: 13px;
 }
 .manual-allowances summary {
   font-size: 0.8125rem;
-  color: #265d49;
+  color: #4c592a;
   font-weight: 700;
   cursor: pointer;
 }
@@ -825,7 +825,7 @@ a {
   gap: 12px;
   margin: -28px -28px 20px;
   padding: 10px 14px 10px 28px;
-  background: #1c5143;
+  background: #424d24;
   color: #fff;
 }
 .sim-sticky-text {
@@ -838,14 +838,14 @@ a {
 }
 .sim-sticky-text small {
   font-size: 0.6875rem;
-  color: #cbe0d3;
+  color: #d8ddcb;
 }
 .sim-sticky-text strong {
   font-size: 1.125rem;
 }
 .sim-sticky-text span {
   font-size: 0.75rem;
-  color: #cbe0d3;
+  color: #d8ddcb;
 }
 .sim-jump {
   color: #fff;
@@ -864,14 +864,14 @@ a {
 /* 入力欄のまとまり */
 .sim-group {
   font-size: 0.875rem;
-  color: #1c5143;
+  color: #424d24;
   margin: 26px 0 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 .sim-group-note {
   font-size: 0.75rem;
-  color: #617068;
+  color: #6b6e61;
   margin: 8px 0 0;
 }
 .sim-group + .sim-grid,
@@ -910,23 +910,23 @@ a {
   margin-left: 6px;
 }
 .sw-salary {
-  background: #1c5143;
+  background: #424d24;
 }
 .sw-extra {
-  background: linear-gradient(#f0d59a, #c39a54);
+  background: linear-gradient(#dfd8b9, #aaa175);
 }
 .sw-salary {
-  background: linear-gradient(#2f7a62, #15402f);
+  background: linear-gradient(#637437, #343c1c);
 }
 .sw-net {
   height: 3px !important;
   border-radius: 2px;
-  background: #2d8c72;
+  background: #72853f;
 }
 /* グラフ：触れた年以外を薄くし、吹き出しで内訳を出す */
 .sim-chart {
   position: relative;
-  background: linear-gradient(#fbfdfb, #fff);
+  background: linear-gradient(#fcfdfb, #fff);
 }
 .sim-chart svg {
   touch-action: pan-y;
@@ -944,10 +944,10 @@ a {
   gap: 2px;
   padding: 9px 12px;
   border-radius: 10px;
-  background: rgba(20, 52, 43, 0.92);
+  background: rgba(43, 50, 23, 0.92);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  color: #e8f1ec;
+  color: #edf0e8;
   font-size: 0.75rem;
   line-height: 1.5;
   white-space: nowrap;
@@ -970,7 +970,7 @@ a {
 .chart-tip em {
   font-style: normal;
   font-weight: 700;
-  color: #f0d59a;
+  color: #dfd8b9;
 }
 .chart-tip i {
   display: inline-block;
@@ -983,14 +983,14 @@ a {
 .reemploy-summary {
   margin: 10px 0 0;
   padding: 10px 14px;
-  border-left: 3px solid #c39a54;
-  background: #fbf6ea;
+  border-left: 3px solid #aaa175;
+  background: #f8f6f0;
   border-radius: 0 7px 7px 0;
   font-size: 0.875rem;
   line-height: 1.7;
 }
 .reemploy-summary b {
-  color: #1c5143;
+  color: #424d24;
 }
 .sim-table {
   min-width: 720px;
@@ -1009,11 +1009,11 @@ a {
 }
 .sim-share-url {
   flex-basis: 100%;
-  border: 1px solid #cdd9d1;
+  border: 1px solid #d5d8cd;
   border-radius: 6px;
   padding: 10px;
   font-size: 0.8125rem;
-  color: #213b32;
+  color: #333823;
 }
 @media (max-width: 600px) {
   .sim-sticky {
@@ -1052,8 +1052,8 @@ summary {
 }
 main.layout > section.card:hover {
   transform: none;
-  border-color: rgba(91,125,101,.17);
-  box-shadow: 0 18px 44px rgba(24,55,42,.075), 0 2px 5px rgba(24,55,42,.04);
+  border-color: rgba(113, 120, 92,.17);
+  box-shadow: 0 18px 44px rgba(45, 53, 26,.075), 0 2px 5px rgba(45, 53, 26,.04);
 }
 @media (prefers-reduced-motion: reduce) {
   .scroll {
