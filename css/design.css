@@ -1498,3 +1498,13 @@ html body #simulatorDialog .a-calc input:disabled {
   color: #7a8a80;
   cursor: not-allowed;
 }
+/* 扶養手当の子ごとの組（入れ方・年齢・生年月日） */
+html body #simulatorDialog .a-child {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+html body #simulatorDialog .a-child[hidden],
+html body #simulatorDialog .a-child [hidden] {
+  display: none;
+}

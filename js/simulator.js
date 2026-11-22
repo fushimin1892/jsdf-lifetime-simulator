@@ -297,17 +297,17 @@
                     a.rankTable
                     ? { ...a, amount: a.rankTable[rank] ?? 0 }
                     : // 上位の階級では父母等の扶養手当が減る（施行令第8条の7・第8条の8）
-                    (a.parents && FUYOU_PARENT[rank] != null) || a.childFys?.length
+                    (a.parents && FUYOU_PARENT[rank] != null) || a.children?.length
                     ? {
                         ...a,
                         amount:
                           a.amount -
                           (a.parents && FUYOU_PARENT[rank] != null ? a.parents * (AL.calcRates.fuyou.parent - FUYOU_PARENT[rank]) : 0) +
-                          // 生まれた年度で入れた子：生まれた年度〜22歳の年度末は1人13,000円、生まれた年度＋16年度からは5,000円を加算（一般職給与法第11条第2項・第4項）
-                          (a.childFys || []).reduce(
-                            (sum, fy) =>
-                              fyNow >= fy && fyNow <= fy + 22
-                                ? sum + AL.calcRates.fuyou.child + (fyNow >= fy + 16 ? AL.calcRates.fuyou.teenAdd : 0)
+                          // 生年月日で入れた子：支給の月（from〜end）は1人13,000円、teenFrom からは5,000円を加算（一般職給与法第11条第2項・第4項、人事院規則9-80第5条）
+                          (a.children || []).reduce(
+                            (sum, k) =>
+                              ymNow >= k.from && ymNow <= k.end
+                                ? sum + AL.calcRates.fuyou.child + (ymNow >= k.teenFrom ? AL.calcRates.fuyou.teenAdd : 0)
                                 : sum,
                             0,
                           ),

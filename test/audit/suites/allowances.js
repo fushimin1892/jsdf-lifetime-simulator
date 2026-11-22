@@ -270,7 +270,7 @@ module.exports = async function allowances(env, { quick, log }) {
       H.set("reemployIncome", "400");
       H.set("afterPension", "kokumin");
       let it;
-      it = H.add("扶養手当"); H.calcIn(it, "c1", "5"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "c2", "17"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "c3", "-3"); H.period(it, "2030", "7", "20", "5");
+      it = H.add("扶養手当"); H.calcIn(it, "p1", "16"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p2", "4"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p3", "26"); H.period(it, "2030", "7", "20", "5");
       it = H.add("住居手当"); H.calcIn(it, "rent", "55000"); H.period(it, "2027", "1", "3", "0");
       it = H.add("通勤手当"); H.setIn(it, ".a-calc-mode", "manual"); H.setIn(it, ".a-amount", "4321", "input"); H.period(it, "2027", "1", "3", "0");
       it = H.add("単身赴任手当"); H.calcIn(it, "km", it.querySelector(".a-calc [data-k=km]").options[3].value); H.period(it, "2040", "4", "2", "6");
