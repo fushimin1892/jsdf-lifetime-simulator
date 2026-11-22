@@ -155,7 +155,7 @@
             fields: [
               {
                 k: "base",
-                label: "勤務する駐屯地・基地（所属の官署だけを表示）",
+                label: "寒冷地手当がつく駐屯地・基地（所属の官署だけを表示）",
                 options: [
                   ["", "一覧にない（下で級地を選ぶ）"],
                   ...R.kanreichi.bases.map(([kind, name, pos, g], i) => [
@@ -577,9 +577,10 @@
               // iPhone の Safari は option の hidden が効かないので、選択肢を作り直す（値は RULES の一覧の番号のまま）
               const group = { ground: "陸", maritime: "海", air: "空" }[$("branch").value],
                 before = basePick.value;
-              basePick.replaceChildren(new Option("一覧にない（下で級地を選ぶ）", ""));
+              basePick.replaceChildren(new Option("一覧にない（分屯基地など。下で級地を選ぶ）", ""));
               R.kanreichi.bases.forEach(([kind, name, pos, g], i) => {
-                if (kind === group) basePick.append(new Option(`${name}（${pos}・${g ? `${g}級地` : "支給地域外"}）`, String(i)));
+                // 寒冷地手当がつく官署（級地のあるもの）だけを出す
+                if (kind === group && g) basePick.append(new Option(`${name}（${pos}・${g}級地）`, String(i)));
               });
               basePick.value = before;
               if (basePick.value !== before) {
