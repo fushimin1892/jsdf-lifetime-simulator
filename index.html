@@ -49,10 +49,10 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-10" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-10" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-10" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-10" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-11" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-11" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-11" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-11" />
   </head>
   <body>
     <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
@@ -318,6 +318,35 @@
               </div>
               <small class="fixed-note">昇任は年2回のため半年ごと。一般曹候補生は最短で入隊後2年9か月（士長昇任から1年9か月）</small>
             </div>
+            <!-- 昇任までの年数（予想階級に必要なものだけ表示。初期値は試算用の仮定） -->
+            <div data-step="2曹" hidden>
+              <label for="stepSgt2">3曹から2曹まで</label>
+              <div class="unit">
+                <input id="stepSgt2" type="number" min="1.6" max="30" step="0.1" value="4" /><span>年</span>
+              </div>
+              <small class="fixed-note">法令の在職期間は3曹で2年</small>
+            </div>
+            <div data-step="1曹" hidden>
+              <label for="stepSgt1">2曹から1曹まで</label>
+              <div class="unit">
+                <input id="stepSgt1" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
+              </div>
+              <small class="fixed-note">法令の在職期間は2曹で2年</small>
+            </div>
+            <div data-step="曹長" hidden>
+              <label for="stepSgm">1曹から曹長まで</label>
+              <div class="unit">
+                <input id="stepSgm" type="number" min="1.6" max="30" step="0.1" value="8" /><span>年</span>
+              </div>
+              <small class="fixed-note">法令の在職期間は1曹で2年</small>
+            </div>
+            <div data-step="准尉" hidden>
+              <label for="stepWo">曹長から准尉まで</label>
+              <div class="unit">
+                <input id="stepWo" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
+              </div>
+              <small class="fixed-note">法令の在職期間は曹長で2年</small>
+            </div>
             <div data-step="3尉route" hidden>
               <label for="ofcRoute">3尉への昇任のしかた</label
               ><select id="ofcRoute" aria-describedby="ofcRouteNote">
@@ -369,35 +398,6 @@
                 >
               </div>
               <small class="fixed-note">法令の在職期間は3年</small>
-            </div>
-            <!-- 昇任までの年数（予想階級に必要なものだけ表示。初期値は試算用の仮定） -->
-            <div data-step="2曹" hidden>
-              <label for="stepSgt2">3曹から2曹まで</label>
-              <div class="unit">
-                <input id="stepSgt2" type="number" min="1.6" max="30" step="0.1" value="4" /><span>年</span>
-              </div>
-              <small class="fixed-note">法令の在職期間は3曹で2年</small>
-            </div>
-            <div data-step="1曹" hidden>
-              <label for="stepSgt1">2曹から1曹まで</label>
-              <div class="unit">
-                <input id="stepSgt1" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
-              </div>
-              <small class="fixed-note">法令の在職期間は2曹で2年</small>
-            </div>
-            <div data-step="曹長" hidden>
-              <label for="stepSgm">1曹から曹長まで</label>
-              <div class="unit">
-                <input id="stepSgm" type="number" min="1.6" max="30" step="0.1" value="8" /><span>年</span>
-              </div>
-              <small class="fixed-note">法令の在職期間は1曹で2年</small>
-            </div>
-            <div data-step="准尉" hidden>
-              <label for="stepWo">曹長から准尉まで</label>
-              <div class="unit">
-                <input id="stepWo" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
-              </div>
-              <small class="fixed-note">法令の在職期間は曹長で2年</small>
             </div>
             <div data-step="3佐" hidden>
               <label for="stepMaj">1尉から3佐まで</label>
@@ -851,7 +851,7 @@
               対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
             </p>
             <ul>
-              <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。スマホ幅の表示と文字の大きさの設定を改善</li>
+              <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
               <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
               <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
               <li>2026-11-16：手当の額を法令から選べるようにし、すべての数値を e-Gov の条文と照合する仕組みを追加</li>
@@ -887,9 +887,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-10"></script>
-    <script src="data/promotion-table.js?v=20261122-10"></script>
-    <script src="js/pay-lookup.js?v=20261122-10"></script>
+    <script src="data/pay-table.js?v=20261122-11"></script>
+    <script src="data/promotion-table.js?v=20261122-11"></script>
+    <script src="js/pay-lookup.js?v=20261122-11"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -900,11 +900,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-10"></script>
-    <script src="js/regional-rate.js?v=20261122-10"></script>
-    <script src="js/allowances.js?v=20261122-10"></script>
-    <script src="js/simulator.js?v=20261122-10"></script>
-    <script src="js/simulator-dialog.js?v=20261122-10"></script>
+    <script src="data/rules.js?v=20261122-11"></script>
+    <script src="js/regional-rate.js?v=20261122-11"></script>
+    <script src="js/allowances.js?v=20261122-11"></script>
+    <script src="js/simulator.js?v=20261122-11"></script>
+    <script src="js/simulator-dialog.js?v=20261122-11"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -913,9 +913,9 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-10"></script>
-    <script src="js/effects.js?v=20261122-10"></script>
-    <script src="js/scroll-lock.js?v=20261122-10"></script>
-    <script src="js/print.js?v=20261122-10"></script>
+    <script src="js/notes-page.js?v=20261122-11"></script>
+    <script src="js/effects.js?v=20261122-11"></script>
+    <script src="js/scroll-lock.js?v=20261122-11"></script>
+    <script src="js/print.js?v=20261122-11"></script>
   </body>
 </html>
