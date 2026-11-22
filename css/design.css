@@ -2511,3 +2511,16 @@ html body #notesPage::backdrop {
   backdrop-filter: none;
   background: rgba(27, 30, 23, 0.66);
 }
+
+/* 出典の行：ラベル（SOURCE・LAW・LOG・NOTE）を本文の上に小さく置き、本文はフッターと同じ左端から始める */
+.colophon > div,
+.colophon > div:first-child {
+  display: block;
+  padding: 14px 0;
+}
+.colophon dt {
+  margin-bottom: 4px;
+}
+.colophon dd {
+  margin: 0;
+}

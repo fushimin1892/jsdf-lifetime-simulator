@@ -82,7 +82,7 @@
 | `js/simulator-dialog.js` | シミュレーターの画面の開け閉め（ヘッダーなどのボタンからも開く） | ほぼ触らない |
 | `js/notes-page.js` | 説明ページ（長い説明を自動で集める） | ほぼ触らない |
 | `js/effects.js` | 見た目の演出（数字のカウントアップなど。計算には関わらない） | ほぼ触らない |
-| `js/crystals.js` | 背景の飾り：ガラスの桜の立体（WebGL。使えない端末は canvas 2D）と舞う花びら。外部ライブラリなし。動きを減らす設定では止まった絵、ダイアログ表示中は描かない。読み込み時の `requestAnimationFrame` を持っておくのは、回帰テストが同期の代わりに置き換えるため | ほぼ触らない |
+| `js/crystals.js` ・ `js/crystals-core.js` ・ `js/crystals-worker.js` | 背景の飾り（ガラスの桜の立体＝WebGL、舞う花びら・きらめき＝canvas 2D）。描画の中身は crystals-core.js。対応するブラウザでは crystals-worker.js（Web Worker と OffscreenCanvas）で描き、ページのスクロールと取り合わない。対応しないときは crystals.js がページの中で描く（スクロール中は止め、1秒30回まで）。外部ライブラリなし。動きを減らす設定では止まった絵、ダイアログ表示中・タブが裏のときは描かない。大きな面に backdrop-filter（すりガラス）を足すと、動く背景の上で毎回ぼかし直しになり重くなるので使わない（「俸給を調べる」の枠だけ） | ほぼ触らない |
 | `fonts/` と `tools/font-subset.js` | Noto Sans JP と JetBrains Mono を、このサイトで使う文字だけに絞ったもの（OFL。ライセンス文も同じフォルダ）。文言を足して新しい文字が増えると test/check.js が知らせるので、元のフォントを Google Fonts の公式 GitHub から取り、`node tools/font-subset.js <NotoSansJP[wght].ttf> <JetBrainsMono[wght].ttf>` で作り直す（Python の fonttools・brotli が要る） | 文言を足したとき |
 | `js/scroll-lock.js` | モーダル表示中の背景スクロール固定 | ほぼ触らない |
 | `js/print.js` | 印刷・PDF の紙面づくり | ほぼ触らない |
