@@ -14,19 +14,6 @@
     raf = window.requestAnimationFrame.bind(window);
 
   // ---------- 形：5枚の花びら（先に小さな切れ込み）の輪郭を、宝石のカットのような立体にする ----------
-  function sakuraOutline(n) {
-    const pts = [];
-    for (let i = 0; i < n; i++) {
-      const t = (i / n) * Math.PI * 2,
-        f = ((t / (Math.PI * 2)) * 5 + 0.5) % 1, // 花びらの中での位置（0.5 が先端）
-        u = Math.abs(f - 0.5) * 2, // 先端 0 → 付け根 1
-        petal = 0.42 + 0.58 * Math.pow(Math.cos((u * Math.PI) / 2), 0.55),
-        notch = 0.16 * Math.max(0, 1 - u / 0.14);
-      const r = petal - notch;
-      pts.push([Math.sin(t) * r, Math.cos(t) * r]);
-    }
-    return pts;
-  }
   function gemOutline(n) {
     const pts = [];
     for (let i = 0; i < n; i++) {
@@ -58,6 +45,52 @@
     }
     return tris;
   }
+  // 桜の立体（細密）：輪郭を3段（縁・中ほど・頂の手前）に重ね、各花びらの中心に稜線を立てる（宝石のカットのように）。裏も同じ形
+  function sakuraMesh(n) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const t = (i / n) * Math.PI * 2,
+        f = ((t / (Math.PI * 2)) * 5 + 0.5) % 1,
+        u = Math.abs(f - 0.5) * 2,
+        petal = 0.42 + 0.58 * Math.pow(Math.cos((u * Math.PI) / 2), 0.55),
+        notch = 0.16 * Math.max(0, 1 - u / 0.14),
+        r = petal - notch;
+      pts.push([Math.sin(t) * r, Math.cos(t) * r, u]);
+    }
+    // 段ごとの大きさと高さ（稜線：花びらの中心 u=0 で高く、付け根 u=1 で低い）
+    const tiers = [
+      [1, (u) => 0.05 + 0.05 * (1 - u)],
+      [0.76, (u) => 0.15 + 0.06 * (1 - u)],
+      [0.44, (u) => 0.24 + 0.04 * (1 - u)],
+    ];
+    const peak = 0.31,
+      at = (i, tier, sgn) => {
+        const [x, y, u] = pts[i % n],
+          [k, z] = tiers[tier];
+        return [x * k, y * k, sgn * z(u)];
+      },
+      tris = [];
+    for (let i = 0; i < n; i++)
+      for (const sgn of [1, -1]) {
+        const flip = (t) => (sgn > 0 ? t : [t[0], t[2], t[1]]);
+        for (let tier = 0; tier < 2; tier++) {
+          const a = at(i, tier, sgn),
+            b = at(i + 1, tier, sgn),
+            p = at(i, tier + 1, sgn),
+            q = at(i + 1, tier + 1, sgn);
+          tris.push(flip([p, a, b]), flip([p, b, q]));
+        }
+        tris.push(flip([[0, 0, sgn * peak], at(i, 2, sgn), at(i + 1, 2, sgn)]));
+        if (sgn > 0) {
+          const a = at(i, 0, 1),
+            b = at(i + 1, 0, 1),
+            c = at(i, 0, -1),
+            d = at(i + 1, 0, -1);
+          tris.push([a, c, d], [a, d, b]);
+        }
+      }
+    return tris;
+  }
   const norm = (v) => {
     const l = Math.hypot(v[0], v[1], v[2]) || 1;
     return [v[0] / l, v[1] / l, v[2] / l];
@@ -73,7 +106,7 @@
     return n;
   }
   const MESH = {
-    sakura: buildMesh(sakuraOutline(80), 0.3, 0.07, 0.5),
+    sakura: sakuraMesh(150),
     gem: buildMesh(gemOutline(8), 0.62, 0, 0.55),
   };
 
@@ -149,7 +182,8 @@
         float fr = pow(1.0 - max(dot(n, v), 0.0), 2.5);
         vec3 irid = 0.55 + 0.45 * cos(6.2831 * (fr * 1.3 + n.x * 0.25 + vec3(0.0, 0.33, 0.67)));
         c = mix(c, c * irid * 1.15, 0.04 + fr * 0.16);
-        c = mix(c, vec3(1.0), fr * 0.35 * uGlow);
+        c *= mix(vec3(1.0), vec3(1.0, 0.9, 0.93), uGlow * 0.75);
+        c = mix(c, vec3(1.0, 0.95, 0.84), fr * 0.45 * uGlow);
         float a = 0.9 + fr * 0.1;
         gl_FragColor = vec4(c * a, a);
       }`;
@@ -273,7 +307,7 @@
         x: r(),
         y: r(),
         depth,
-        size: (13 + r() * 13) * depth,
+        size: (12 + r() * 14) * depth * (depth > 0.95 ? 1.6 : 1),
         fall: (14 + r() * 22) * depth, // 1秒に落ちる量（px）
         sway: 18 + r() * 46,
         swayF: 0.25 + r() * 0.45,
@@ -281,39 +315,92 @@
         spin: (r() - 0.5) * 1.4,
         flipF: 0.5 + r() * 1.3,
         tint: r(),
+        curl: (r() - 0.5) * 0.36,
       };
     });
   }
-  // 花びら1枚：付け根から先へふくらみ、先に小さな切れ込み。flip で裏返る様子（横に縮む）を出す
-  function drawPetal(x, y, size, rot, flip, alpha, tint) {
-    const w = size * 0.62,
-      l = size * 1.25,
-      sx = Math.max(0.08, Math.abs(flip)),
-      back = flip < 0;
+  // 花びら1枚（細密）：付け根の濃い紅から縁の白へ色が移り、細い筋が扇に広がり、縁はうっすら光る。
+  // flip で裏返る様子（横に縮む・裏は少し濃い）、curl で左右の非対称（反り）を出す。手前の数枚は少しぼかす
+  function drawPetal(x, y, size, rot, flip, alpha, tint, curl, blur) {
+    const w = size * 0.6,
+      l = size * 1.3,
+      sx = Math.max(0.1, Math.abs(flip)),
+      back = flip < 0,
+      light = 0.86 + 0.14 * flip; // 光の当たり方（表で明るく、裏で暗く）
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot);
     ctx.scale(sx, 1);
-    const g = ctx.createLinearGradient(0, l * 0.5, 0, -l * 0.5);
-    const base = back ? [214, 160, 166] : [232, 176, 182],
-      tip = back ? [240, 214, 214] : [252, 234, 234],
-      mixc = (a, b) => a.map((v, i) => Math.round(v + (b[i] - v) * tint * 0.35));
-    g.addColorStop(0, `rgba(${mixc(base, [214, 206, 180]).join(",")},${alpha})`);
-    g.addColorStop(1, `rgba(${mixc(tip, [244, 240, 226]).join(",")},${alpha})`);
+    if (blur) ctx.filter = `blur(${blur}px)`;
+    // 形：付け根（下）から先（上）へ。先にはっきりした切れ込み。curl で左右の膨らみを変える
+    const wl = w * (1 + curl),
+      wr = w * (1 - curl);
+    const path = () => {
+      ctx.beginPath();
+      ctx.moveTo(0, l * 0.5);
+      ctx.bezierCurveTo(wr * 0.55, l * 0.42, wr * 1.05, l * 0.05, wr * 0.92, -l * 0.22);
+      ctx.bezierCurveTo(wr * 0.82, -l * 0.42, wr * 0.48, -l * 0.52, wr * 0.22, -l * 0.5);
+      ctx.quadraticCurveTo(wr * 0.06, -l * 0.47, 0, -l * 0.36);
+      ctx.quadraticCurveTo(-wl * 0.06, -l * 0.47, -wl * 0.22, -l * 0.5);
+      ctx.bezierCurveTo(-wl * 0.48, -l * 0.52, -wl * 0.82, -l * 0.42, -wl * 0.92, -l * 0.22);
+      ctx.bezierCurveTo(-wl * 1.05, l * 0.05, -wl * 0.55, l * 0.42, 0, l * 0.5);
+      ctx.closePath();
+    };
+    const tone = (c) => c.map((v, i) => Math.round(Math.min(255, (v + ([236, 228, 206][i] - v) * tint * 0.28) * light)));
+    const deep = tone(back ? [206, 128, 146] : [222, 138, 158]),
+      mid = tone(back ? [234, 186, 196] : [244, 196, 206]),
+      edge = tone(back ? [246, 226, 228] : [255, 244, 244]);
+    // 色：付け根を中心に、紅 → 淡い桃 → 白
+    const g = ctx.createRadialGradient(0, l * 0.5, 0, 0, l * 0.5, l * 1.02);
+    g.addColorStop(0, `rgba(${deep},${alpha})`);
+    g.addColorStop(0.32, `rgba(${mid},${alpha})`);
+    g.addColorStop(1, `rgba(${edge},${alpha * 0.92})`);
+    path();
+    ctx.fillStyle = g;
+    ctx.fill();
+    // 光：片側から差す白いつや
+    const gl2 = ctx.createLinearGradient(-w, 0, w, 0);
+    gl2.addColorStop(0, `rgba(255,255,255,0)`);
+    gl2.addColorStop(back ? 0.3 : 0.7, `rgba(255,255,255,${0.22 * alpha * light})`);
+    gl2.addColorStop(1, `rgba(255,255,255,0)`);
+    ctx.fillStyle = gl2;
+    ctx.fill();
+    // 筋：付け根から扇に5本
+    ctx.lineWidth = 0.45 / sx;
+    ctx.strokeStyle = `rgba(196,112,134,${alpha * 0.28})`;
+    for (const k of [-0.62, -0.3, 0, 0.3, 0.62]) {
+      ctx.beginPath();
+      ctx.moveTo(0, l * 0.46);
+      ctx.quadraticCurveTo(k * w * 0.35, l * 0.05, k * w * 0.78, -l * (0.3 - Math.abs(k) * 0.12));
+      ctx.stroke();
+    }
+    // 縁：うっすら光る細い線（透ける薄さ）
+    path();
+    ctx.lineWidth = 0.7 / sx;
+    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.55})`;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // きらめき：4方向に伸びる細い光（大きな桜のまわりで、ゆっくり明滅する）
+  function drawGlint(x, y, r, a) {
+    if (a <= 0.02) return;
+    ctx.save();
+    ctx.translate(x, y);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.5);
+    g.addColorStop(0, `rgba(255,250,236,${a})`);
+    g.addColorStop(1, "rgba(255,250,236,0)");
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.moveTo(0, l * 0.5);
-    ctx.bezierCurveTo(w, l * 0.25, w * 0.95, -l * 0.32, w * 0.28, -l * 0.5);
-    ctx.lineTo(0, -l * 0.38);
-    ctx.lineTo(-w * 0.28, -l * 0.5);
-    ctx.bezierCurveTo(-w * 0.95, -l * 0.32, -w, l * 0.25, 0, l * 0.5);
-    ctx.closePath();
+    ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = `rgba(184,140,140,${alpha * 0.35})`;
-    ctx.lineWidth = 0.6 / sx;
+    ctx.strokeStyle = `rgba(214,196,140,${a * 0.9})`;
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.moveTo(0, l * 0.45);
-    ctx.lineTo(0, -l * 0.3);
+    ctx.moveTo(-r, 0);
+    ctx.lineTo(r, 0);
+    ctx.moveTo(0, -r);
+    ctx.lineTo(0, r);
     ctx.stroke();
     ctx.restore();
   }
@@ -339,7 +426,7 @@
       y: narrow && o.kind === "sakura" ? 0.2 : o.y,
       size: narrow ? W * o.s * 1.4 : Math.min(W, H) * o.s + W * o.s * 0.3,
     }));
-    petals = makePetals(narrow ? 10 : 24);
+    petals = makePetals(narrow ? 12 : 30);
     if (calm) draw(0);
   }
 
@@ -366,7 +453,7 @@
         xx = p.x * W + Math.sin(t * p.swayF + p.phase) * p.sway + mx * 24 * p.depth,
         rot = p.phase + t * p.spin + Math.sin(t * p.swayF + p.phase) * 0.6,
         flip = Math.cos(t * p.flipF + p.phase);
-      drawPetal(xx, yy, p.size, rot, flip, 0.7 + p.depth * 0.28, p.tint);
+      drawPetal(xx, yy, p.size, rot, flip, 0.72 + p.depth * 0.26, p.tint, p.curl, p.depth > 0.95 ? 0.9 : p.depth < 0.55 ? 0.5 : 0);
     }
     for (const o of items) {
       // 最初の大きな桜はヒーローの「俸給を調べる」の後ろだけ（繰り返して本文に重ねない）
@@ -392,6 +479,13 @@
       ctx.ellipse(x, y + o.size * 1.15, o.size * 1.1, o.size * 0.28, 0, 0, Math.PI * 2);
       ctx.fill();
       const R = rotMatrix(ax, ay, az);
+      // 大きな桜：花びらの先のあたりに、きらめきを5つ（順にゆっくり明滅）
+      if (o.hero)
+        for (let k = 0; k < 5; k++) {
+          const ang = az + (k * Math.PI * 2) / 5 + 0.25,
+            rr = o.size * (1.12 + 0.06 * Math.sin(t * 0.5 + k));
+          drawGlint(x + Math.sin(ang) * rr, y - Math.cos(ang) * rr * Math.cos(ax), 7 + 3 * k % 4, Math.max(0, Math.sin(t * 0.9 + k * 1.3)) * 0.9);
+        }
       if (gl) gl.draw(o.kind, x, y, o.size, R);
       else draw2d(MESH[o.kind], x, y, o.size, R);
     }

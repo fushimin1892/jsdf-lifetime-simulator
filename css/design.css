@@ -1987,3 +1987,175 @@ html body #simulatorDialog .sim-total strong {
     grid-column: 1 / -1;
   }
 }
+
+/*
+ ===================================================================
+   13 ボタン（すべて共通）：ページとシミュレーターの押せるものを、2種類の形にそろえる
+   ・墨（主な操作）：墨のつやのある面に、内側に真鍮色の細い輪。かざすと光の筋が横切る。矢印は真鍮の細い丸の中
+   ・線（ほかの操作）：すりガラスの白に、細い線の二重の縁。かざすと墨の面に変わる
+   ・墨の帯の上（結果へ・閉じる）：透ける面に明るい細い線
+   =================================================================== */
+html body :is(.btn-primary, .head-cta),
+html body #simulatorDialog .allowance-add {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid #0f110b;
+  background: linear-gradient(180deg, #2c3124 0%, #1b1e17 55%, #12140e 100%);
+  color: #f4f2ea;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 3px #1b1e17,
+    inset 0 0 0 4px rgba(210, 197, 149, 0.42);
+  transition:
+    box-shadow 0.3s,
+    background-color 0.3s,
+    transform 0.3s;
+}
+html body :is(.btn-primary, .head-cta)::after,
+html body #simulatorDialog .allowance-add::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 248, 228, 0.22) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+html body :is(.btn-primary, .head-cta):hover,
+html body #simulatorDialog .allowance-add:hover {
+  border-color: #0f110b;
+  background: linear-gradient(180deg, #364027 0%, #263016 55%, #181e0e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 3px #263016,
+    inset 0 0 0 4px rgba(210, 197, 149, 0.7);
+}
+html body :is(.btn-primary, .head-cta):hover::after,
+html body #simulatorDialog .allowance-add:hover::after {
+  transform: translateX(120%);
+}
+/* 矢印：真鍮色の細い丸の中に */
+html body :is(.btn-primary, .head-cta) span {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: -6px;
+  border: 1px solid rgba(210, 197, 149, 0.6);
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  line-height: 1;
+}
+html body .head-cta span {
+  width: 18px;
+  height: 18px;
+  margin-right: -4px;
+}
+
+html body .btn-ghost,
+html body #simulatorDialog :is(.sim-preset, .sim-compare-clear, .a-calc-add),
+html body #notesPage .notes-back {
+  position: relative;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.6),
+    inset 0 0 0 4px rgba(74, 90, 38, 0.16);
+  cursor: pointer;
+  transition:
+    background-color 0.25s,
+    border-color 0.25s,
+    color 0.25s,
+    box-shadow 0.25s;
+}
+html body #simulatorDialog .a-calc-add {
+  border-style: solid;
+}
+html body .btn-ghost:hover,
+html body #simulatorDialog :is(.sim-preset, .sim-compare-clear, .a-calc-add):hover,
+html body #notesPage .notes-back:hover {
+  border-color: #0f110b;
+  background: #1b1e17;
+  color: #f4f2ea;
+  box-shadow:
+    inset 0 0 0 3px #1b1e17,
+    inset 0 0 0 4px rgba(210, 197, 149, 0.5);
+}
+
+/* 墨の帯の上のボタン：結果へ・閉じる */
+html body #simulatorDialog :is(.sim-jump, .sim-close) {
+  border: 1px solid rgba(244, 242, 234, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f2ea;
+  box-shadow: inset 0 0 0 2px rgba(27, 30, 23, 0.9), inset 0 0 0 3px rgba(210, 197, 149, 0.25);
+  transition:
+    border-color 0.25s,
+    background-color 0.25s;
+}
+html body #simulatorDialog :is(.sim-jump, .sim-close):hover {
+  border-color: rgba(210, 197, 149, 0.8);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 豪華な仕上げ：「俸給を調べる」の四隅に真鍮色の鉤（かぎ）と、内側にもう1本の細い枠 */
+html body .lookup {
+  position: relative;
+  outline: 1px solid rgba(74, 90, 38, 0.14);
+  outline-offset: -7px;
+}
+html body .lookup::before,
+html body .lookup::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #a8904f;
+  pointer-events: none;
+}
+html body .lookup::before {
+  left: -1px;
+  top: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+html body .lookup::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+/* 選んだ号俸：墨の面に真鍮の細い輪 */
+html body .paytable td.highlight {
+  box-shadow: inset 0 0 0 2px #1b1e17, inset 0 0 0 3px rgba(210, 197, 149, 0.55) !important;
+}
+/* 流れる帯の菱形は真鍮色に */
+.ticker-track span i {
+  background: #a8904f;
+}
+@media (prefers-reduced-motion: reduce) {
+  html body :is(.btn-primary, .head-cta)::after,
+  html body #simulatorDialog .allowance-add::after {
+    transition: none;
+  }
+}
+/* シミュレーターの結果の箱も、ボタンと同じ縁にそろえる（墨の箱＝真鍮の細い輪、白い箱＝細い線の二重の縁） */
+html body #simulatorDialog :is(.sim-total, .sim-metrics > .sim-net) {
+  background: linear-gradient(180deg, #23271d 0%, #1b1e17 60%, #14160f 100%);
+  box-shadow:
+    inset 0 0 0 5px #1b1e17,
+    inset 0 0 0 6px rgba(210, 197, 149, 0.32);
+}
+html body #simulatorDialog .sim-metrics > div:not(.sim-net),
+html body #simulatorDialog :is(.sim-compare, details.sim-fold) {
+  box-shadow:
+    inset 0 0 0 5px #fff,
+    inset 0 0 0 6px rgba(74, 90, 38, 0.1);
+}
