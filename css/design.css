@@ -1478,3 +1478,23 @@ html body .update-log ul {
     padding: 12px 14px;
   }
 }
+
+/* 扶養手当の「＋子を追加」と、表示だけの欄（更新中） */
+html body #simulatorDialog .a-calc-add {
+  margin-top: 10px;
+  border-radius: 999px;
+  padding: 9px 16px;
+  border: 1px dashed #0c271e;
+  background: #fff;
+  color: #0c271e;
+  font-weight: 700;
+  cursor: pointer;
+}
+html body #simulatorDialog .a-calc-add[hidden] {
+  display: none;
+}
+html body #simulatorDialog .a-calc input:disabled {
+  background: #eef1ef;
+  color: #7a8a80;
+  cursor: not-allowed;
+}

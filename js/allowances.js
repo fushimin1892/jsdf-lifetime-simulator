@@ -44,29 +44,46 @@
               return [value, text];
             });
           };
+        // 扶養手当で入れられる子の数（「＋子を追加」で足せる上限）
+        const CHILD_MAX = 10;
         const calcKinds = {
           扶養手当: {
+            // 子は年齢で入れる（最初は1人目だけ。「＋子を追加」で足す）。年齢から年度ごとに自動で計算し、22歳の年度末を過ぎたら外す。
+            // 以前の版の人数の欄（child・teen）と生まれた年度（b1〜b4）は、共有URLを開いたときのために見えない欄で残す
             fields: [
-              { k: "child", label: "中学生までの子", max: 10, unit: "人" },
-              { k: "teen", label: "高校生〜22歳の年度末までの子", max: 10, unit: "人" },
-              { k: "parent", label: "60歳以上の父母・祖父母など", max: 10, unit: "人" },
-              { k: "b1", label: "生まれた年度で入れる子（1人目。0はなし）", max: 2100, unit: "年度" },
-              { k: "b2", label: "同（2人目）", max: 2100, unit: "年度" },
-              { k: "b3", label: "同（3人目）", max: 2100, unit: "年度" },
-              { k: "b4", label: "同（4人目）", max: 2100, unit: "年度" },
+              ...Array.from({ length: CHILD_MAX }, (_, i) => ({
+                k: `c${i + 1}`,
+                label: `${i + 1}人目の子の入隊時の年齢`,
+                min: -40,
+                max: 21,
+                unit: "歳",
+                blank: true,
+                more: i > 0,
+              })),
+              { k: "parent", label: "60歳以上の父母・祖父母など（更新中）", max: 10, unit: "人", disabled: true },
+              { k: "child", legacy: true },
+              { k: "teen", legacy: true },
+              { k: "b1", legacy: true },
+              { k: "b2", legacy: true },
+              { k: "b3", legacy: true },
+              { k: "b4", legacy: true },
             ],
+            addLabel: "＋子を追加",
             compute: (v) => {
               const c = count(v.child),
                 t = count(v.teen),
-                p = count(v.parent),
-                born = childFysOf(v).length,
-                amount = R.fuyou.child * (c + t) + R.fuyou.teenAdd * t + R.fuyou.parent * p;
+                kids = childFysOf(v).length,
+                amount = R.fuyou.child * (c + t) + R.fuyou.teenAdd * t;
               return {
                 amount,
-                text: `月額 ${yen(amount)}（子 ${c + t}人・父母等 ${p}人）${born ? `＋生まれた年度で入れた子 ${born}人の分は年度ごとに自動` : ""}`,
+                text: kids
+                  ? `子 ${kids}人：年齢から年度ごとに自動で計算（22歳の年度末まで1人月13,000円、15歳を過ぎた4月から5,000円を加算。対象外の年齢になった年度から外します）${amount ? `＋以前の版の人数の分 月額 ${yen(amount)}` : ""}`
+                  : amount
+                    ? `月額 ${yen(amount)}（以前の版の人数の欄の分）`
+                    : "子の年齢を入れてください",
               };
             },
-            note: "令和8年4月からの額：子1人13,000円（15歳になった後の4月1日から22歳の年度末までの子は5,000円を加算）、父母等1人6,500円。配偶者の扶養手当は令和8年3月で廃止されました。将補（2）欄・1佐（1）欄の間は父母等の分は支給されず、1佐（2）欄の間は1人3,500円になります（施行令第8条の7・第8条の8。階級に合わせて自動で計算します）。子の年齢で額が変わるときは、「生まれた年度」の欄に子の生まれた年度（4月2日〜翌年4月1日生まれを1つの年度とします。例：2030年5月生まれは2030、2031年3月生まれも2030）を入れると、生まれた年度の4月から22歳の年度末まで1人13,000円、15歳になった後の4月（生まれた年度＋16年度）からは5,000円を加えて、年度ごとに自動で計算します（一般職給与法第11条第2項・第4項。実際の支給は届出の翌月からなので、生まれた年度の初めの数か月は多めに出ます）。人数の欄と同じ子を重ねて入れないでください。",
+            note: "令和8年4月からの額：子1人13,000円（15歳になった後の4月1日から22歳の年度末までの子は5,000円を加算）。配偶者の扶養手当は令和8年3月で廃止されました（一般職給与法第11条）。子の年齢は、入隊した年度の4月1日の年齢を入れます。入隊のあとに生まれる子は、生まれるまでの年数をマイナスで入れます（例：入隊5年後に生まれる子は −5）。年齢から生まれた年度を出し、その年度から22歳の年度末まで年度ごとに自動で計算します（実際の支給は届出の翌月からなので、生まれた年度の初めの数か月は多めに出ます）。60歳以上の父母・祖父母などの分は、階級によって額が変わり決まりが複雑なため、更新中です（今は計算に入れません）。",
           },
           住居手当: {
             fields: [{ k: "rent", label: "家賃（月額）", max: 1000000, unit: "円" }],
@@ -419,15 +436,36 @@
             calcOut.textContent = r.text;
           };
           if (calc) {
+            // 欄の種類：options（選択）、数（min〜max）。blank は空欄から始める欄、more は「追加」で出す欄、
+            // disabled は表示だけで入力できない欄（更新中）、legacy は以前の版の値を残すだけの見えない欄
             calcBox.innerHTML = calc.fields
               .map((f) => {
+                if (f.legacy) return `<input data-k="${f.k}" type="hidden" value="">`;
                 const input =
                   f.options != null
                     ? `<select data-k="${f.k}">${f.options.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select>`
-                    : `<div class="unit"><input data-k="${f.k}" type="number" min="0" max="${f.max}" step="1" inputmode="numeric" value="0"><span>${f.unit}</span></div>`;
-                return `<div><label>${f.label}</label>${input}</div>`;
+                    : `<div class="unit"><input data-k="${f.k}" type="number" min="${f.min ?? 0}" max="${f.max}" step="1" inputmode="numeric" value="${f.blank ? "" : "0"}"${f.blank ? ' data-blank="1"' : ""}${f.disabled ? " disabled" : ""}><span>${f.unit}</span></div>`;
+                return `<div${f.more ? ' class="a-calc-more" hidden' : ""}><label>${f.label}</label>${input}</div>`;
               })
               .join("");
+            // 「＋子を追加」：隠れている次の欄を1つ出す。全部出たらボタンを隠す
+            if (calc.addLabel) {
+              const add = document.createElement("button");
+              add.type = "button";
+              add.className = "a-calc-add";
+              add.textContent = calc.addLabel;
+              const syncAdd = () => (add.hidden = !calcBox.querySelector(".a-calc-more[hidden]"));
+              add.addEventListener("click", () => {
+                const next = calcBox.querySelector(".a-calc-more[hidden]");
+                if (next) {
+                  next.hidden = false;
+                  next.querySelector("input")?.focus();
+                }
+                syncAdd();
+              });
+              calcBox.after(add);
+              container.syncCalcAdd = syncAdd;
+            }
             const calcNote = container.querySelector(".a-calc-note");
             calcNote.textContent = calc.note;
             // 説明ページの見出し（ラベルの直下にないので、手当名を付けて指定する）
@@ -596,6 +634,10 @@
                 if (s.v?.[el.dataset.k] != null && (el.tagName !== "SELECT" || [...el.options].some((o) => o.value === String(s.v[el.dataset.k]))))
                   el.value = s.v[el.dataset.k];
             }
+            // 表示だけの欄（更新中）は 0 に戻す。値の入った追加の欄は出しておく
+            for (const el of calcBox.querySelectorAll("input[disabled]")) el.value = "0";
+            for (const el of calcBox.querySelectorAll(".a-calc-more")) if (el.querySelector("input")?.value !== "") el.hidden = false;
+            container.syncCalcAdd?.();
             runCalc();
           }
           syncKind();
@@ -619,8 +661,23 @@
         }
         // 扶養手当の行で「条件から計算」を使っているときの父母等の人数（金額を直接入力しているときは0）
         // 扶養手当の「生まれた年度」で入れた子の年度の一覧（0・空欄・1950より前は除く）
+        // 入隊した年度（4月〜翌3月）
+        const entryFy = () => {
+          const y = Number($("entryYear")?.value) || 2026,
+            m = Number($("entryMonth")?.value) || 4;
+          return m >= 4 ? y : y - 1;
+        };
+        // 扶養手当の子の生まれた年度の一覧。年齢の欄（c1〜）は、0歳以上なら入隊した年度の4月1日の年齢として「入隊年度−年齢−1」、
+        // マイナスなら入隊からその年数のあとに生まれるとして「入隊年度＋年数」。以前の版の生まれた年度（b1〜b4）もそのまま使う
         function childFysOf(v) {
-          return ["b1", "b2", "b3", "b4"].map((k) => count(v?.[k])).filter((y) => y >= 1950);
+          const E = entryFy(),
+            byAge = Array.from({ length: CHILD_MAX }, (_, i) => v?.[`c${i + 1}`])
+              .filter((a) => a !== "" && a != null && Number.isFinite(Number(a)))
+              .map((a) => Math.trunc(Number(a)))
+              .filter((a) => a >= -40 && a <= 21)
+              .map((a) => (a >= 0 ? E - a - 1 : E - a)),
+            byYear = ["b1", "b2", "b3", "b4"].map((k) => count(v?.[k])).filter((y) => y >= 1950);
+          return [...byAge, ...byYear];
         }
         function calcChildFys(row) {
           try {
@@ -642,7 +699,8 @@
         function calcParents(row) {
           try {
             const s = JSON.parse(row.querySelector(".a-calc-state")?.value || "null");
-            return s?.mode === "auto" ? count(s.v?.parent) : 0;
+            // 60歳以上の父母などは更新中（計算に入れない）
+            return 0;
           } catch {
             return 0;
           }
@@ -706,12 +764,15 @@
             const calcWrap = row.querySelector(".a-calc-wrap");
             if (calcWrap && !calcWrap.hidden && row.querySelector(".a-calc-mode").value === "auto")
               for (const input of row.querySelectorAll(".a-calc input[data-k]")) {
+                // 見えない欄（以前の版の値）・表示だけの欄（更新中）・空欄でよい欄（追加した子の年齢）は確かめない
+                if (input.type === "hidden" || input.disabled || (input.dataset.blank && input.value.trim() === "")) continue;
                 const v = input.value.trim(),
+                  min = Number(input.min || 0),
                   max = Number(input.max);
-                if (!/^[0-9]+$/.test(v) || Number(v) > max)
+                if (!/^-?[0-9]+$/.test(v) || Number(v) < min || Number(v) > max)
                   throw fail(
                     [row],
-                    `「${name}」の${input.dataset.base || "入力"}は0〜${max.toLocaleString("ja-JP")}の整数で入力してください。`,
+                    `「${name}」の${input.dataset.base || "入力"}は${min.toLocaleString("ja-JP")}〜${max.toLocaleString("ja-JP")}の整数で入力してください。`,
                   );
               }
             // 年・月で打つ欄（地域手当・広域異動手当以外）：入隊より前・期間0か月を、わかる言葉で知らせる
