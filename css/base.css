@@ -712,7 +712,7 @@ a {
   font-size: 0.75rem;
   opacity: 0.8;
 }
-@media (max-width: 520px) {
+@media (max-width: 600px) {
   .allowance-fields .a-period-wrap {
     grid-template-columns: minmax(0, 1fr);
   }
