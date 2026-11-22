@@ -48,11 +48,14 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
       }
     </script>
+    <!-- フォント（fonts フォルダ。このサイトで使う文字だけに絞った Noto Sans JP と JetBrains Mono。OFL） -->
+    <link rel="preload" href="fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-27" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-27" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-27" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-27" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-28" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-28" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-28" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-28" />
   </head>
   <body>
     <i class="scroll-progress" aria-hidden="true"></i>
@@ -78,7 +81,7 @@
         <p class="hero-meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span><span>INDEX 01 — 04</span></p>
         <div class="hero-copy">
           <p class="hero-chip"><span class="chip-dot" aria-hidden="true"></span>2026年11月公布の改正俸給表に対応</p>
-          <h1>階級と号俸から、<br /><em>俸給がすぐわかる。</em></h1>
+          <h1><span class="ln">階級と号俸から、</span><br /><em class="ln">俸給がすぐわかる。</em></h1>
           <p class="hero-lead">
             2026年11月公布の改正法（令和8年法律第89号。2026年4月にさかのぼって適用）に基づく自衛官俸給表です。昇任・賞与・手当・退職手当まで含めた生涯年収も試算できます。
           </p>
@@ -894,9 +897,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-27"></script>
-    <script src="data/promotion-table.js?v=20261122-27"></script>
-    <script src="js/pay-lookup.js?v=20261122-27"></script>
+    <script src="data/pay-table.js?v=20261122-28"></script>
+    <script src="data/promotion-table.js?v=20261122-28"></script>
+    <script src="js/pay-lookup.js?v=20261122-28"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -907,11 +910,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-27"></script>
-    <script src="js/regional-rate.js?v=20261122-27"></script>
-    <script src="js/allowances.js?v=20261122-27"></script>
-    <script src="js/simulator.js?v=20261122-27"></script>
-    <script src="js/simulator-dialog.js?v=20261122-27"></script>
+    <script src="data/rules.js?v=20261122-28"></script>
+    <script src="js/regional-rate.js?v=20261122-28"></script>
+    <script src="js/allowances.js?v=20261122-28"></script>
+    <script src="js/simulator.js?v=20261122-28"></script>
+    <script src="js/simulator-dialog.js?v=20261122-28"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -920,10 +923,10 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-27"></script>
-    <script src="js/effects.js?v=20261122-27"></script>
-    <script src="js/crystals.js?v=20261122-27"></script>
-    <script src="js/scroll-lock.js?v=20261122-27"></script>
-    <script src="js/print.js?v=20261122-27"></script>
+    <script src="js/notes-page.js?v=20261122-28"></script>
+    <script src="js/effects.js?v=20261122-28"></script>
+    <script src="js/crystals.js?v=20261122-28"></script>
+    <script src="js/scroll-lock.js?v=20261122-28"></script>
+    <script src="js/print.js?v=20261122-28"></script>
   </body>
 </html>

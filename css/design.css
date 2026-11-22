@@ -1,36 +1,56 @@
 /*
  ===================================================================
-   デザイン v4（2026年11月・作り直し）「作戦地図」
-   参考：mesh3d.gallery に載った Daiki Fujita のサイト（明るい紙の地・細い縦の罫と方眼・
-         とても大きな太字・小さな番号ラベル・浮かぶクロームの立体）。
-   自衛隊に合わせて：紙は地図の淡い灰、色はオリーブドラブと墨、立体は桜の形のクローム
-         （js/crystals.js が canvas に描く。外部のライブラリ・フォントは使わない）。
-   方針：文字は墨色で大きく、ラベルは等幅の小さな英字と番号（[01] など）。
-         部品は角の小さい四角と細い線。立体は飾りなので、文字の上には重ねすぎない。
-   このファイルの見た目はこの style 1枚で決める（base.css は骨組み、スクリプトは演出だけ）。
+   デザイン v5（2026-11-22）「作戦地図」— 1枚にまとめ直した版
+   参考：mesh3d.gallery に載った Daiki Fujita のサイト（明るい紙・縦の罫・大きな文字・番号ラベル・浮かぶ立体）。
+   自衛隊に合わせて：紙は地図の淡い灰、色は墨・オリーブドラブ・カーキ、立体はガラスの桜（js/crystals.js）、舞う花びら。
+
+   決まり（ここを守れば全体がそろう）
+   ・格子：本文の幅（最大 1152px）を12列に割る。左右の端は --edge-x。背景の縦の罫は列の境目。部品の端は罫の上に置く
+   ・文字：日本語は Noto Sans JP、ラベルは JetBrains Mono（どちらも fonts/ にこのサイトの文字だけに絞って置く。OFL）
+           見出しは中くらいの太さ、大きな数字は細く。ラベルは 10px・大文字・広い字間・[番号]
+   ・形：押せるもの＝丸め切る（999px）。箱＝角 4px。ダイアログ＝角 8px。線は細い1本。影は使わない（すりガラスだけ）
+   ・色：墨（--ink）・オリーブドラブ（--od）・カーキ（--brass は墨の上だけ）。紙は --paper
+   ・余白は 8 の倍数
+
+   並び：1 文字と色 → 2 背景 → 3 ヘッダー → 4 ヒーロー → 5 俸給を調べる → 6 帯 → 7 俸給表 → 8 出典 → 9 フッター
+         → 10 動き → 11 狭い幅 → 12 シミュレーター（下の方）
+   base.css は骨組み。このファイルが見た目のすべてを決める。
    ===================================================================
 */
 
+/* ---------- 1 文字と色 ---------- */
+@font-face {
+  font-family: "Noto Sans JP Site";
+  src: url("../fonts/noto-sans-jp.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono Site";
+  src: url("../fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
 :root {
   --paper: #e7e5de;
   --paper-2: #f1f0eb;
   --card: rgba(246, 245, 241, 0.72);
-  --ink: #1c1e18;
-  --ink-2: #35382c;
-  --dim: #525649; /* 紙の上で 6:1 前後 */
-  --faint: #626557; /* 紙の上で 4.5:1 以上 */
-  --line: rgba(28, 30, 24, 0.14);
-  --line-2: rgba(28, 30, 24, 0.26);
-  --od: #4a5a26; /* オリーブドラブ */
+  --ink: #1b1e17;
+  --ink-2: #33392b;
+  --dim: #4f5647;
+  --faint: #5f6656; /* 紙の上で 4.5:1 以上 */
+  --line: rgba(27, 30, 23, 0.12);
+  --line-2: rgba(27, 30, 23, 0.24);
+  --od: #4a5a26;
   --od-2: #3a4720;
-  --brass: #d8c48a; /* 墨の帯の上だけで使う */
-  --r: 6px;
-  /* 外部フォントは読み込まない（端末のフォントを使う） */
-  --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
-  --num: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --brass: #d2c595; /* 墨の帯の上だけで使う */
+  --r: 4px;
+  --edge-x: max(24px, calc(50% - 576px));
+  --sans: "Noto Sans JP Site", system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+  --num: var(--sans);
+  --mono: "JetBrains Mono Site", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
-  /* 以前の名前（下の部品が使う） */
+  /* 以前の名前（シミュレーターの部品が使う） */
   --gold: var(--brass);
   --mint: var(--od);
   color-scheme: light;
@@ -43,20 +63,39 @@ html {
 html body {
   margin: 0;
   min-height: 100vh;
-  /* 地の色は html に塗る（body に塗ると、後ろに置いた方眼と立体が隠れる） */
+  /* 地の色は html に塗る（body に塗ると、後ろの方眼と立体が隠れる） */
   background: transparent;
   color: var(--ink);
-  font-family: var(--sans);
+  font: 400 15px/1.8 var(--sans);
   font-feature-settings: "palt" 1;
+  letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   overflow-x: clip;
 }
 ::selection {
-  background: rgba(74, 90, 38, 0.28);
+  background: rgba(74, 90, 38, 0.24);
   color: var(--ink);
 }
+/* 小さなラベル：10px・等幅・大文字・広い字間 */
+html body .hero .hero-meta,
+.hero-facts > div::before,
+.lookup-head span,
+html body .cap,
+.sec-meta,
+html body .paytable .hint,
+html body main .paytable .source::before,
+.footer-grid::before,
+.footer-h,
+.ticker-track span {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
 
-/* ---------- 背景：地図の方眼、縦の罫、四隅の十字、浮かぶ立体（canvas） ---------- */
+/* ---------- 2 背景：方眼・12列の縦の罫・四隅の十字・立体と花びら・読んだところの線 ---------- */
 .bg-scene {
   position: fixed;
   inset: 0;
@@ -68,17 +107,16 @@ html body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(28, 30, 24, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(28, 30, 24, 0.045) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(rgba(27, 30, 23, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 30, 23, 0.03) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
-/* 12列の縦の罫（参考サイトの縦線） */
 .bg-scene .bg-cols {
   position: absolute;
-  inset: 0 max(16px, calc(50% - 600px));
-  background-image: linear-gradient(90deg, rgba(28, 30, 24, 0.09) 1px, transparent 1px);
-  background-size: calc(100% / 6) 100%;
-  border-right: 1px solid rgba(28, 30, 24, 0.09);
+  inset: 0 var(--edge-x);
+  background-image: linear-gradient(90deg, rgba(27, 30, 23, 0.075) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+  border-right: 1px solid rgba(27, 30, 23, 0.075);
 }
 .bg-scene .bg-mark {
   position: absolute;
@@ -87,7 +125,7 @@ html body {
   background:
     linear-gradient(var(--ink-2), var(--ink-2)) center / 1px 100% no-repeat,
     linear-gradient(var(--ink-2), var(--ink-2)) center / 100% 1px no-repeat;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 .bg-scene .m1 {
   left: 14px;
@@ -111,8 +149,33 @@ html body {
   width: 100%;
   height: 100%;
 }
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 20;
+    height: 2px;
+    background: var(--od);
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root);
+    pointer-events: none;
+  }
+  @keyframes progress-grow {
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
 
-/* ---------- ナビ：小さな等幅の文字を横に散らした細い帯 ---------- */
+/* ---------- 3 ヘッダー：12列。ブランドは1〜4列、ナビは6〜10列を3等分、ボタンは右端 ---------- */
 html body .site-head {
   position: relative;
   z-index: 5;
@@ -121,22 +184,24 @@ html body .site-head {
   box-shadow: none;
 }
 html body .site-head .top {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: center;
-  gap: 28px;
-  border-bottom: 1px solid var(--line-2);
+  max-width: none;
+  margin: 0 var(--edge-x);
+  padding: 24px 0;
+  border: 0;
 }
 html body .brand {
+  grid-column: 1 / 5;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  justify-self: start;
   color: var(--ink);
   text-decoration: none;
-  font: 800 0.875rem/1 var(--sans);
-  letter-spacing: 0.08em;
+  font: 600 0.8125rem/1 var(--sans);
+  letter-spacing: 0.14em;
   white-space: nowrap;
 }
 html body .brand .brand-name {
@@ -144,8 +209,8 @@ html body .brand .brand-name {
 }
 html body .brand-mark svg {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
 }
 html body .brand-mark rect {
   fill: var(--ink);
@@ -157,17 +222,19 @@ html body .brand-mark path {
   stroke-width: 2.2;
 }
 html body .site-nav {
-  display: flex;
-  gap: 28px;
-  margin-left: auto;
+  grid-column: 6 / 11;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
 }
 html body .site-nav a {
   position: relative;
+  justify-self: start;
+  padding: 6px 0;
   color: var(--dim);
   text-decoration: none;
-  font: 600 0.75rem/1 var(--sans);
-  letter-spacing: 0.08em;
-  padding: 6px 0;
+  font: 500 0.75rem/1 var(--sans);
+  letter-spacing: 0.1em;
   transition: color 0.2s;
 }
 html body .site-nav a::before {
@@ -184,7 +251,7 @@ html body .site-nav a::after {
   background: var(--ink);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 html body .site-nav a:hover {
   color: var(--ink);
@@ -193,6 +260,8 @@ html body .site-nav a:hover::after {
   transform: scaleX(1);
 }
 html body .head-cta {
+  grid-column: 11 / 13;
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -201,8 +270,8 @@ html body .head-cta {
   border-radius: 999px;
   background: var(--ink);
   color: var(--paper-2);
-  font: 700 0.75rem/1 var(--sans);
-  letter-spacing: 0.06em;
+  font: 600 0.75rem/1 var(--sans);
+  letter-spacing: 0.1em;
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.2s;
@@ -210,14 +279,16 @@ html body .head-cta {
 html body .head-cta:hover {
   background: var(--od-2);
 }
-html body .head-cta span {
+html body .head-cta span,
+html body .btn span {
   transition: transform 0.25s;
 }
-html body .head-cta:hover span {
-  transform: translateX(3px);
+html body .head-cta:hover span,
+html body .btn:hover span {
+  transform: translateX(4px);
 }
 
-/* ---------- ヒーロー：幅いっぱいの大きな見出し、その下に説明と「俸給を調べる」 ---------- */
+/* ---------- 4 ヒーロー：12列。目盛りの行（3列ずつ4つ）→ 札 → 見出し → 説明（1〜6列）と「俸給を調べる」（8〜12列） ---------- */
 html body .hero {
   background: none;
   color: var(--ink);
@@ -229,56 +300,56 @@ html body .hero::after {
   content: none;
 }
 html body .hero-in {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 24px 96px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
-  grid-template-areas:
-    "meta meta"
-    "chip chip"
-    "title title"
-    "lead lookup"
-    "actions lookup"
-    "facts lookup";
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-rows: auto auto auto auto auto 1fr;
-  column-gap: 64px;
   align-items: start;
+  max-width: none;
+  margin: 0 var(--edge-x);
+  padding: 8px 0 104px;
 }
-/* 見出しの列の中身を、ヒーローの格子に直接並べる */
 html body .hero-copy {
   display: contents;
 }
 html body .hero .hero-meta {
-  grid-area: meta;
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 0 0 56px;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 72px;
   color: var(--faint);
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  line-height: 1.4;
+}
+html body .hero .hero-meta span {
+  display: block;
+  padding: 10px 16px 0 0;
+  border-top: 1px solid var(--line-2);
+}
+/* 目盛り：線の左端に小さな縦の線 */
+html body .hero .hero-meta span::before,
+.sec-meta span::before {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 6px;
+  margin: -10px 0 4px;
+  background: var(--ink-2);
 }
 html body .hero .hero-chip {
-  grid-area: chip;
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: inline-flex;
   align-items: center;
   justify-self: start;
   gap: 10px;
   margin: 0;
-  padding: 7px 12px;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  background: rgba(246, 245, 241, 0.6);
   color: var(--ink-2);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font: 500 0.75rem/1.4 var(--sans);
+  letter-spacing: 0.06em;
 }
 .chip-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--od);
   box-shadow: 0 0 0 4px rgba(74, 90, 38, 0.16);
@@ -290,57 +361,75 @@ html body .hero .hero-chip {
   }
 }
 html body .hero h1 {
-  grid-area: title;
-  margin: 26px 0 44px;
+  grid-column: 1 / -1;
+  grid-row: 3;
+  max-width: none;
+  margin: 24px 0 64px;
   color: var(--ink);
-  font: 900 clamp(2.25rem, 7.2vw, 6.25rem) / 1.04 var(--sans);
-  letter-spacing: -0.045em;
+  font: 500 clamp(2.25rem, 6.2vw, 5.5rem) / 1.12 var(--sans);
+  letter-spacing: -0.035em;
   white-space: normal;
   text-shadow: none;
-  max-width: none;
 }
 html body .hero h1 em {
   font-style: normal;
+  font-weight: 300;
   color: var(--od);
 }
+/* 見出しを1行ずつ、下から切り出すように出す */
+html body .hero h1 .ln {
+  display: inline-block;
+  animation: line-up 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+html body .hero h1 .ln + br + .ln {
+  animation-delay: 0.14s;
+}
+@keyframes line-up {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(0.35em);
+  }
+  to {
+    clip-path: inset(0 0 -10% 0);
+    transform: none;
+  }
+}
 html body .hero .hero-lead {
-  grid-area: lead;
-  max-width: 34em;
+  grid-column: 1 / 7;
+  grid-row: 4;
+  max-width: none;
   margin: 0;
+  padding-right: 32px;
   color: var(--dim);
-  font-size: 0.9375rem;
-  line-height: 1.95;
+  font-size: 0.875rem;
+  line-height: 2.05;
+  letter-spacing: 0.04em;
 }
 html body .hero-actions {
-  grid-area: actions;
+  grid-column: 1 / 7;
+  grid-row: 5;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 32px;
+  margin-top: 40px;
 }
-/* ボタン：墨の面か、細い線だけ。角は丸めきる */
+/* ボタン：墨の面か、細い線だけ。線だけのものはかざすと墨で塗る */
 html body .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 52px;
-  padding: 0 28px;
+  min-height: 48px;
+  padding: 0 24px;
   border-radius: 999px;
-  font: 700 0.875rem/1 var(--sans);
-  letter-spacing: 0.06em;
+  font: 600 0.8125rem/1 var(--sans);
+  letter-spacing: 0.1em;
   text-decoration: none;
   cursor: pointer;
   transition:
     background-color 0.2s,
     border-color 0.2s,
     color 0.2s;
-}
-html body .btn span {
-  transition: transform 0.25s;
-}
-html body .btn:hover span {
-  transform: translateX(4px);
 }
 html body .btn-primary {
   border: 1px solid var(--ink);
@@ -349,8 +438,8 @@ html body .btn-primary {
   box-shadow: none;
 }
 html body .btn-primary:hover {
-  background: var(--od-2);
   border-color: var(--od-2);
+  background: var(--od-2);
 }
 html body .btn-ghost {
   border: 1px solid var(--line-2);
@@ -359,25 +448,68 @@ html body .btn-ghost {
 }
 html body .btn-ghost:hover {
   border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper-2);
 }
-html body .btn:focus-visible,
-html body .head-cta:focus-visible,
-html body a:focus-visible,
-html body select:focus-visible {
+html body :is(.btn, .head-cta, a, select):focus-visible {
   outline: 2px solid var(--od);
   outline-offset: 3px;
 }
+/* 数字の行：[番号]・数字・説明を 1:2:3 の位置にそろえる */
+.hero-facts {
+  grid-column: 1 / 7;
+  grid-row: 6;
+  counter-reset: fact;
+  margin: 64px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line-2);
+}
+.hero-facts > div {
+  counter-increment: fact;
+  display: grid;
+  grid-template-columns: 1fr 2fr 3fr;
+  align-items: baseline;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.hero-facts > div::before {
+  content: "[" counter(fact, decimal-leading-zero) "]";
+  color: var(--faint);
+}
+.hero-facts dd {
+  order: 1;
+  margin: 0;
+  color: var(--ink);
+  font: 200 clamp(1.875rem, 3.4vw, 2.75rem) / 1 var(--num);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-facts dd small {
+  margin-left: 6px;
+  color: var(--od);
+  font: 600 0.75rem/1 var(--sans);
+  letter-spacing: 0.04em;
+}
+.hero-facts dt {
+  order: 2;
+  justify-self: end;
+  color: var(--faint);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: right;
+}
 
-/* 俸給を調べる（ヒーローの右側）：すりガラスの紙。後ろの立体がにじんで見える */
+/* ---------- 5 俸給を調べる：すりガラスの紙（後ろの立体と花びらがにじむ） ---------- */
 html body .lookup {
-  grid-area: lookup;
-  padding: 26px;
+  grid-column: 8 / 13;
+  grid-row: 4 / 7;
+  padding: 28px;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
   background: var(--card);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
   backdrop-filter: blur(18px) saturate(1.2);
-  box-shadow: 0 30px 60px -40px rgba(28, 30, 24, 0.45);
+  box-shadow: 0 30px 60px -40px rgba(27, 30, 23, 0.4);
 }
 .lookup-head {
   display: flex;
@@ -389,49 +521,46 @@ html body .lookup {
 .lookup-head h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 1.0625rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font: 600 1rem/1.4 var(--sans);
+  letter-spacing: 0.06em;
 }
 .lookup-head h2::before {
   content: "[01] ";
   color: var(--od);
-  font: 600 0.75rem/1 var(--mono);
-  letter-spacing: 0.04em;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.06em;
 }
 .lookup-head span {
   color: var(--faint);
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 html body .lookup .fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 html body .lookup label {
   display: block;
   color: var(--faint);
-  font-size: 0.6875rem;
-  font-weight: 700;
+  font: 600 0.6875rem/1.4 var(--sans);
   letter-spacing: 0.12em;
 }
 html body .lookup select {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  height: 50px;
+  height: 48px;
   margin-top: 8px;
   padding: 0 40px 0 14px;
   border: 1px solid var(--line-2);
-  border-radius: 4px;
+  border-radius: var(--r);
   background-color: rgba(255, 255, 255, 0.7);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234a5a26' stroke-width='1.8'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234a5a26' stroke-width='1.6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   color: var(--ink);
-  font: 600 0.9375rem/1 var(--sans);
+  font: 500 0.9375rem/1 var(--sans);
   cursor: pointer;
   transition: border-color 0.2s;
 }
@@ -447,9 +576,9 @@ html body .lookup select:focus:not(:focus-visible) {
   outline: 0;
 }
 html body .lookup .result {
-  margin-top: 22px;
-  padding: 0;
   display: block;
+  margin-top: 24px;
+  padding: 0;
   border: 0;
   background: none;
   box-shadow: none;
@@ -459,26 +588,25 @@ html body .lookup #detail {
   margin: 0;
   color: var(--dim);
   font-size: 0.8125rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 html body .lookup .result strong {
   display: block;
   margin-top: 8px;
   color: var(--ink);
-  font: 900 clamp(2.75rem, 5vw, 4.25rem) / 1 var(--num);
-  letter-spacing: -0.045em;
+  font: 200 clamp(2.75rem, 5vw, 4.5rem) / 1 var(--num);
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 html body .lookup .result strong span {
   margin-left: 8px;
   color: var(--od);
-  font: 700 0.9375rem/1 var(--sans);
-  letter-spacing: 0.04em;
+  font: 600 0.875rem/1 var(--sans);
+  letter-spacing: 0.06em;
 }
-/* 昇給の見通し：1〜3年後の号俸と金額を細い行で並べる */
 .outlook {
-  margin-top: 20px;
-  padding-top: 14px;
+  margin-top: 24px;
+  padding-top: 16px;
   border-top: 1px solid var(--line-2);
 }
 .outlook-head {
@@ -491,7 +619,7 @@ html body .lookup .result strong span {
 .outlook-head span {
   color: var(--ink);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 .outlook-head small {
   color: var(--faint);
@@ -506,8 +634,8 @@ html body .lookup .result strong span {
   display: grid;
   grid-template-columns: 4.5em 1fr auto auto;
   align-items: baseline;
-  gap: 10px;
-  padding: 7px 0;
+  gap: 12px;
+  padding: 8px 0;
   border-bottom: 1px dashed var(--line-2);
   color: var(--dim);
   font-size: 0.75rem;
@@ -517,17 +645,17 @@ html body .lookup .result strong span {
 }
 #outlook b {
   color: var(--faint);
-  font-weight: 500;
+  font-weight: 400;
 }
 #outlook strong {
   color: var(--ink);
-  font: 800 0.9375rem/1 var(--num);
+  font: 500 0.9375rem/1 var(--num);
   font-variant-numeric: tabular-nums;
 }
 #outlook em {
   min-width: 5.5em;
   color: var(--od);
-  font: 700 0.75rem/1 var(--num);
+  font: 600 0.75rem/1 var(--num);
   font-style: normal;
   text-align: right;
 }
@@ -535,78 +663,63 @@ html body .lookup .result strong span {
   display: block;
   color: var(--faint);
 }
-/* 俸給表では、見通しの号俸を細い枠で示す */
-html body .paytable td.ahead {
-  color: var(--ink);
-  box-shadow: inset 0 0 0 1px rgba(74, 90, 38, 0.45);
-  background-image: linear-gradient(rgba(74, 90, 38, 0.06), rgba(74, 90, 38, 0.06));
-}
 html body .lookup > .note {
   margin-top: 20px;
-  padding-top: 14px;
+  padding-top: 16px;
   border-top: 1px solid var(--line-2);
   color: var(--faint);
   font-size: 0.6875rem;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
-/* ヒーロー下の数字：参考サイトの番号つきの行のように、細い線で区切って縦に並べる */
-.hero-facts {
-  grid-area: facts;
-  counter-reset: fact;
-  margin: 48px 0 0;
-  padding: 0;
+/* ---------- 6 流れる帯：細い線にはさまれた小さな文字（目盛りのような帯） ---------- */
+.ticker {
+  overflow: hidden;
+  margin: 0 0 72px;
   border-top: 1px solid var(--line-2);
-}
-.hero-facts > div {
-  counter-increment: fact;
-  display: grid;
-  grid-template-columns: 3.2em auto 1fr;
-  align-items: baseline;
-  gap: 16px;
-  padding: 14px 0;
   border-bottom: 1px solid var(--line-2);
+  background: rgba(241, 240, 235, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--dim);
+  white-space: nowrap;
+  user-select: none;
 }
-.hero-facts > div::before {
-  content: "[" counter(fact, decimal-leading-zero) "]";
-  color: var(--faint);
-  font: 500 0.6875rem/1 var(--mono);
+.ticker-track {
+  display: inline-flex;
+  animation: ticker 70s linear infinite;
 }
-.hero-facts dd {
-  order: 1;
-  margin: 0;
-  color: var(--ink);
-  font: 900 clamp(1.75rem, 3.4vw, 2.75rem) / 1 var(--num);
-  letter-spacing: -0.045em;
-  font-variant-numeric: tabular-nums;
+.ticker-track span {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px;
+  line-height: 1;
+  letter-spacing: 0.24em;
 }
-.hero-facts dd small {
-  margin-left: 6px;
-  color: var(--od);
-  font: 700 0.75rem/1 var(--sans);
-  letter-spacing: 0;
+.ticker-track span i {
+  width: 5px;
+  height: 5px;
+  background: var(--od);
+  transform: rotate(45deg);
 }
-.hero-facts dt {
-  order: 2;
-  justify-self: end;
-  color: var(--faint);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  text-align: right;
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-/* ---------- 本文のカード：枠で囲まず、上の太い線と番号で区切る ---------- */
+/* ---------- 7 俸給表：目盛りの行（[02] と仕様3つ）→ 見出し → 説明と案内 → 表 ---------- */
 html body .layout {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px 40px;
+  max-width: none;
+  margin: 0 var(--edge-x);
+  padding: 0;
 }
 html body main.layout > section.card {
   position: relative;
-  margin: 0 0 24px;
-  padding: 40px 0 8px;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-top: 2px solid var(--ink);
   border-radius: 0;
   background: none;
   box-shadow: none;
@@ -614,61 +727,102 @@ html body main.layout > section.card {
   overflow: visible;
 }
 html body .cap {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
   color: var(--od);
-  font: 600 0.6875rem/1.4 var(--mono);
-  letter-spacing: 0.18em;
 }
 html body .cap::before {
-  content: "[02]";
-  width: auto;
-  height: auto;
-  background: none;
+  content: "[02] ";
   color: var(--faint);
-  letter-spacing: 0.04em;
 }
 html body .section-title {
-  margin: 14px 0 10px;
+  margin: 16px 0 8px;
   color: var(--ink);
-  font: 900 clamp(1.75rem, 4.4vw, 3.5rem) / 1.08 var(--sans);
-  letter-spacing: -0.04em;
+  font: 500 clamp(1.75rem, 3.6vw, 3rem) / 1.15 var(--sans);
+  letter-spacing: -0.03em;
 }
 html body main .sub {
   color: var(--dim);
   font-size: 0.875rem;
   line-height: 1.8;
 }
-
-/* 俸給表：明るい紙の上に、横の細い線だけで読ませる */
 html body .paytable .titleline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line-2);
+}
+html body .paytable .titleline > div {
+  display: contents;
+}
+html body .paytable .titleline .cap {
+  grid-column: 1 / 7;
+  grid-row: 1;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-2);
+  line-height: 1.4;
+}
+.sec-meta {
+  grid-column: 7 / 13;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-2);
+  color: var(--faint);
+  line-height: 1.4;
+}
+html body .paytable .titleline .section-title {
+  grid-column: 1 / 13;
+  grid-row: 2;
+  margin: 48px 0 16px;
+}
+html body .paytable .titleline .sub {
+  grid-column: 1 / 9;
+  grid-row: 3;
+  align-self: center;
+  margin: 0;
 }
 html body .paytable .hint {
-  color: var(--faint);
-  font-size: 0.75rem;
+  grid-column: 9 / 13;
+  grid-row: 3;
+  justify-self: end;
+  align-self: center;
+  padding: 6px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
 }
 html body .paytable .scroll {
-  margin-top: 24px;
+  margin-top: 32px;
   max-height: 560px;
   overflow: auto;
   border: 1px solid var(--line-2);
   border-radius: var(--r);
-  background: rgba(246, 245, 241, 0.85);
+  background: rgba(246, 245, 241, 0.88);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   scrollbar-width: thin;
-  scrollbar-color: rgba(28, 30, 24, 0.3) transparent;
+  scrollbar-color: rgba(27, 30, 23, 0.28) transparent;
+}
+html body .paytable .scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html body .paytable .scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(27, 30, 23, 0.28);
+}
+html body .paytable .scroll::-webkit-scrollbar-track,
+html body .paytable .scroll::-webkit-scrollbar-corner {
+  background: transparent;
 }
 html body .paytable table {
   border-collapse: separate;
   border-spacing: 0;
-  font: 500 0.8125rem/1 var(--num);
+  font: 400 0.8125rem/1 var(--num);
   font-variant-numeric: tabular-nums;
 }
 html body .paytable th,
@@ -680,11 +834,11 @@ html body .paytable thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 14px 16px;
-  background: var(--ink);
-  color: var(--paper-2);
-  font: 700 0.75rem/1.3 var(--sans);
-  letter-spacing: 0.06em;
+  padding: 16px;
+  background: var(--paper-2);
+  color: var(--dim);
+  font: 500 0.6875rem/1.3 var(--sans);
+  letter-spacing: 0.1em;
   text-align: right;
   border-bottom: 1px solid var(--ink);
   white-space: nowrap;
@@ -701,83 +855,130 @@ html body .paytable thead th:first-child {
 }
 html body .paytable tbody th {
   z-index: 1;
-  padding: 11px 16px;
-  background: #e3e1d9;
+  padding: 12px 16px;
+  background: #ebe9e2;
   color: var(--dim);
-  font: 600 0.75rem/1 var(--mono);
+  font: 500 0.6875rem/1 var(--mono);
 }
 html body .paytable tbody tr td,
 html body .paytable tbody tr:nth-child(even) td:not(:first-child) {
-  padding: 11px 16px;
+  padding: 12px 16px;
   background: transparent;
   color: var(--ink-2);
   text-align: right;
   white-space: nowrap;
 }
 html body .paytable tbody tr:hover td {
-  background: rgba(74, 90, 38, 0.08);
+  background: rgba(74, 90, 38, 0.07);
   color: var(--ink);
 }
-/* 選んだ号俸：墨の面に白い数字 */
 html body .paytable td.highlight {
   background: var(--ink) !important;
   color: var(--paper-2) !important;
-  font-weight: 800;
+  font-weight: 600;
   box-shadow: none;
   border-radius: 0;
 }
 html body .paytable tr:has(td.highlight) th {
-  color: var(--ink);
   background: #d6d9c4;
+  color: var(--ink);
 }
-html body main .source {
-  margin-top: 18px;
-  padding-top: 0;
-  border-top: 0;
-  color: var(--faint);
+html body .paytable td.ahead {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(74, 90, 38, 0.45);
+  background-image: linear-gradient(rgba(74, 90, 38, 0.06), rgba(74, 90, 38, 0.06));
+}
+
+/* ---------- 8 出典：1〜2列に [03] SOURCE、3〜12列に本文 ---------- */
+html body main .paytable .source {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+  color: var(--dim);
   font-size: 0.75rem;
-  line-height: 1.8;
+  line-height: 1.9;
+}
+html body main .paytable .source::before {
+  content: "[03] SOURCE";
+  grid-column: 1 / 3;
+  color: var(--od);
+  line-height: 2.4;
+}
+html body main .paytable .source .source-body {
+  grid-column: 3 / 13;
 }
 html body main .source a {
   color: var(--od);
 }
+html body .update-log {
+  margin: 16px 0;
+  border-top: 1px dashed var(--line-2);
+  border-bottom: 1px dashed var(--line-2);
+}
+html body .update-log summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  list-style: none;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+html body .update-log summary::-webkit-details-marker {
+  display: none;
+}
+html body .update-log summary::after {
+  content: "+";
+  color: var(--od);
+  font: 500 1rem/1 var(--mono);
+}
+html body .update-log[open] summary::after {
+  content: "−";
+}
+html body .update-log ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+}
 
-/* ---------- フッター：墨の地に、画面の幅いっぱいの大きな文字 ---------- */
+/* ---------- 9 フッター：紙の地。上に墨の太線、[04] INFO・ブランド・根拠、下端に大きな文字 ---------- */
 html body .foot {
   max-width: none;
   margin: 72px 0 0;
-  padding: 0;
-  border-top: 0;
-  background: var(--ink);
-  color: #c9ccbf;
+  padding: 0 0 20px !important;
+  border-top: 2px solid var(--ink);
+  background: none;
+  color: var(--dim);
   overflow: hidden;
-  color-scheme: dark;
 }
 html body .footer-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 56px 24px 0;
+  max-width: none;
+  margin: 0 var(--edge-x);
+  padding: 40px 0 0;
 }
 .footer-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px 48px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
 }
-html body .foot .brand,
-html body .foot .brand .brand-name {
-  color: var(--paper-2);
+.footer-grid::before {
+  content: "[04] INFO";
+  grid-column: 1 / 3;
+  padding-top: 6px;
+  color: var(--od);
 }
-html body .foot .brand-mark rect {
-  fill: var(--od);
+html body .footer-brand {
+  grid-column: 3 / 8;
 }
 html body .footer-brand p {
-  margin: 14px 0 0;
-  color: #c9ccbf;
+  margin: 16px 0 0;
+  color: var(--dim);
   font-size: 0.8125rem;
 }
 html body .footer-nav {
+  grid-column: 9 / 13;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -785,28 +986,30 @@ html body .footer-nav {
 }
 .footer-h {
   margin: 0 0 4px;
-  color: #a9ae9c;
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.2em;
+  color: var(--od);
+  letter-spacing: 0.08em;
 }
 html body .footer-nav a {
   padding: 0;
   border: 0;
   background: none;
-  color: #dcdfd2;
-  font: 500 0.8125rem/1.5 var(--sans);
-  text-decoration: none;
+  color: var(--ink);
+  font: 500 0.8125rem/1.6 var(--sans);
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 4px;
   cursor: pointer;
   transition: color 0.2s;
 }
-html body .footer-nav a:hover {
-  color: #fff;
+html body .footer-nav a:hover,
+.to-top:hover {
+  color: var(--od);
 }
 html body .footer-note {
-  margin: 40px 0 0;
-  padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  color: #b3b8a7;
+  margin: 40px 0 0 calc(100% / 6);
+  padding-top: 24px;
+  border-top: 1px solid var(--line-2);
+  color: var(--dim);
   font-size: 0.75rem;
   line-height: 1.8;
 }
@@ -814,44 +1017,32 @@ html body .footer-note {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 10px;
+  margin: 8px 0 0 calc(100% / 6);
   font-size: 0.75rem;
 }
 html body .footer-copy {
-  color: #b3b8a7;
+  color: var(--dim);
 }
 .to-top {
-  color: #dcdfd2;
+  color: var(--ink);
   text-decoration: none;
 }
-.to-top:hover {
-  color: #fff;
-}
-html body .foot :is(a, button):focus-visible {
-  outline-color: var(--brass) !important;
-}
-/* 画面の幅いっぱいの大きな文字（上の部分だけ見せる。参考サイトの下端の大きな文字） */
+/* 画面の幅いっぱいの大きな文字（欠けずに、下端にぴったり） */
 .footer-word {
-  margin: 36px 0 0;
-  height: 0.74em;
-  overflow: hidden;
-  font: 900 clamp(2.5rem, 10.4vw, 9.75rem) / 1 var(--num);
-  letter-spacing: -0.06em;
+  margin: 48px 0 0;
+  overflow: visible;
+  color: var(--ink);
+  font: 600 clamp(2.5rem, 10.4vw, 9.75rem) / 0.84 var(--sans);
+  letter-spacing: -0.05em;
   text-align: center;
   white-space: nowrap;
-  color: var(--paper);
   user-select: none;
 }
-.foot {
-  padding-bottom: 0 !important;
-}
-
-/* ---------- 右下の丸ボタンは使わない（入口はヘッダー・ヒーローに） ---------- */
 html body .sim-launch {
   display: none !important;
 }
 
-/* ---------- 画面に入ったら下から出す ---------- */
+/* ---------- 10 動き：画面に入ったら下から。最初の画面は順に ---------- */
 .reveal-ready .reveal {
   opacity: 0;
   transform: translateY(28px);
@@ -863,33 +1054,190 @@ html body .sim-launch {
   opacity: 1;
   transform: none;
 }
-.hero-copy > *,
-.hero-meta,
+html body .hero .hero-meta,
+html body .hero .hero-chip,
+html body .hero .hero-lead,
+html body .hero-actions,
+.hero-facts,
 html body .hero .lookup {
   animation: rise-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.hero-copy > :nth-child(2) {
-  animation-delay: 0.08s;
-}
-.hero-copy > :nth-child(3) {
-  animation-delay: 0.16s;
-}
-.hero-copy > :nth-child(4) {
+html body .hero .hero-lead {
   animation-delay: 0.22s;
 }
-.hero-copy > :nth-child(5) {
-  animation-delay: 0.28s;
+html body .hero-actions {
+  animation-delay: 0.3s;
+}
+.hero-facts {
+  animation-delay: 0.38s;
 }
 html body .hero .lookup {
-  animation-delay: 0.2s;
+  animation-delay: 0.26s;
 }
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(20px);
   }
 }
 
+/* ---------- 11 狭い幅：1列に戻す（背景の罫は4列） ---------- */
+@media (max-width: 960px) {
+  :root {
+    --edge-x: 20px;
+  }
+  .bg-scene .bg-cols {
+    background-size: calc(100% / 4) 100%;
+  }
+  html body .site-nav {
+    display: none;
+  }
+  html body .brand {
+    grid-column: 1 / 8;
+  }
+  html body .head-cta {
+    grid-column: 8 / 13;
+  }
+  html body .hero-in {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    padding-bottom: 64px;
+  }
+  html body .hero .hero-meta,
+  html body .hero .hero-chip,
+  html body .hero h1,
+  html body .hero .hero-lead,
+  html body .hero-actions,
+  .hero-facts,
+  html body .lookup {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    padding-right: 0;
+  }
+  html body .hero .hero-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+    margin-bottom: 40px;
+  }
+  html body .hero h1 {
+    margin-bottom: 32px;
+  }
+  html body .lookup {
+    margin-top: 40px;
+  }
+  html body .paytable .titleline,
+  html body main .paytable .source,
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 12px;
+  }
+  html body .paytable .titleline .cap,
+  html body .paytable .titleline .section-title,
+  html body .paytable .titleline .sub,
+  html body .paytable .hint,
+  html body main .paytable .source::before,
+  html body main .paytable .source .source-body,
+  .footer-grid::before,
+  html body .footer-brand,
+  html body .footer-nav {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  html body .paytable .titleline .section-title {
+    margin-top: 24px;
+  }
+  html body .paytable .hint {
+    justify-self: start;
+  }
+  .sec-meta {
+    display: none;
+  }
+  html body .footer-note,
+  .footer-bottom {
+    margin-left: 0;
+  }
+  html body #simulatorDialog .sim-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  :root {
+    --edge-x: 16px;
+  }
+  html body .site-head .top {
+    padding: 16px 0;
+  }
+  html body .hero h1 {
+    font-size: clamp(1.875rem, 9.4vw, 2.75rem);
+  }
+  html body .hero .hero-meta {
+    letter-spacing: 0.06em;
+  }
+  html body .hero .hero-meta span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  html body .hero-actions .btn {
+    flex: 1 1 100%;
+  }
+  html body .lookup {
+    padding: 22px 18px;
+  }
+  .hero-facts > div {
+    grid-template-columns: 1fr 2fr 2fr;
+  }
+  .hero-facts dt {
+    font-size: 0.6875rem;
+  }
+  html body #simulatorDialog .sim-metrics > .sim-net {
+    grid-column: 1 / -1;
+  }
+}
+/* 幅320〜380：ヘッダーの丸いボタンが画面の外に出ないよう詰める */
+@media (max-width: 380px) {
+  html body .brand {
+    gap: 8px;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+  html body .head-cta {
+    gap: 4px;
+    padding: 8px 10px;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip-dot,
+  html body .hero h1 .ln,
+  html body .hero .hero-meta,
+  html body .hero .hero-chip,
+  html body .hero .hero-lead,
+  html body .hero-actions,
+  .hero-facts,
+  html body .hero .lookup,
+  .ticker-track,
+  #simChart.fx-grow g {
+    animation: none !important;
+  }
+  .scroll-progress {
+    display: none !important;
+  }
+  .reveal-ready .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+ ===================================================================
+   12 シミュレーター（ダイアログ）：ページと同じ決まり（紙・墨・オリーブ・角4px・[番号]）
+   ===================================================================
+*/
 /* ---------- シミュレーター：紙のシート（ページと同じ色づかい） ---------- */
 html body #simulatorDialog::backdrop {
   background: rgba(28, 30, 24, 0.55);
@@ -921,7 +1269,7 @@ html body #simulatorDialog .cap {
   color: var(--od);
 }
 html body #simulatorDialog .cap::before {
-  content: "[SIM]";
+  content: "[SIM] ";
   background: none;
   color: var(--faint);
 }
@@ -1000,114 +1348,6 @@ html body #notesPage::backdrop {
   from {
     transform: scaleY(0);
     opacity: 0;
-  }
-}
-
-/* ---------- タブレット・スマホ ---------- */
-@media (max-width: 960px) {
-  html body .site-nav {
-    display: none;
-  }
-  html body .head-cta {
-    margin-left: auto;
-  }
-  html body .hero-in {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "meta"
-      "chip"
-      "title"
-      "lead"
-      "actions"
-      "lookup"
-      "facts";
-    grid-template-rows: none;
-    padding: 20px 20px 64px;
-  }
-  html body .lookup {
-    margin-top: 40px;
-  }
-  html body .hero .hero-meta {
-    margin-bottom: 36px;
-  }
-  html body .layout {
-    padding: 0 16px 32px;
-  }
-  html body #simulatorDialog .sim-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 560px) {
-  html body .site-head .top {
-    padding: 16px;
-  }
-  html body .brand-name {
-    font-size: 0.8125rem;
-  }
-  html body .head-cta {
-    padding: 9px 12px;
-  }
-  .hero-meta span:nth-child(2) {
-    display: none;
-  }
-  html body .hero h1 {
-    font-size: clamp(2rem, 10.6vw, 3rem);
-    margin-bottom: 28px;
-  }
-  html body .hero-actions .btn {
-    flex: 1 1 100%;
-  }
-  html body .lookup {
-    padding: 22px 18px;
-  }
-  html body .lookup .fields {
-    grid-template-columns: 1fr 1fr;
-  }
-  .hero-facts > div {
-    grid-template-columns: 2.6em auto 1fr;
-    gap: 10px;
-  }
-  .hero-facts dt {
-    font-size: 0.6875rem;
-  }
-  html body #simulatorDialog .sim-metrics > .sim-net {
-    grid-column: 1 / -1;
-  }
-}
-/* 幅320〜380のスマホ：ヘッダーの丸いボタンが画面の外に出ないよう詰める */
-@media (max-width: 380px) {
-  html body .site-head .top {
-    gap: 10px;
-    padding: 14px 12px;
-  }
-  html body .brand {
-    gap: 8px;
-  }
-  html body .brand-name {
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-  }
-  html body .head-cta {
-    gap: 4px;
-    padding: 8px 10px;
-    font-size: 0.6875rem;
-    letter-spacing: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .chip-dot,
-  .hero-copy > *,
-  .hero-meta,
-  html body .hero .lookup,
-  #simChart.fx-grow g {
-    animation: none !important;
-  }
-  .reveal-ready .reveal {
-    opacity: 1;
-    transform: none;
-  }
-  html {
-    scroll-behavior: auto;
   }
 }
 
@@ -1640,98 +1880,6 @@ html body #simulatorDialog .a-child [hidden] {
   display: none;
 }
 
-/* ===================================================================
-   v4.1 統一（2026-11-22）：ページ全体で形・線・ラベル・色の決まりをそろえる
-   ・押せるもの（ボタン・ひな形・追加）＝丸め切る（999px）。箱（カード・欄・表）＝角 4px。ダイアログ＝角 8px
-   ・線は細い1本（--line-2）。影は使わない（浮かせるのは「俸給を調べる」のすりガラスだけ）
-   ・ラベルは等幅の英字と [番号]。強調は墨の面。色は墨・オリーブドラブ・カーキだけ
-   =================================================================== */
-:root {
-  --r: 4px;
-  --brass: #d2c595;
-}
-html body #simulatorDialog,
-html body #notesPage {
-  border-radius: 8px;
-}
-/* ヒーローの小さな札：枠をなくし、点と文字だけのラベルに */
-html body .hero .hero-chip {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  font: 600 0.75rem/1.4 var(--sans);
-}
-
-/* ボタン：線だけのボタンは、かざすと墨で塗りつぶす */
-html body .btn-ghost:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--paper-2);
-}
-
-/* 流れる帯：ヒーローと本文の間。参考サイトの大きな文字の帯（飾りなので読み上げない） */
-.ticker {
-  overflow: hidden;
-  margin: 0 0 72px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  background: var(--ink);
-  color: var(--paper);
-  white-space: nowrap;
-  user-select: none;
-}
-.ticker-track {
-  display: inline-flex;
-  animation: ticker 48s linear infinite;
-}
-.ticker-track span {
-  display: inline-flex;
-  align-items: center;
-  gap: 28px;
-  padding: 16px 14px;
-  font: 900 clamp(1.25rem, 2.6vw, 2rem) / 1 var(--num);
-  letter-spacing: -0.02em;
-}
-.ticker-track span i {
-  width: 10px;
-  height: 10px;
-  background: var(--brass);
-  transform: rotate(45deg);
-}
-@keyframes ticker {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* 画面の上端の細い線：どこまで読んだか（スクロールに合わせて伸びる。対応するブラウザだけ） */
-.scroll-progress {
-  display: none;
-}
-@supports (animation-timeline: scroll()) {
-  .scroll-progress {
-    display: block;
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    z-index: 20;
-    height: 2px;
-    background: var(--od);
-    transform-origin: left;
-    transform: scaleX(0);
-    animation: progress-grow linear both;
-    animation-timeline: scroll(root);
-    pointer-events: none;
-  }
-  @keyframes progress-grow {
-    to {
-      transform: scaleX(1);
-    }
-  }
-}
-
 /* ---------- シミュレーター：ページと同じ決まりに ---------- */
 html body #simulatorDialog .simulator {
   background: var(--paper-2);
@@ -1809,501 +1957,10 @@ html body #simulatorDialog .sim-sticky-text :is(small, span) {
   color: #cfcbb4;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track {
-    animation: none;
-  }
-  .scroll-progress {
-    display: none !important;
-  }
-}
-
-/* ===================================================================
-   v4.2（2026-11-22）：流れる帯・俸給表の見出し・出典・フッターを、ページの他の部分と同じ決まりに
-   ・帯は墨の太い帯をやめ、細い線にはさまれた小さな等幅の文字に（目盛りのような帯）
-   ・見出しの左に [02]、下の出典は左に [03] SOURCE、フッターは紙の地のまま上に墨の太線と [04]
-   =================================================================== */
-.ticker {
-  margin: 0 0 64px;
-  border-top: 1px solid var(--line-2);
-  border-bottom: 1px solid var(--line-2);
-  background: rgba(241, 240, 235, 0.55);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  color: var(--dim);
-}
-.ticker-track {
-  animation-duration: 70s;
-}
-.ticker-track span {
-  gap: 22px;
-  padding: 11px 11px;
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.22em;
-}
-.ticker-track span i {
-  width: 5px;
-  height: 5px;
-  background: var(--od);
-}
-
-/* 俸給表の見出し：太線は帯に任せ、左に番号・右下に操作の案内 */
-html body main.layout > section.card {
-  padding-top: 0;
-  border-top: 0;
-}
-html body .paytable .titleline {
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--line-2);
-}
-html body .paytable .hint {
-  padding: 6px 12px;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  color: var(--dim);
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.06em;
-}
-html body .paytable .scroll {
-  margin-top: 28px;
-}
-html body .paytable .scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-html body .paytable .scroll::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(28, 30, 24, 0.28);
-}
-html body .paytable .scroll::-webkit-scrollbar-track,
-html body .paytable .scroll::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* 出典：左に [03] SOURCE、右に本文（細い線で区切る） */
-html body main .paytable .source {
-  display: grid;
-  grid-template-columns: 9.5em minmax(0, 1fr);
-  column-gap: 24px;
-  margin-top: 40px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line-2);
-  color: var(--dim);
-}
-html body main .paytable .source::before {
-  content: "[03] SOURCE";
-  color: var(--od);
-  font: 600 0.6875rem/2.2 var(--mono);
-  letter-spacing: 0.14em;
-}
-html body .update-log {
-  margin: 14px 0;
-  border-top: 1px dashed var(--line-2);
-  border-bottom: 1px dashed var(--line-2);
-}
-html body .update-log summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  list-style: none;
-  color: var(--ink);
-}
-html body .update-log summary::-webkit-details-marker {
-  display: none;
-}
-html body .update-log summary::after {
-  content: "+";
-  color: var(--od);
-  font: 500 1rem/1 var(--mono);
-}
-html body .update-log[open] summary::after {
-  content: "−";
-}
-html body .update-log ul {
-  margin: 0 0 12px;
-}
-
-/* フッター：紙の地のまま。上に墨の太線、左にブランド、右に [04] 根拠。下端に墨の大きな文字 */
-html body .foot {
-  margin-top: 56px;
-  border-top: 2px solid var(--ink);
-  background: none;
-  color: var(--dim);
-  color-scheme: light;
-}
-html body .footer-inner {
-  padding-top: 40px;
-}
-html body .foot .brand,
-html body .foot .brand .brand-name {
-  color: var(--ink);
-}
-html body .foot .brand-mark rect {
-  fill: var(--ink);
-}
-html body .footer-brand p,
-html body .footer-note,
-html body .footer-copy {
-  color: var(--dim);
-}
-.footer-h {
-  color: var(--od);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-}
-.footer-h::before {
-  content: "[04] ";
-  color: var(--faint);
-}
-html body .footer-nav a,
-.to-top {
-  color: var(--ink);
-}
-html body .footer-nav a:hover,
-.to-top:hover {
-  color: var(--od);
-}
-html body .footer-nav a {
-  text-decoration: underline;
-  text-decoration-color: var(--line-2);
-  text-underline-offset: 4px;
-}
-html body .footer-note {
-  border-top-color: var(--line-2);
-}
-html body .foot :is(a, button):focus-visible {
-  outline-color: var(--od) !important;
-}
-/* 大きな文字は欠けずに全部見せ、下端にぴったり置く */
-.footer-word {
-  height: auto;
-  margin: 48px 0 0;
-  overflow: visible;
-  line-height: 0.74;
-  color: var(--ink);
-  transform: translateY(0.02em);
-}
 
 /* シミュレーターの「詳しい説明」：紙の上で読める濃さのオリーブに */
 html body #simulatorDialog .note-link {
   color: var(--od);
-}
-
-@media (max-width: 600px) {
-  html body main .paytable .source {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  html body main .paytable .source::before {
-    margin-bottom: 4px;
-  }
-}
-/* 出典とフッターの間の空きを詰め、下端の大きな文字は欠けないように少し余白を置く */
-html body main.layout {
-  padding-bottom: 0;
-}
-html body main.layout > section.card:last-child {
-  margin-bottom: 0;
-}
-html body .foot {
-  margin-top: 64px;
-  padding-bottom: 20px !important;
-}
-.footer-word {
-  line-height: 0.84;
-  transform: none;
-}
-
-/* ===================================================================
-   v4.3 細密（2026-11-22）：12列の格子に、文字を均等に細かく並べる
-   ・本文の幅（最大 1152px）を12列に割り、背景の縦の罫を列の境目に合わせる。部品の左端は必ず罫の上
-   ・余白は 8 の倍数。ラベルは 10px の等幅の英字。見出しと大きな数字は細い字の太さで繊細に
-   =================================================================== */
-:root {
-  --edge-x: max(24px, calc(50% - 576px)); /* 本文の左右の端 */
-}
-/* 背景の縦の罫：本文の端と12列の境目に */
-.bg-scene .bg-cols {
-  inset: 0 var(--edge-x);
-  background-image: linear-gradient(90deg, rgba(28, 30, 24, 0.075) 1px, transparent 1px);
-  background-size: calc(100% / 12) 100%;
-  border-right: 1px solid rgba(28, 30, 24, 0.075);
-}
-.bg-scene .bg-grid {
-  background-size: 16px 16px;
-  background-image:
-    linear-gradient(rgba(28, 30, 24, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(28, 30, 24, 0.03) 1px, transparent 1px);
-}
-
-/* ---------- 文字：細く、小さく、字間をそろえる ---------- */
-html body {
-  font-size: 15px;
-  letter-spacing: 0.02em;
-}
-html body .brand {
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.12em;
-}
-html body .site-nav a,
-html body .head-cta {
-  font: 500 0.6875rem/1 var(--mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-html body .hero h1 {
-  font-weight: 500;
-  font-size: clamp(2.25rem, 6.2vw, 5.375rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-}
-html body .hero .hero-lead {
-  font-size: 0.875rem;
-  line-height: 2;
-  letter-spacing: 0.03em;
-}
-html body .btn {
-  min-height: 48px;
-  padding: 0 24px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.1em;
-}
-html body .section-title {
-  font-weight: 500;
-  font-size: clamp(1.75rem, 3.6vw, 3rem);
-  letter-spacing: -0.025em;
-}
-html body .lookup .result strong {
-  font-weight: 300;
-  letter-spacing: -0.04em;
-}
-html body .lookup .result strong span {
-  font-weight: 500;
-}
-.hero-facts dd {
-  font-weight: 300;
-  letter-spacing: -0.035em;
-}
-#outlook strong {
-  font-weight: 500;
-}
-/* 小さなラベルはすべて 10px の等幅・大文字・広い字間 */
-html body .hero .hero-meta,
-.hero-facts > div::before,
-.lookup-head span,
-html body .cap,
-.footer-h,
-html body main .paytable .source::before,
-.sec-meta,
-html body .paytable .hint {
-  font-family: var(--mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-/* ---------- ヘッダー：12列。ブランドは1列目、ナビは6〜10列、ボタンは右端 ---------- */
-html body .site-head .top {
-  max-width: none;
-  margin: 0 var(--edge-x);
-  padding: 20px 0;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 0;
-  align-items: center;
-}
-html body .brand {
-  grid-column: 1 / 5;
-}
-html body .site-nav {
-  grid-column: 6 / 11;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-}
-html body .site-nav a {
-  justify-self: start;
-}
-html body .head-cta {
-  grid-column: 11 / 13;
-  justify-self: end;
-}
-
-/* ---------- ヒーロー：12列。説明は1〜6列、「俸給を調べる」は8〜12列 ---------- */
-html body .hero-in {
-  max-width: none;
-  margin: 0 var(--edge-x);
-  padding: 24px 0 96px;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-areas: none;
-  grid-template-rows: auto auto auto auto auto 1fr;
-  column-gap: 0;
-}
-/* 4つのラベル：3列ずつ均等に。上に細い線と小さな目盛り */
-html body .hero .hero-meta {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin: 0 0 64px;
-}
-html body .hero .hero-meta span {
-  display: block;
-  padding: 10px 16px 0 0;
-  border-top: 1px solid var(--line-2);
-}
-html body .hero .hero-meta span::before {
-  content: "";
-  display: block;
-  width: 1px;
-  height: 6px;
-  margin: -10px 0 4px;
-  background: var(--ink-2);
-}
-html body .hero .hero-chip {
-  grid-column: 1 / -1;
-  grid-row: 2;
-}
-html body .hero h1 {
-  grid-column: 1 / -1;
-  grid-row: 3;
-  margin: 24px 0 56px;
-}
-html body .hero .hero-lead {
-  grid-column: 1 / 7;
-  grid-row: 4;
-  padding-right: 32px;
-}
-html body .hero-actions {
-  grid-column: 1 / 7;
-  grid-row: 5;
-  margin-top: 32px;
-}
-.hero-facts {
-  grid-column: 1 / 7;
-  grid-row: 6;
-  margin-top: 56px;
-}
-html body .lookup {
-  grid-column: 8 / 13;
-  grid-row: 4 / 7;
-}
-/* 数字の行：番号・数字・説明を同じ位置にそろえる */
-.hero-facts > div {
-  grid-template-columns: 1fr 2fr 3fr;
-  gap: 0;
-  padding: 16px 0;
-}
-
-/* ---------- 本文・帯・フッター：同じ端と12列 ---------- */
-html body .layout {
-  max-width: none;
-  margin: 0 var(--edge-x);
-  padding: 0;
-}
-/* 俸給表の見出し：1〜2列に番号と仕様、3〜12列に見出し、右下に案内 */
-html body .paytable .titleline {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 0;
-  align-items: start;
-  padding-bottom: 24px;
-}
-html body .paytable .titleline > div {
-  display: contents;
-}
-html body .paytable .titleline .cap {
-  grid-column: 1 / 3;
-  grid-row: 1;
-  padding-top: 14px;
-}
-.sec-meta {
-  grid-column: 1 / 3;
-  grid-row: 2 / 4;
-  display: grid;
-  gap: 6px;
-  margin: 16px 0 0;
-  color: var(--faint);
-}
-html body .paytable .titleline .section-title {
-  grid-column: 3 / 13;
-  grid-row: 1 / 3;
-  margin: 0 0 8px;
-}
-html body .paytable .titleline .sub {
-  grid-column: 3 / 10;
-  grid-row: 3;
-  margin: 0;
-}
-html body .paytable .hint {
-  grid-column: 10 / 13;
-  grid-row: 3;
-  justify-self: end;
-  align-self: end;
-}
-/* 表：見出しの行は紙の色にして軽く。数字は細め */
-html body .paytable thead th {
-  background: #f1f0eb;
-  color: var(--dim);
-  font: 500 0.6875rem/1.3 var(--mono);
-  letter-spacing: 0.08em;
-  border-bottom: 1px solid var(--ink);
-}
-html body .paytable tbody th {
-  background: #ebe9e2;
-  font-size: 0.6875rem;
-}
-html body .paytable tbody tr td,
-html body .paytable tbody tr:nth-child(even) td:not(:first-child) {
-  padding: 12px 16px;
-  font-weight: 400;
-}
-/* 出典：1〜2列にラベル、3〜12列に本文 */
-html body main .paytable .source {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 0;
-}
-html body main .paytable .source::before {
-  grid-column: 1 / 3;
-}
-html body main .paytable .source .source-body {
-  grid-column: 3 / 13;
-}
-/* フッター：1〜2列にラベル、3〜7列にブランド、9〜12列に根拠。下の文も3列目から */
-html body .footer-inner {
-  max-width: none;
-  margin: 0 var(--edge-x);
-  padding: 40px 0 0;
-}
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0;
-}
-.footer-grid::before {
-  content: "[04] INFO";
-  grid-column: 1 / 3;
-  padding-top: 6px;
-  color: var(--od);
-  font: 600 0.625rem/1.4 var(--mono);
-  letter-spacing: 0.2em;
-}
-html body .footer-brand {
-  grid-column: 3 / 8;
-}
-html body .footer-nav {
-  grid-column: 9 / 13;
-}
-.footer-h::before {
-  content: "";
-}
-html body .footer-note,
-.footer-bottom {
-  margin-left: calc(100% / 6);
 }
 
 /* ---------- シミュレーターも細い字に ---------- */
@@ -2319,159 +1976,14 @@ html body #simulatorDialog .sim-total strong {
   font-weight: 500;
 }
 
-/* ---------- タブレット・スマホ：1列に戻す（背景の罫は4列） ---------- */
+/* シミュレーターの結果の数字の並び（狭い幅）。上の4列の指定より後ろに置く */
 @media (max-width: 960px) {
-  :root {
-    --edge-x: 20px;
-  }
-  .bg-scene .bg-cols {
-    background-size: calc(100% / 4) 100%;
-  }
-  html body .brand {
-    grid-column: 1 / 8;
-  }
-  html body .head-cta {
-    grid-column: 8 / 13;
-  }
-  html body .hero-in {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: none;
-    padding-bottom: 64px;
-  }
-  html body .hero .hero-meta,
-  html body .hero .hero-chip,
-  html body .hero h1,
-  html body .hero .hero-lead,
-  html body .hero-actions,
-  .hero-facts,
-  html body .lookup {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    padding-right: 0;
-  }
-  html body .hero .hero-meta {
+  html body #simulatorDialog .sim-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 16px;
-    margin-bottom: 40px;
   }
-  html body .hero h1 {
-    margin-bottom: 32px;
-  }
-  .hero-facts {
-    order: 2;
-  }
-  html body .paytable .titleline,
-  html body main .paytable .source,
-  .footer-grid {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 12px;
-  }
-  html body .paytable .titleline .cap,
-  html body .paytable .titleline .section-title,
-  html body .paytable .titleline .sub,
-  html body .paytable .hint,
-  html body main .paytable .source::before,
-  html body main .paytable .source .source-body,
-  .footer-grid::before,
-  html body .footer-brand,
-  html body .footer-nav {
+}
+@media (max-width: 560px) {
+  html body #simulatorDialog .sim-metrics > .sim-net {
     grid-column: 1 / -1;
-    grid-row: auto;
   }
-  html body .paytable .hint {
-    justify-self: start;
-  }
-  .sec-meta {
-    display: none;
-  }
-  html body .footer-note,
-  .footer-bottom {
-    margin-left: 0;
-  }
-}
-@media (max-width: 560px) {
-  :root {
-    --edge-x: 16px;
-  }
-  html body .hero h1 {
-    font-size: clamp(1.875rem, 9.4vw, 2.75rem);
-  }
-  .hero-facts > div {
-    grid-template-columns: 1fr 2fr 2fr;
-  }
-}
-/* 細かい手直し：ヘッダーの下線はヒーローの目盛りの線と重なるのでなくす。日本語のラベルは字間を詰める */
-html body .site-head .top {
-  border-bottom: 0;
-}
-html body .site-nav a,
-html body .head-cta {
-  font-family: var(--sans);
-  letter-spacing: 0.1em;
-}
-html body .paytable .hint,
-.lookup-head span,
-.footer-h {
-  letter-spacing: 0.08em;
-}
-/* 狭い幅：ナビは隠す（上の 12 列のナビの指定より後ろに置く）。目盛りのラベルは字間を詰めて1行に */
-@media (max-width: 960px) {
-  html body .site-nav {
-    display: none;
-  }
-}
-@media (max-width: 560px) {
-  html body .hero .hero-meta {
-    letter-spacing: 0.06em;
-  }
-  html body .hero .hero-meta span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-/* 俸給表の見出しの並べ方（v4.3 の上書き）：ヒーローと同じ形にする
-   1行目＝細い線の上に [02] PAY TABLE（1〜6列）と仕様3つ（7〜12列を3等分）、2行目＝見出し（左端）、3行目＝説明と案内 */
-html body .paytable .titleline .cap {
-  grid-column: 1 / 7;
-  grid-row: 1;
-  padding: 10px 0 0;
-  border-top: 1px solid var(--line-2);
-}
-.sec-meta {
-  grid-column: 7 / 13;
-  grid-row: 1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--line-2);
-  line-height: 1.4;
-}
-html body .paytable .titleline .cap::after,
-.sec-meta span::before {
-  content: none;
-}
-.sec-meta span::before {
-  content: "";
-  display: block;
-  width: 1px;
-  height: 6px;
-  margin: -10px 0 4px;
-  background: var(--ink-2);
-}
-html body .paytable .titleline .section-title {
-  grid-column: 1 / 13;
-  grid-row: 2;
-  margin: 40px 0 16px;
-}
-html body .paytable .titleline .sub {
-  grid-column: 1 / 9;
-  grid-row: 3;
-  align-self: center;
-}
-html body .paytable .hint {
-  grid-column: 9 / 13;
-  grid-row: 3;
-  align-self: center;
 }

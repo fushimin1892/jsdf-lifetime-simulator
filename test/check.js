@@ -114,6 +114,15 @@ check(!/https?:\/\/fonts\.|<link[^>]+rel="preconnect"/.test(html), "index.html �
 // CSP：このサイトのファイルだけを読み込む（default-src 'none'）
 const csp = html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1] || "";
 check(/default-src 'none'/.test(csp) && /script-src 'self'(;|$)/.test(csp) && !/unsafe/.test(csp), `index.html の CSP「${csp}」`);
+// フォントはこのサイトの fonts/ だけ（font-src は 'self' だけ許す）。画面で使う文字がすべて絞ったフォントに入っているか
+check(!/font-src/.test(csp) || /font-src 'self'(;|$)/.test(csp), `index.html の CSP の font-src「${csp}」`);
+{
+  const have = new Set([...read("fonts/charset.txt").trim()]);
+  const files = ["index.html", ...["js", "data", "css"].flatMap((d) => fs.readdirSync(path.join(ROOT, d)).filter((f) => /.(js|css)$/.test(f)).map((f) => d + "/" + f))];
+  const missing = new Set();
+  for (const f of files) for (const ch of read(f)) if (ch.codePointAt(0) > 0x7e && !/[�-�]/.test(ch) && !have.has(ch)) missing.add(ch);
+  check(missing.size === 0, `フォントに入っていない文字 ${[...missing].join("")}（node tools/font-subset.js でフォントを作り直す）`);
+}
 const inlineScript = [...html.matchAll(/<script([^>]*)>/gi)].some(([, attrs]) => !/ src=/.test(attrs) && !attrs.includes("application/ld+json"));
 check(!inlineScript && !/ on[a-z]+="/i.test(html) && !/ style="/i.test(html), "index.html にインラインのスクリプト・イベント属性・style 属性がある（CSP で止まる）");
 // 利用者の入力を保存しない（以前の版の保存を消す removeItem だけ許す）
