@@ -155,12 +155,13 @@
             fields: [
               {
                 k: "base",
-                label: "勤務する駐屯地・基地",
+                label: "勤務する駐屯地・基地（所属の官署だけを表示）",
                 options: [
                   ["", "一覧にない（下で級地を選ぶ）"],
                   ...R.kanreichi.bases.map(([kind, name, pos, g], i) => [
                     String(i),
-                    `${kind}・${name}（${pos}・${g ? `${g}級地` : "支給地域外"}）`,
+                    `${name}（${pos}・${g ? `${g}級地` : "支給地域外"}）`,
+                    kind,
                   ]),
                 ],
               },
@@ -440,7 +441,7 @@
                     `<input data-k="m${n}" type="hidden" value=""><input data-k="c${n}" type="hidden" value=""><input data-k="d${n}" type="hidden" value=""></div>`;
                 }
                 const input = f.options != null
-                    ? `<select data-k="${f.k}">${f.options.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select>`
+                    ? `<select data-k="${f.k}">${f.options.map(([v, t, grp]) => `<option value="${v}"${grp ? ` data-group="${grp}"` : ""}>${t}</option>`).join("")}</select>`
                     : `<div class="unit"><input data-k="${f.k}" type="number" min="${f.min ?? 0}" max="${f.max}" step="1" inputmode="numeric" value="${f.blank ? "" : "0"}"${f.blank ? ' data-blank="1"' : ""}${f.disabled ? " disabled" : ""}><span>${f.unit}</span></div>`;
                 return `<div${f.more ? ' class="a-calc-more" hidden' : ""}><label>${f.label}</label>${input}</div>`;
               })
@@ -570,6 +571,22 @@
               out = only && !only.includes($("branch").value);
             branchNote.hidden = !out;
             branchNote.textContent = out ? `この所属では対象外です（${only.map((b) => branchNames[b]).join("・")}の手当）。` : "";
+            // 寒冷地手当の駐屯地・基地：所属（陸・海・空）の官署だけを選べるようにする。選んでいた官署が別の所属なら「一覧にない」に戻す
+            const basePick = container.querySelector(".a-calc [data-k=base]");
+            if (basePick) {
+              // iPhone の Safari は option の hidden が効かないので、選択肢を作り直す（値は RULES の一覧の番号のまま）
+              const group = { ground: "陸", maritime: "海", air: "空" }[$("branch").value],
+                before = basePick.value;
+              basePick.replaceChildren(new Option("一覧にない（下で級地を選ぶ）", ""));
+              R.kanreichi.bases.forEach(([kind, name, pos, g], i) => {
+                if (kind === group) basePick.append(new Option(`${name}（${pos}・${g ? `${g}級地` : "支給地域外"}）`, String(i)));
+              });
+              basePick.value = before;
+              if (basePick.value !== before) {
+                basePick.value = "";
+                basePick.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+            }
           };
           container.syncBranch();
           prefecture.addEventListener("change", () => {
