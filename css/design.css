@@ -1,58 +1,62 @@
 /*
  ===================================================================
-   デザイン v3（2026年10月・1から作り直し）
-   参考：scrolltide / supahero（暗い映画的なヒーローと光）、navbar.gallery（浮いたガラスのナビ）、
-         cta.gallery（白い丸ボタン＋帯）、footer.design（大きな文字のフッター）、3dicons（立体アイコン）、
-         glass.samasante（ガラスの部品）、UIエフェクト見本帳（ぼかしから現れる表示・線で囲まれる枠・カウントアップ）。
-   2026-10-31 見直し：傾くカード・浮くタグ・光るボタン・浮くナビはやめ、最初の画面で俸給を調べられる形にした。
-   方針：ページは夜の深緑。光の玉と細い方眼で奥行きを出し、カードはガラス。金色は大事な数字とボタンだけ。
-         シミュレーターは入力が多いので、明るい紙のシートにして読みやすさを優先する。
-   このファイルの見た目はこの style 1枚で決める（上の基本 style は骨組み、下のスクリプトは演出だけ）。
+   デザイン v4（2026年11月・作り直し）「作戦地図」
+   参考：mesh3d.gallery に載った Daiki Fujita のサイト（明るい紙の地・細い縦の罫と方眼・
+         とても大きな太字・小さな番号ラベル・浮かぶクロームの立体）。
+   自衛隊に合わせて：紙は地図の淡い灰、色はオリーブドラブと墨、立体は桜の形のクローム
+         （js/crystals.js が canvas に描く。外部のライブラリ・フォントは使わない）。
+   方針：文字は墨色で大きく、ラベルは等幅の小さな英字と番号（[01] など）。
+         部品は角の小さい四角と細い線。立体は飾りなので、文字の上には重ねすぎない。
+   このファイルの見た目はこの style 1枚で決める（base.css は骨組み、スクリプトは演出だけ）。
    ===================================================================
 */
 
 :root {
-  --bg: #050f0b;
-  --bg-2: #0a1a14;
-  --glass: rgba(255, 255, 255, 0.045);
-  --glass-2: rgba(255, 255, 255, 0.07);
-  --edge: rgba(255, 255, 255, 0.1);
-  --edge-2: rgba(255, 255, 255, 0.16);
-  --text: #eef4f0;
-  --dim: #a3b6ac;
-  --faint: #7d9488; /* 暗い背景の上で 4.5:1 以上 */
-  --mint: #7ee2b4;
-  --emerald: #1f7a57;
-  --gold: #ebc77c;
-  --gold-2: #c99a45;
-  --r: 22px;
+  --paper: #e7e5de;
+  --paper-2: #f1f0eb;
+  --card: rgba(246, 245, 241, 0.72);
+  --ink: #1b1e17;
+  --ink-2: #33392b;
+  --dim: #4f5647; /* 紙の上で 6:1 前後 */
+  --faint: #5f6656; /* 紙の上で 4.5:1 以上 */
+  --line: rgba(27, 30, 23, 0.14);
+  --line-2: rgba(27, 30, 23, 0.26);
+  --od: #4a5a26; /* オリーブドラブ */
+  --od-2: #3a4720;
+  --brass: #d8c48a; /* 墨の帯の上だけで使う */
+  --r: 6px;
   /* 外部フォントは読み込まない（端末のフォントを使う） */
   --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
   --num: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
-  color-scheme: dark;
+  /* 以前の名前（下の部品が使う） */
+  --gold: var(--brass);
+  --mint: var(--od);
+  color-scheme: light;
 }
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
-  background: var(--bg);
+  background: var(--paper);
 }
 html body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
+  /* 地の色は html に塗る（body に塗ると、後ろに置いた方眼と立体が隠れる） */
+  background: transparent;
+  color: var(--ink);
   font-family: var(--sans);
   font-feature-settings: "palt" 1;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
 ::selection {
-  background: rgba(235, 199, 124, 0.35);
-  color: #fff;
+  background: rgba(74, 90, 38, 0.28);
+  color: var(--ink);
 }
 
-/* ---------- 背景：漂う光の玉と細い方眼 ---------- */
+/* ---------- 背景：地図の方眼、縦の罫、四隅の十字、浮かぶ立体（canvas） ---------- */
 .bg-scene {
   position: fixed;
   inset: 0;
@@ -60,54 +64,55 @@ html body {
   overflow: hidden;
   pointer-events: none;
 }
-.bg-scene .orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.55;
-  animation: orb-drift 22s ease-in-out infinite alternate;
-}
-.bg-scene .o1 {
-  width: 620px;
-  height: 620px;
-  left: -160px;
-  top: -200px;
-  background: radial-gradient(circle, #1f7a57 0%, transparent 70%);
-}
-.bg-scene .o2 {
-  width: 520px;
-  height: 520px;
-  right: -140px;
-  top: 80px;
-  background: radial-gradient(circle, #8a6a2c 0%, transparent 70%);
-  opacity: 0.4;
-  animation-duration: 28s;
-}
-.bg-scene .o3 {
-  width: 700px;
-  height: 700px;
-  left: 30%;
-  top: 70vh;
-  background: radial-gradient(circle, #124c3a 0%, transparent 70%);
-  animation-duration: 34s;
-}
 .bg-scene .bg-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+    linear-gradient(rgba(27, 30, 23, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 30, 23, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
-@keyframes orb-drift {
-  to {
-    transform: translate(80px, 60px) scale(1.12);
-  }
+/* 12列の縦の罫（参考サイトの縦線） */
+.bg-scene .bg-cols {
+  position: absolute;
+  inset: 0 max(16px, calc(50% - 600px));
+  background-image: linear-gradient(90deg, rgba(27, 30, 23, 0.09) 1px, transparent 1px);
+  background-size: calc(100% / 6) 100%;
+  border-right: 1px solid rgba(27, 30, 23, 0.09);
+}
+.bg-scene .bg-mark {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(var(--ink-2), var(--ink-2)) center / 1px 100% no-repeat,
+    linear-gradient(var(--ink-2), var(--ink-2)) center / 100% 1px no-repeat;
+  opacity: 0.5;
+}
+.bg-scene .m1 {
+  left: 14px;
+  top: 14px;
+}
+.bg-scene .m2 {
+  right: 14px;
+  top: 14px;
+}
+.bg-scene .m3 {
+  left: 14px;
+  bottom: 14px;
+}
+.bg-scene .m4 {
+  right: 14px;
+  bottom: 14px;
+}
+.bg-scene .crystals {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-/* ---------- ナビ：ページの上端に置くだけの細い帯（スクロールしても追ってこない） ---------- */
+/* ---------- ナビ：小さな等幅の文字を横に散らした細い帯 ---------- */
 html body .site-head {
   position: relative;
   z-index: 5;
@@ -116,54 +121,59 @@ html body .site-head {
   box-shadow: none;
 }
 html body .site-head .top {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 22px 24px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
   gap: 28px;
-  border-bottom: 1px solid var(--edge);
+  border-bottom: 1px solid var(--line-2);
 }
 html body .brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--text);
+  color: var(--ink);
   text-decoration: none;
-  font: 700 0.9375rem/1 var(--sans);
-  letter-spacing: 0.06em;
+  font: 800 0.875rem/1 var(--sans);
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 html body .brand .brand-name {
-  color: var(--text);
+  color: var(--ink);
 }
 html body .brand-mark svg {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 }
 html body .brand-mark rect {
-  fill: #13402f;
+  fill: var(--ink);
+  rx: 3px;
 }
 html body .brand-mark path {
   fill: none;
-  stroke: var(--gold);
+  stroke: var(--brass);
   stroke-width: 2.2;
 }
 html body .site-nav {
   display: flex;
-  gap: 26px;
+  gap: 28px;
   margin-left: auto;
 }
 html body .site-nav a {
   position: relative;
   color: var(--dim);
   text-decoration: none;
-  font-size: 0.8125rem;
+  font: 600 0.75rem/1 var(--sans);
+  letter-spacing: 0.08em;
   padding: 6px 0;
   transition: color 0.2s;
 }
-/* 下線が左から伸びる */
+html body .site-nav a::before {
+  content: "/ ";
+  color: var(--od);
+}
 html body .site-nav a::after {
   content: "";
   position: absolute;
@@ -171,13 +181,13 @@ html body .site-nav a::after {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: var(--gold);
+  background: var(--ink);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 html body .site-nav a:hover {
-  color: #fff;
+  color: var(--ink);
 }
 html body .site-nav a:hover::after {
   transform: scaleX(1);
@@ -186,14 +196,19 @@ html body .head-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--gold);
-  font: 700 0.8125rem/1 var(--sans);
-  letter-spacing: 0.04em;
+  padding: 10px 16px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper-2);
+  font: 700 0.75rem/1 var(--sans);
+  letter-spacing: 0.06em;
   cursor: pointer;
   white-space: nowrap;
+  transition: background-color 0.2s;
+}
+html body .head-cta:hover {
+  background: var(--od-2);
 }
 html body .head-cta span {
   transition: transform 0.25s;
@@ -202,10 +217,10 @@ html body .head-cta:hover span {
   transform: translateX(3px);
 }
 
-/* ---------- ヒーロー：左に説明、右にそのまま使える「俸給を調べる」 ---------- */
+/* ---------- ヒーロー：幅いっぱいの大きな見出し、その下に説明と「俸給を調べる」 ---------- */
 html body .hero {
   background: none;
-  color: var(--text);
+  color: var(--ink);
   overflow: visible;
   min-height: 0;
 }
@@ -214,65 +229,104 @@ html body .hero::after {
   content: none;
 }
 html body .hero-in {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 24px 96px;
+  padding: 28px 24px 96px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
-  gap: 64px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);
+  grid-template-areas:
+    "meta meta"
+    "chip chip"
+    "title title"
+    "lead lookup"
+    "actions lookup"
+    "facts lookup";
+  grid-template-rows: auto auto auto auto auto 1fr;
+  column-gap: 64px;
+  align-items: start;
 }
-.hero-chip {
+/* 見出しの列の中身を、ヒーローの格子に直接並べる */
+html body .hero-copy {
+  display: contents;
+}
+html body .hero .hero-meta {
+  grid-area: meta;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 56px;
+  color: var(--faint);
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+html body .hero .hero-chip {
+  grid-area: chip;
   display: inline-flex;
   align-items: center;
+  justify-self: start;
   gap: 10px;
   margin: 0;
-  color: var(--dim);
+  padding: 7px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(246, 245, 241, 0.6);
+  color: var(--ink-2);
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 .chip-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--mint);
-  box-shadow: 0 0 0 4px rgba(126, 226, 180, 0.14);
+  background: var(--od);
+  box-shadow: 0 0 0 4px rgba(74, 90, 38, 0.16);
+  animation: chip-blink 2.4s ease-in-out infinite;
+}
+@keyframes chip-blink {
+  50% {
+    box-shadow: 0 0 0 7px rgba(74, 90, 38, 0.04);
+  }
 }
 html body .hero h1 {
-  margin: 24px 0 22px;
-  color: #fff;
-  font: 900 clamp(1.875rem, 4.6vw, 3.75rem) / 1.18 var(--sans);
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+  grid-area: title;
+  margin: 26px 0 44px;
+  color: var(--ink);
+  font: 900 clamp(2.25rem, 7.2vw, 6.25rem) / 1.04 var(--sans);
+  letter-spacing: -0.045em;
+  white-space: normal;
   text-shadow: none;
   max-width: none;
 }
 html body .hero h1 em {
   font-style: normal;
-  color: var(--gold);
+  color: var(--od);
 }
 html body .hero .hero-lead {
-  max-width: 32em;
+  grid-area: lead;
+  max-width: 34em;
   margin: 0;
   color: var(--dim);
   font-size: 0.9375rem;
   line-height: 1.95;
 }
 html body .hero-actions {
+  grid-area: actions;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 36px;
+  margin-top: 32px;
 }
-/* ボタン：光や丸い矢印は付けず、平らな面と文字だけで見せる */
+/* ボタン：墨の面か、細い線だけ。角は丸めきる */
 html body .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   min-height: 52px;
-  padding: 0 26px;
-  border-radius: 12px;
+  padding: 0 28px;
+  border-radius: 999px;
   font: 700 0.875rem/1 var(--sans);
   letter-spacing: 0.06em;
   text-decoration: none;
@@ -289,65 +343,72 @@ html body .btn:hover span {
   transform: translateX(4px);
 }
 html body .btn-primary {
-  border: 1px solid var(--gold);
-  background: var(--gold);
-  color: #17110a;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper-2);
   box-shadow: none;
 }
 html body .btn-primary:hover {
-  background: #f3d692;
-  border-color: #f3d692;
+  background: var(--od-2);
+  border-color: var(--od-2);
 }
 html body .btn-ghost {
-  border: 1px solid var(--edge-2);
-  background: transparent;
-  color: #fff;
+  border: 1px solid var(--line-2);
+  background: rgba(246, 245, 241, 0.5);
+  color: var(--ink);
 }
 html body .btn-ghost:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--ink);
 }
 html body .btn:focus-visible,
 html body .head-cta:focus-visible,
 html body a:focus-visible,
 html body select:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--od);
   outline-offset: 3px;
 }
 
-/* 俸給を調べる（ヒーローの右側のパネル） */
+/* 俸給を調べる（ヒーローの右側）：すりガラスの紙。後ろの立体がにじんで見える */
 html body .lookup {
-  padding: 28px;
-  border: 1px solid var(--edge);
-  border-radius: 20px;
-  background: rgba(12, 28, 22, 0.72);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+  grid-area: lookup;
+  padding: 26px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: var(--card);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: 0 30px 60px -40px rgba(27, 30, 23, 0.45);
 }
 .lookup-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--edge);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-2);
 }
 .lookup-head h2 {
   margin: 0;
-  color: #fff;
+  color: var(--ink);
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.lookup-head h2::before {
+  content: "[01] ";
+  color: var(--od);
+  font: 600 0.75rem/1 var(--mono);
   letter-spacing: 0.04em;
 }
 .lookup-head span {
   color: var(--faint);
-  font: 600 0.6875rem/1 var(--sans);
-  letter-spacing: 0.14em;
+  font: 500 0.6875rem/1 var(--mono);
+  letter-spacing: 0.12em;
 }
 html body .lookup .fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 html body .lookup label {
   display: block;
@@ -362,37 +423,37 @@ html body .lookup select {
   width: 100%;
   height: 50px;
   margin-top: 8px;
-  padding: 0 40px 0 16px;
-  border: 1px solid var(--edge-2);
-  border-radius: 12px;
-  background-color: rgba(0, 0, 0, 0.25);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23ebc77c' stroke-width='1.6'/%3E%3C/svg%3E");
+  padding: 0 40px 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234a5a26' stroke-width='1.8'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
-  color: #fff;
-  font: 500 0.9375rem/1 var(--sans);
+  background-position: right 14px center;
+  color: var(--ink);
+  font: 600 0.9375rem/1 var(--sans);
   cursor: pointer;
   transition: border-color 0.2s;
 }
 html body .lookup select option {
-  background: #0d1f18;
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
 }
 html body .lookup select:hover,
 html body .lookup select:focus {
-  border-color: var(--gold);
+  border-color: var(--ink);
 }
 html body .lookup select:focus:not(:focus-visible) {
   outline: 0;
 }
 html body .lookup .result {
-  margin-top: 24px;
+  margin-top: 22px;
   padding: 0;
   display: block;
   border: 0;
   background: none;
   box-shadow: none;
-  color: #fff;
+  color: var(--ink);
 }
 html body .lookup #detail {
   margin: 0;
@@ -402,23 +463,23 @@ html body .lookup #detail {
 }
 html body .lookup .result strong {
   display: block;
-  margin-top: 10px;
-  color: #fff;
-  font: 800 clamp(2.75rem, 5vw, 4rem) / 1 var(--num);
-  letter-spacing: -0.035em;
+  margin-top: 8px;
+  color: var(--ink);
+  font: 900 clamp(2.75rem, 5vw, 4.25rem) / 1 var(--num);
+  letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
 }
 html body .lookup .result strong span {
   margin-left: 8px;
-  color: var(--gold);
-  font: 600 0.9375rem/1 var(--sans);
+  color: var(--od);
+  font: 700 0.9375rem/1 var(--sans);
   letter-spacing: 0.04em;
 }
 /* 昇給の見通し：1〜3年後の号俸と金額を細い行で並べる */
 .outlook {
-  margin-top: 22px;
-  padding-top: 16px;
-  border-top: 1px solid var(--edge);
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
 }
 .outlook-head {
   display: flex;
@@ -428,7 +489,7 @@ html body .lookup .result strong span {
   margin-bottom: 8px;
 }
 .outlook-head span {
-  color: #fff;
+  color: var(--ink);
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -447,7 +508,7 @@ html body .lookup .result strong span {
   align-items: baseline;
   gap: 10px;
   padding: 7px 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  border-bottom: 1px dashed var(--line-2);
   color: var(--dim);
   font-size: 0.75rem;
 }
@@ -459,14 +520,14 @@ html body .lookup .result strong span {
   font-weight: 500;
 }
 #outlook strong {
-  color: #fff;
-  font: 700 0.9375rem/1 var(--num);
+  color: var(--ink);
+  font: 800 0.9375rem/1 var(--num);
   font-variant-numeric: tabular-nums;
 }
 #outlook em {
   min-width: 5.5em;
-  color: var(--mint);
-  font: 600 0.75rem/1 var(--num);
+  color: var(--od);
+  font: 700 0.75rem/1 var(--num);
   font-style: normal;
   text-align: right;
 }
@@ -474,57 +535,105 @@ html body .lookup .result strong span {
   display: block;
   color: var(--faint);
 }
-/* 俸給表では、見通しの号俸を点線の枠で示す */
+/* 俸給表では、見通しの号俸を細い枠で示す */
 html body .paytable td.ahead {
-  color: #fff;
-  box-shadow: inset 0 0 0 1px rgba(235, 199, 124, 0.35);
-  background-image: linear-gradient(rgba(235, 199, 124, 0.05), rgba(235, 199, 124, 0.05));
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(74, 90, 38, 0.45);
+  background-image: linear-gradient(rgba(74, 90, 38, 0.06), rgba(74, 90, 38, 0.06));
 }
 html body .lookup > .note {
-  margin-top: 22px;
-  padding-top: 16px;
-  border-top: 1px solid var(--edge);
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-2);
   color: var(--faint);
   font-size: 0.6875rem;
   line-height: 1.7;
 }
 
-/* ---------- 本文のカード ---------- */
+/* ヒーロー下の数字：参考サイトの番号つきの行のように、細い線で区切って縦に並べる */
+.hero-facts {
+  grid-area: facts;
+  counter-reset: fact;
+  margin: 48px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line-2);
+}
+.hero-facts > div {
+  counter-increment: fact;
+  display: grid;
+  grid-template-columns: 3.2em auto 1fr;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.hero-facts > div::before {
+  content: "[" counter(fact, decimal-leading-zero) "]";
+  color: var(--faint);
+  font: 500 0.6875rem/1 var(--mono);
+}
+.hero-facts dd {
+  order: 1;
+  margin: 0;
+  color: var(--ink);
+  font: 900 clamp(1.75rem, 3.4vw, 2.75rem) / 1 var(--num);
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-facts dd small {
+  margin-left: 6px;
+  color: var(--od);
+  font: 700 0.75rem/1 var(--sans);
+  letter-spacing: 0;
+}
+.hero-facts dt {
+  order: 2;
+  justify-self: end;
+  color: var(--faint);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+/* ---------- 本文のカード：枠で囲まず、上の太い線と番号で区切る ---------- */
 html body .layout {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 40px;
 }
 html body main.layout > section.card {
   position: relative;
   margin: 0 0 24px;
-  padding: 44px 48px;
-  border: 1px solid var(--edge);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 40px 0 8px;
+  border: 0;
+  border-top: 2px solid var(--ink);
+  border-radius: 0;
+  background: none;
   box-shadow: none;
-  color: var(--text);
+  color: var(--ink);
   overflow: visible;
 }
 html body .cap {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--gold);
-  font: 600 0.6875rem/1.4 var(--num);
-  letter-spacing: 0.22em;
+  color: var(--od);
+  font: 600 0.6875rem/1.4 var(--mono);
+  letter-spacing: 0.18em;
 }
 html body .cap::before {
-  content: "";
-  width: 18px;
-  height: 1px;
-  background: var(--gold);
+  content: "[02]";
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--faint);
+  letter-spacing: 0.04em;
 }
 html body .section-title {
-  margin: 12px 0 8px;
-  color: #fff;
-  font: 900 clamp(1.5rem, 2.8vw, 2.125rem) / 1.25 var(--sans);
-  letter-spacing: -0.01em;
+  margin: 14px 0 10px;
+  color: var(--ink);
+  font: 900 clamp(1.75rem, 4.4vw, 3.5rem) / 1.08 var(--sans);
+  letter-spacing: -0.04em;
 }
 html body main .sub {
   color: var(--dim);
@@ -532,7 +641,7 @@ html body main .sub {
   line-height: 1.8;
 }
 
-/* 俸給表：縦の罫線をなくし、横の細い線だけで読ませる */
+/* 俸給表：明るい紙の上に、横の細い線だけで読ませる */
 html body .paytable .titleline {
   display: flex;
   flex-wrap: wrap;
@@ -548,11 +657,13 @@ html body .paytable .scroll {
   margin-top: 24px;
   max-height: 560px;
   overflow: auto;
-  border: 1px solid var(--edge);
-  border-radius: 14px;
-  background: #07140f;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  background: rgba(246, 245, 241, 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: rgba(27, 30, 23, 0.3) transparent;
 }
 html body .paytable table {
   border-collapse: separate;
@@ -563,19 +674,19 @@ html body .paytable table {
 html body .paytable th,
 html body .paytable td {
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--line);
 }
 html body .paytable thead th {
   position: sticky;
   top: 0;
   z-index: 2;
   padding: 14px 16px;
-  background: #0b1c16;
-  color: var(--dim);
-  font: 600 0.75rem/1.3 var(--sans);
+  background: var(--ink);
+  color: var(--paper-2);
+  font: 700 0.75rem/1.3 var(--sans);
   letter-spacing: 0.06em;
   text-align: right;
-  border-bottom: 1px solid var(--edge-2);
+  border-bottom: 1px solid var(--ink);
   white-space: nowrap;
 }
 html body .paytable thead th:first-child,
@@ -583,7 +694,7 @@ html body .paytable tbody th {
   position: sticky;
   left: 0;
   text-align: center;
-  box-shadow: 1px 0 0 var(--edge);
+  box-shadow: 1px 0 0 var(--line-2);
 }
 html body .paytable thead th:first-child {
   z-index: 3;
@@ -591,32 +702,33 @@ html body .paytable thead th:first-child {
 html body .paytable tbody th {
   z-index: 1;
   padding: 11px 16px;
-  background: #0b1c16;
-  color: var(--faint);
-  font: 600 0.75rem/1 var(--num);
+  background: #e3e1d9;
+  color: var(--dim);
+  font: 600 0.75rem/1 var(--mono);
 }
 html body .paytable tbody tr td,
 html body .paytable tbody tr:nth-child(even) td:not(:first-child) {
   padding: 11px 16px;
   background: transparent;
-  color: #cfdcd5;
+  color: var(--ink-2);
   text-align: right;
   white-space: nowrap;
 }
 html body .paytable tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  background: rgba(74, 90, 38, 0.08);
+  color: var(--ink);
 }
-/* 選んだ号俸：行の番号と金額を金色にし、細い枠で示す */
+/* 選んだ号俸：墨の面に白い数字 */
 html body .paytable td.highlight {
-  background: rgba(235, 199, 124, 0.14) !important;
-  color: var(--gold) !important;
+  background: var(--ink) !important;
+  color: var(--paper-2) !important;
   font-weight: 800;
-  box-shadow: inset 0 0 0 1px rgba(235, 199, 124, 0.6);
+  box-shadow: none;
   border-radius: 0;
 }
 html body .paytable tr:has(td.highlight) th {
-  color: var(--gold);
+  color: var(--ink);
+  background: #d6d9c4;
 }
 html body main .source {
   margin-top: 18px;
@@ -627,21 +739,22 @@ html body main .source {
   line-height: 1.8;
 }
 html body main .source a {
-  color: var(--mint);
+  color: var(--od);
 }
 
-/* ---------- フッター ---------- */
+/* ---------- フッター：墨の地に、画面の幅いっぱいの大きな文字 ---------- */
 html body .foot {
   max-width: none;
   margin: 72px 0 0;
   padding: 0;
-  border-top: 1px solid var(--edge);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
-  color: var(--dim);
+  border-top: 0;
+  background: var(--ink);
+  color: #c9ccbf;
   overflow: hidden;
+  color-scheme: dark;
 }
 html body .footer-inner {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 56px 24px 0;
 }
@@ -652,9 +765,16 @@ html body .footer-inner {
   align-items: flex-start;
   gap: 32px 48px;
 }
+html body .foot .brand,
+html body .foot .brand .brand-name {
+  color: var(--paper-2);
+}
+html body .foot .brand-mark rect {
+  fill: var(--od);
+}
 html body .footer-brand p {
   margin: 14px 0 0;
-  color: var(--dim);
+  color: #c9ccbf;
   font-size: 0.8125rem;
 }
 html body .footer-nav {
@@ -665,15 +785,15 @@ html body .footer-nav {
 }
 .footer-h {
   margin: 0 0 4px;
-  color: var(--faint);
-  font: 600 0.6875rem/1 var(--num);
+  color: #a9ae9c;
+  font: 500 0.6875rem/1 var(--mono);
   letter-spacing: 0.2em;
 }
 html body .footer-nav a {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--dim);
+  color: #dcdfd2;
   font: 500 0.8125rem/1.5 var(--sans);
   text-decoration: none;
   cursor: pointer;
@@ -685,8 +805,8 @@ html body .footer-nav a:hover {
 html body .footer-note {
   margin: 40px 0 0;
   padding-top: 22px;
-  border-top: 1px solid var(--edge);
-  color: var(--faint);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: #b3b8a7;
   font-size: 0.75rem;
   line-height: 1.8;
 }
@@ -698,82 +818,89 @@ html body .footer-note {
   font-size: 0.75rem;
 }
 html body .footer-copy {
-  color: var(--faint);
+  color: #b3b8a7;
 }
 .to-top {
-  color: var(--dim);
+  color: #dcdfd2;
   text-decoration: none;
 }
 .to-top:hover {
   color: #fff;
 }
-/* 画面の幅いっぱいの大きな文字（下半分だけ見せる） */
+html body .foot :is(a, button):focus-visible {
+  outline-color: var(--brass) !important;
+}
+/* 画面の幅いっぱいの大きな文字（上の部分だけ見せる。参考サイトの下端の大きな文字） */
 .footer-word {
-  margin: 28px 0 0;
-  height: 0.62em;
+  margin: 36px 0 0;
+  height: 0.74em;
   overflow: hidden;
-  font: 800 clamp(3rem, 12.4vw, 10rem) / 1 var(--num);
-  letter-spacing: -0.04em;
+  font: 900 clamp(2.5rem, 10.4vw, 9.75rem) / 1 var(--num);
+  letter-spacing: -0.06em;
   text-align: center;
   white-space: nowrap;
-  background: linear-gradient(180deg, rgba(235, 199, 124, 0.5), rgba(235, 199, 124, 0.02));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--paper);
   user-select: none;
 }
+.foot {
+  padding-bottom: 0 !important;
+}
 
-/* ---------- 右下の丸ボタンは使わない（入口はヘッダー・ヒーロー・帯に） ---------- */
+/* ---------- 右下の丸ボタンは使わない（入口はヘッダー・ヒーローに） ---------- */
 html body .sim-launch {
   display: none !important;
 }
 
-/* ---------- 画面に入ったらふわっと出す ---------- */
+/* ---------- 画面に入ったら下から出す ---------- */
 .reveal-ready .reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(28px);
   transition:
-    opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .reveal-ready .reveal.in {
   opacity: 1;
   transform: none;
 }
 .hero-copy > *,
+.hero-meta,
 html body .hero .lookup {
-  animation: rise-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: rise-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .hero-copy > :nth-child(2) {
-  animation-delay: 0.06s;
+  animation-delay: 0.08s;
 }
 .hero-copy > :nth-child(3) {
-  animation-delay: 0.12s;
+  animation-delay: 0.16s;
 }
 .hero-copy > :nth-child(4) {
-  animation-delay: 0.18s;
+  animation-delay: 0.22s;
+}
+.hero-copy > :nth-child(5) {
+  animation-delay: 0.28s;
 }
 html body .hero .lookup {
-  animation-delay: 0.15s;
+  animation-delay: 0.2s;
 }
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(22px);
   }
 }
 
-/* ---------- シミュレーター：明るい紙のシートとして読みやすく ---------- */
+/* ---------- シミュレーター：紙のシート（ページと同じ色づかい） ---------- */
 html body #simulatorDialog::backdrop {
-  background: rgba(2, 8, 6, 0.72);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(27, 30, 23, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 html body #simulatorDialog {
   color-scheme: light;
   border: 0;
-  border-radius: 24px;
-  box-shadow: 0 50px 120px -30px rgba(0, 0, 0, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 50px 120px -30px rgba(27, 30, 23, 0.7);
   /* 枠の外にはみ出して見えるスクロールバーを出さない（スクロール自体はできる） */
   scrollbar-width: none;
 }
@@ -781,32 +908,34 @@ html body #simulatorDialog::-webkit-scrollbar {
   display: none;
 }
 html body #simulatorDialog .simulator {
-  color: #17312d;
+  color: var(--ink-2);
 }
 html body #simulatorDialog .section-title {
-  color: #0c2a22;
-  font-size: clamp(1.375rem, 5.6vw, 2rem);
+  color: var(--ink);
+  font-size: clamp(1.5rem, 5.6vw, 2.5rem);
 }
 html body #simulatorDialog .sub {
-  color: #5d6d66;
+  color: var(--dim);
 }
 html body #simulatorDialog .cap {
-  color: #8a6220;
+  color: var(--od);
 }
 html body #simulatorDialog .cap::before {
-  background: #a8792c;
+  content: "[SIM]";
+  background: none;
+  color: var(--faint);
 }
 html body #simulatorDialog .source {
-  color: #5a6a62;
+  color: var(--faint);
 }
 html body #simulatorDialog .source a {
-  color: #1f7a57;
+  color: var(--od);
 }
 html body #simulatorDialog .sim-sticky {
-  background: #0c271e;
+  background: var(--ink);
 }
 html body #simulatorDialog .sim-total {
-  background: #0c271e;
+  background: var(--ink);
   color: #fff;
 }
 html body #simulatorDialog .sim-total strong,
@@ -816,7 +945,7 @@ html body #simulatorDialog .sim-sticky strong {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
-/* 結果の数字：白い枠のタイルにし、2つの合計だけを深緑で強調する */
+/* 結果の数字：白い枠のタイルにし、2つの合計だけを墨で強調する */
 html body #simulatorDialog .sim-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -824,42 +953,42 @@ html body #simulatorDialog .sim-metrics {
 }
 html body #simulatorDialog .sim-metrics > div {
   padding: 18px 20px;
-  border: 1px solid #e3e8e4;
-  border-radius: 14px;
+  border: 1px solid #dcdad2;
+  border-radius: var(--r);
   background: #fff;
   box-shadow: none;
 }
 html body #simulatorDialog .sim-metrics small {
-  color: #5a6a62;
+  color: var(--faint);
   font-size: 0.75rem;
 }
 html body #simulatorDialog .sim-metrics strong {
   display: block;
   margin-top: 8px;
-  color: #0c2a22;
+  color: var(--ink);
   font-size: 1.375rem;
 }
 html body #simulatorDialog .sim-metrics > .sim-net {
   grid-column: span 2;
-  border-color: #0c271e;
-  background: #0c271e;
+  border-color: var(--ink);
+  background: var(--ink);
 }
 html body #simulatorDialog .sim-metrics > .sim-net small {
-  color: #a3b6ac;
+  color: #c9ccbf;
 }
 html body #simulatorDialog .sim-metrics > .sim-net strong {
   color: #fff;
   font-size: 1.75rem;
 }
 html body #simulatorDialog .sim-metrics > .sim-net:last-child strong {
-  color: var(--gold);
+  color: var(--brass);
 }
 html body #notesPage {
   color-scheme: light;
-  border-radius: 22px;
+  border-radius: 10px;
 }
 html body #notesPage::backdrop {
-  background: rgba(2, 8, 6, 0.6);
+  background: rgba(27, 30, 23, 0.5);
 }
 /* グラフの棒を順に伸ばす（開いたときだけ） */
 #simChart.fx-grow g {
@@ -883,16 +1012,26 @@ html body #notesPage::backdrop {
     margin-left: auto;
   }
   html body .hero-in {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    padding: 48px 20px 64px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "meta"
+      "chip"
+      "title"
+      "lead"
+      "actions"
+      "lookup"
+      "facts";
+    grid-template-rows: none;
+    padding: 20px 20px 64px;
+  }
+  html body .lookup {
+    margin-top: 40px;
+  }
+  html body .hero .hero-meta {
+    margin-bottom: 36px;
   }
   html body .layout {
     padding: 0 16px 32px;
-  }
-  html body main.layout > section.card {
-    padding: 30px 22px;
-    border-radius: 20px;
   }
   html body #simulatorDialog .sim-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -905,8 +1044,15 @@ html body #notesPage::backdrop {
   html body .brand-name {
     font-size: 0.8125rem;
   }
+  html body .head-cta {
+    padding: 9px 12px;
+  }
+  .hero-meta span:nth-child(2) {
+    display: none;
+  }
   html body .hero h1 {
-    font-size: clamp(1.625rem, 8.4vw, 2.5rem);
+    font-size: clamp(2rem, 10.6vw, 3rem);
+    margin-bottom: 28px;
   }
   html body .hero-actions .btn {
     flex: 1 1 100%;
@@ -917,13 +1063,41 @@ html body #notesPage::backdrop {
   html body .lookup .fields {
     grid-template-columns: 1fr 1fr;
   }
+  .hero-facts > div {
+    grid-template-columns: 2.6em auto 1fr;
+    gap: 10px;
+  }
+  .hero-facts dt {
+    font-size: 0.6875rem;
+  }
   html body #simulatorDialog .sim-metrics > .sim-net {
     grid-column: 1 / -1;
   }
 }
+/* 幅320〜380のスマホ：ヘッダーの丸いボタンが画面の外に出ないよう詰める */
+@media (max-width: 380px) {
+  html body .site-head .top {
+    gap: 10px;
+    padding: 14px 12px;
+  }
+  html body .brand {
+    gap: 8px;
+  }
+  html body .brand-name {
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+  html body .head-cta {
+    gap: 4px;
+    padding: 8px 10px;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .bg-scene .orb,
+  .chip-dot,
   .hero-copy > *,
+  .hero-meta,
   html body .hero .lookup,
   #simChart.fx-grow g {
     animation: none !important;
@@ -938,51 +1112,8 @@ html body #notesPage::backdrop {
 }
 
 /*
- デザインの仕上げ：ヒーローの数字の帯、シミュレーターの手順番号と入力欄
+ シミュレーターの手順番号と入力欄
 */
-
-/* ヒーロー下の数字の帯：このサイトの中身を3つの数字で示す */
-.hero-facts {
-  display: flex;
-  gap: 0;
-  margin: 44px 0 0;
-  padding: 0;
-  border-top: 1px solid var(--edge);
-}
-.hero-facts > div {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-end;
-  flex: 1 1 0;
-  padding: 18px 20px 0 0;
-}
-.hero-facts > div + div {
-  padding-left: 20px;
-  border-left: 1px solid var(--edge);
-}
-.hero-facts dd {
-  margin: 0;
-  color: #fff;
-  font: 800 clamp(1.5rem, 2.6vw, 2rem) / 1 var(--num);
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-}
-.hero-facts dd small {
-  margin-left: 4px;
-  color: var(--gold);
-  font: 600 0.75rem/1 var(--sans);
-  letter-spacing: 0;
-}
-.hero-facts dt {
-  margin-top: 8px;
-  color: var(--faint);
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-.foot {
-  padding-bottom: 40px !important;
-}
-
 /* シミュレーター：見出しに 01・02… の手順番号を付け、紙のシートを少し温かい白に */
 html body #simulatorDialog .simulator {
   counter-reset: simstep;
@@ -996,7 +1127,7 @@ html body #simulatorDialog h3.sim-group {
   margin: 44px 0 18px;
   padding: 0;
   border: 0;
-  color: #0c2a22;
+  color: #1b1e17;
   font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -1008,8 +1139,8 @@ html body #simulatorDialog h3.sim-group::before {
   flex: none;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: #0c271e;
+  border-radius: 4px;
+  background: #1b1e17;
   color: var(--gold);
   font: 700 0.75rem/1 var(--num);
   letter-spacing: 0.04em;
@@ -1027,7 +1158,7 @@ html body #simulatorDialog .allowance-selector select,
 html body #simulatorDialog .unit,
 html body #simulatorDialog .allowance-fields input:not([type="hidden"]) {
   border: 1px solid #dfe6e2;
-  border-radius: 12px;
+  border-radius: 4px;
   background-color: #fff;
   box-shadow: 0 1px 2px rgba(12, 39, 30, 0.04);
   transition:
@@ -1041,9 +1172,9 @@ html body #simulatorDialog .allowance-selector select {
   appearance: none;
   min-height: 48px;
   padding: 12px 40px 12px 15px;
-  color: #17312d;
+  color: #1b1e17;
   font-weight: 600;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a8792c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%234a5a26' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 15px center;
   cursor: pointer;
@@ -1051,7 +1182,7 @@ html body #simulatorDialog .allowance-selector select {
 html body #simulatorDialog .unit span {
   border-left-color: #edf1ee;
   background: #f6f8f6;
-  color: #5d6d66;
+  color: #4f5647;
   border-radius: 0 11px 11px 0;
 }
 html body #simulatorDialog .unit input {
@@ -1071,38 +1202,38 @@ html body #simulatorDialog .allowance-fields select:focus,
 html body #simulatorDialog .allowance-fields input:focus,
 html body #simulatorDialog .unit:focus-within {
   outline: 0;
-  border-color: #1f7a57;
-  box-shadow: 0 0 0 4px rgba(31, 122, 87, 0.12);
+  border-color: #4a5a26;
+  box-shadow: 0 0 0 4px rgba(74, 90, 38, 0.12);
 }
 html body #simulatorDialog .sim-grid label {
-  color: #2c463e;
+  color: #33392b;
   font-size: 0.7813rem;
   font-weight: 700;
 }
 /* 手当の行：白いカードに */
 html body #simulatorDialog .allowance-item {
   border: 1px solid #e3e8e4;
-  border-radius: 16px;
+  border-radius: 6px;
   padding: 18px;
   box-shadow: 0 6px 18px -12px rgba(12, 39, 30, 0.25);
 }
 html body #simulatorDialog .allowance-add {
   border-radius: 999px;
   padding: 10px 18px;
-  border: 1px solid #0c271e;
-  background: #0c271e;
+  border: 1px solid #1b1e17;
+  background: #1b1e17;
   color: #fff;
   font-weight: 700;
   cursor: pointer;
 }
 html body #simulatorDialog .allowance-add:hover {
-  background: #164234;
+  background: #3a4720;
 }
 /* 結果欄：折りたためる表と、2つの条件の比較 */
 html body #simulatorDialog details.sim-fold {
   margin-top: 18px;
   border: 1px solid #e3e8e4;
-  border-radius: 16px;
+  border-radius: 6px;
   background: #fff;
 }
 html body #simulatorDialog details.sim-fold > summary {
@@ -1127,8 +1258,8 @@ html body #simulatorDialog details.sim-fold > summary::after {
   top: 50%;
   width: 9px;
   height: 9px;
-  border-right: 2px solid #a8792c;
-  border-bottom: 2px solid #a8792c;
+  border-right: 2px solid #4a5a26;
+  border-bottom: 2px solid #4a5a26;
   transform: translateY(-70%) rotate(45deg);
   transition: transform 0.2s;
 }
@@ -1142,7 +1273,7 @@ html body #simulatorDialog details.sim-fold > .sim-scroll {
   margin-top: 18px;
   padding: 18px;
   border: 1px solid #e3e8e4;
-  border-radius: 16px;
+  border-radius: 6px;
   background: #fff;
 }
 .sim-compare-head {
@@ -1154,7 +1285,7 @@ html body #simulatorDialog details.sim-fold > .sim-scroll {
 }
 .sim-compare-head h3 {
   margin: 0;
-  color: #0c2a22;
+  color: #1b1e17;
   font-size: 1.0625rem;
 }
 .sim-compare-actions {
@@ -1167,13 +1298,13 @@ html body #simulatorDialog details.sim-fold > .sim-scroll {
   border: 1px solid #cfd8d3;
   border-radius: 999px;
   background: #fff;
-  color: #2c463e;
+  color: #33392b;
   font-weight: 700;
   cursor: pointer;
 }
 .sim-compare-help {
   margin: 10px 0 0;
-  color: #5d6d66;
+  color: #4f5647;
   font-size: 0.7813rem;
   line-height: 1.7;
 }
@@ -1192,7 +1323,7 @@ html body #simulatorDialog .sim-compare-table th {
   text-align: left;
 }
 .sim-compare-table tr.sim-compare-key td {
-  color: #0c2a22;
+  color: #1b1e17;
   font-weight: 800;
 }
 #compareWrap {
@@ -1240,13 +1371,13 @@ html body #simulatorDialog .sim-compare-table th {
 
 /* フォーカスの見え方をそろえる（キーボード操作で必ず枠が見えるように） */
 html body :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible {
-  outline: 3px solid var(--gold) !important;
+  outline: 3px solid var(--od) !important;
   outline-offset: 2px;
 }
 /* シミュレーターは明るい紙なので、濃い緑の枠にする（白地で 5:1 以上） */
 html body #simulatorDialog :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible,
 html body #notesPage :is(a, button, summary, select, textarea, input, [tabindex]):focus-visible {
-  outline: 3px solid #1f7a57 !important;
+  outline: 3px solid #4a5a26 !important;
   outline-offset: 2px;
 }
 /* 単位つきの欄は、枠全体（入力＋単位）に線を出す */
@@ -1254,7 +1385,7 @@ html body #simulatorDialog .unit input:focus-visible {
   outline: 0 !important;
 }
 html body #simulatorDialog .unit:has(input:focus-visible) {
-  outline: 3px solid #1f7a57 !important;
+  outline: 3px solid #4a5a26 !important;
   outline-offset: 2px;
 }
 /* 上の濃い緑の帯（結果の要約）の上ではフォーカスの線を明るい色に */
@@ -1394,7 +1525,7 @@ html body #simulatorDialog .a-period-row .unit span {
   }
   html body #simulatorDialog #compareWrap td::before {
     display: block;
-    color: #5a6a62;
+    color: #4f5647;
     font-size: 0.6875rem;
     font-weight: 600;
   }
@@ -1423,8 +1554,8 @@ html body #simulatorDialog .sim-section-head h3 {
 /* 明るいシミュレーターの中では、選んだ文字（Tab で入った欄の値など）が白く消えないようにする */
 html body #simulatorDialog ::selection,
 html body #notesPage ::selection {
-  background: rgba(31, 122, 87, 0.24);
-  color: #0c271e;
+  background: rgba(74, 90, 38, 0.24);
+  color: #1b1e17;
 }
 
 /* よくある経歴のひな形（シミュレーターの上）：枠線だけのボタンを横に並べ、狭い幅では折り返す */
@@ -1438,15 +1569,15 @@ html body #simulatorDialog .sim-presets {
 html body #simulatorDialog .sim-presets-label {
   font-weight: 700;
   font-size: 0.875rem;
-  color: #17312d;
+  color: #1b1e17;
   margin-right: 4px;
 }
 html body #simulatorDialog .sim-preset {
   border-radius: 999px;
   padding: 8px 14px;
-  border: 1px solid #0c271e;
+  border: 1px solid #1b1e17;
   background: #fff;
-  color: #0c271e;
+  color: #1b1e17;
   font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
@@ -1484,9 +1615,9 @@ html body #simulatorDialog .a-calc-add {
   margin-top: 10px;
   border-radius: 999px;
   padding: 9px 16px;
-  border: 1px dashed #0c271e;
+  border: 1px dashed #1b1e17;
   background: #fff;
-  color: #0c271e;
+  color: #1b1e17;
   font-weight: 700;
   cursor: pointer;
 }

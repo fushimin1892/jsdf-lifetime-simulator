@@ -13,7 +13,7 @@
       name="description"
       content="2026年11月公布の改正法（令和8年法律第89号）に基づく自衛官の俸給表。階級と号俸を選ぶだけで俸給月額がわかり、昇任・賞与・手当を含めた生涯年収も試算できます。"
     />
-    <meta name="theme-color" content="#06120e" />
+    <meta name="theme-color" content="#e7e5de" />
     <meta name="format-detection" content="telephone=no" />
     <link
       rel="icon"
@@ -49,14 +49,14 @@
       }
     </script>
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-22" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-22" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-22" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-22" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-23" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-23" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-23" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-23" />
   </head>
   <body>
-    <!-- 背景：ゆっくり漂う光の玉と細かい粒子（飾りなので読み上げない） -->
-    <div class="bg-scene" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i><i class="bg-grid"></i></div>
+    <!-- 背景：地図の方眼・縦の罫・四隅の十字と、浮かぶ桜の立体（js/crystals.js が描く。飾りなので読み上げない） -->
+    <div class="bg-scene" aria-hidden="true"><i class="bg-grid"></i><i class="bg-cols"></i><i class="bg-mark m1"></i><i class="bg-mark m2"></i><i class="bg-mark m3"></i><i class="bg-mark m4"></i><canvas class="crystals"></canvas></div>
     <header class="site-head" id="pageTop">
       <div class="top">
         <a class="brand" href="#pageTop">
@@ -74,6 +74,7 @@
     </header>
     <section class="hero" aria-label="俸給を調べる">
       <div class="hero-in">
+        <p class="hero-meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span></p>
         <div class="hero-copy">
           <p class="hero-chip"><span class="chip-dot" aria-hidden="true"></span>2026年11月公布の改正俸給表に対応</p>
           <h1>階級と号俸から、<br /><em>俸給がすぐわかる。</em></h1>
@@ -887,9 +888,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-22"></script>
-    <script src="data/promotion-table.js?v=20261122-22"></script>
-    <script src="js/pay-lookup.js?v=20261122-22"></script>
+    <script src="data/pay-table.js?v=20261122-23"></script>
+    <script src="data/promotion-table.js?v=20261122-23"></script>
+    <script src="js/pay-lookup.js?v=20261122-23"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -900,11 +901,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-22"></script>
-    <script src="js/regional-rate.js?v=20261122-22"></script>
-    <script src="js/allowances.js?v=20261122-22"></script>
-    <script src="js/simulator.js?v=20261122-22"></script>
-    <script src="js/simulator-dialog.js?v=20261122-22"></script>
+    <script src="data/rules.js?v=20261122-23"></script>
+    <script src="js/regional-rate.js?v=20261122-23"></script>
+    <script src="js/allowances.js?v=20261122-23"></script>
+    <script src="js/simulator.js?v=20261122-23"></script>
+    <script src="js/simulator-dialog.js?v=20261122-23"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -913,9 +914,10 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-22"></script>
-    <script src="js/effects.js?v=20261122-22"></script>
-    <script src="js/scroll-lock.js?v=20261122-22"></script>
-    <script src="js/print.js?v=20261122-22"></script>
+    <script src="js/notes-page.js?v=20261122-23"></script>
+    <script src="js/effects.js?v=20261122-23"></script>
+    <script src="js/crystals.js?v=20261122-23"></script>
+    <script src="js/scroll-lock.js?v=20261122-23"></script>
+    <script src="js/print.js?v=20261122-23"></script>
   </body>
 </html>
