@@ -2371,3 +2371,143 @@ html body .footer-nav {
     margin-top: 8px;
   }
 }
+
+/* 手当の支給日数・回数：数の欄と「1か月あたり／1年あたり」を横に並べる */
+html body #simulatorDialog .a-days-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+html body #simulatorDialog .a-days-row select {
+  min-width: 9.5em;
+}
+
+/*
+ ===================================================================
+   15 シミュレーターの中の仕上げ：見出しの階層をそろえ、説明のリンク・前提の文を読みやすく
+   ・大見出し＝[番号]＋細い線（所属・基本の条件・昇任の時期・手当の条件・賞与・退職…）
+   ・小見出し＝真鍮色の菱形＋文字＋細い線（所属の主な手当・生活の条件・年収の推移・条件を比べる…）
+   =================================================================== */
+/* 手当の条件：別の箱にせず、ほかの見出しと同じ流れに置く */
+html body #simulatorDialog .allowance-panel {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+html body #simulatorDialog .allowance-panel > .sub {
+  margin: 0 0 8px;
+}
+/* 小見出し：真鍮色の菱形と細い線 */
+html body #simulatorDialog .branch-title,
+html body #simulatorDialog .sim-section-head h3,
+html body #simulatorDialog .sim-compare-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font: 600 0.9375rem/1.4 var(--sans);
+  letter-spacing: 0.06em;
+}
+html body #simulatorDialog .branch-title::before,
+html body #simulatorDialog .sim-section-head h3::before,
+html body #simulatorDialog .sim-compare-head h3::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: #a8904f;
+  transform: rotate(45deg);
+}
+html body #simulatorDialog .branch-title {
+  margin: 36px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+html body #simulatorDialog .sim-section-head {
+  margin-top: 40px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+html body #simulatorDialog details.sim-fold > summary.sim-section-head {
+  margin-top: 0;
+  border-bottom: 0;
+}
+/* 「詳しい説明」：小さな矢印つきのリンクに */
+html body #simulatorDialog .note-link {
+  margin-top: 6px;
+  color: var(--od);
+  font: 600 0.75rem/1.4 var(--sans);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(74, 90, 38, 0.35);
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+html body #simulatorDialog .note-link::before {
+  content: "→ ";
+  font-family: var(--mono);
+}
+html body #simulatorDialog .note-link:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+/* 下の計算の前提：脚注のように。広い画面では2段組 */
+html body #simulatorDialog .simulator > .source:last-child,
+html body #simulatorDialog #simulator > .source {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+  color: var(--dim);
+  font-size: 0.75rem;
+  line-height: 1.95;
+}
+html body #simulatorDialog #simulator > .source::before {
+  content: "[注] 計算の前提";
+  display: block;
+  margin-bottom: 10px;
+  color: var(--od);
+  font: 600 0.625rem/1.4 var(--mono);
+  letter-spacing: 0.14em;
+  column-span: all;
+}
+@media (min-width: 900px) {
+  html body #simulatorDialog #simulator > .source {
+    column-count: 2;
+    column-gap: 40px;
+    column-rule: 1px solid var(--line);
+  }
+}
+
+/* 軽さ：大きな面のすりガラス（ぼかし）は、動く背景の上で毎回ぼかし直しになり重いのでやめ、少し濃い紙の色にする。
+   ぼかしは「俸給を調べる」の枠だけに残す */
+html body .paytable .scroll,
+.ticker,
+html body .btn-ghost,
+html body #simulatorDialog :is(.sim-preset, .sim-compare-clear, .a-calc-add),
+html body #notesPage .notes-back {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html body .paytable .scroll {
+  background: rgba(246, 245, 241, 0.96);
+}
+.ticker {
+  background: rgba(241, 240, 235, 0.9);
+}
+html body .btn-ghost,
+html body #simulatorDialog :is(.sim-preset, .sim-compare-clear, .a-calc-add) {
+  background: rgba(255, 255, 255, 0.8);
+}
+/* 軽さ：シミュレーター・説明ページを開いたときの後ろは、ぼかさずに半透明の墨色で覆う
+   （全画面のぼかしは、ダイアログの中をスクロールするたびにかけ直しになり、カクつく） */
+html body #simulatorDialog::backdrop,
+html body #notesPage::backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(27, 30, 23, 0.66);
+}

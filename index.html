@@ -52,10 +52,10 @@
     <link rel="preload" href="fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-33" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-33" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-33" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-33" />
+    <link rel="stylesheet" href="css/base.css?v=20261122-36" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-36" />
+    <link rel="stylesheet" href="css/design.css?v=20261122-36" />
+    <link rel="stylesheet" href="css/print.css?v=20261122-36" />
   </head>
   <body>
     <i class="scroll-progress" aria-hidden="true"></i>
@@ -469,8 +469,7 @@
             </div>
           </div>
           <div class="allowance-panel">
-            <div class="cap">ALLOWANCES</div>
-            <h3>手当の条件</h3>
+            <h3 class="sim-group">手当の条件</h3>
             <p class="sub">該当する勤務・生活条件を選ぶと、対応する手当を自動で計算します。</p>
             <h4 class="branch-title">所属の主な手当（配置手当）</h4>
             <!-- 所属に応じた配置手当の選択欄（スクリプトが所属ごとに作る） -->
@@ -899,9 +898,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-33"></script>
-    <script src="data/promotion-table.js?v=20261122-33"></script>
-    <script src="js/pay-lookup.js?v=20261122-33"></script>
+    <script src="data/pay-table.js?v=20261122-36"></script>
+    <script src="data/promotion-table.js?v=20261122-36"></script>
+    <script src="js/pay-lookup.js?v=20261122-36"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -912,11 +911,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-33"></script>
-    <script src="js/regional-rate.js?v=20261122-33"></script>
-    <script src="js/allowances.js?v=20261122-33"></script>
-    <script src="js/simulator.js?v=20261122-33"></script>
-    <script src="js/simulator-dialog.js?v=20261122-33"></script>
+    <script src="data/rules.js?v=20261122-36"></script>
+    <script src="js/regional-rate.js?v=20261122-36"></script>
+    <script src="js/allowances.js?v=20261122-36"></script>
+    <script src="js/simulator.js?v=20261122-36"></script>
+    <script src="js/simulator-dialog.js?v=20261122-36"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -925,10 +924,10 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-33"></script>
-    <script src="js/effects.js?v=20261122-33"></script>
-    <script src="js/crystals.js?v=20261122-33"></script>
-    <script src="js/scroll-lock.js?v=20261122-33"></script>
-    <script src="js/print.js?v=20261122-33"></script>
+    <script src="js/notes-page.js?v=20261122-36"></script>
+    <script src="js/effects.js?v=20261122-36"></script>
+    <script src="js/crystals.js?v=20261122-36"></script>
+    <script src="js/scroll-lock.js?v=20261122-36"></script>
+    <script src="js/print.js?v=20261122-36"></script>
   </body>
 </html>

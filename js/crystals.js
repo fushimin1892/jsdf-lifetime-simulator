@@ -321,65 +321,62 @@
   }
   // 花びら1枚（細密）：付け根の濃い紅から縁の白へ色が移り、細い筋が扇に広がり、縁はうっすら光る。
   // flip で裏返る様子（横に縮む・裏は少し濃い）、curl で左右の非対称（反り）を出す。手前の数枚は少しぼかす
-  function drawPetal(x, y, size, rot, flip, alpha, tint, curl, blur) {
+  function paintPetal(c, size, flip, alpha, tint, curl, blur) {
     const w = size * 0.6,
       l = size * 1.3,
-      sx = Math.max(0.1, Math.abs(flip)),
+      sx = 1,
       back = flip < 0,
       light = 0.86 + 0.14 * flip; // 光の当たり方（表で明るく、裏で暗く）
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-    ctx.scale(sx, 1);
-    if (blur) ctx.filter = `blur(${blur}px)`;
+    c.save();
+    if (blur) c.filter = `blur(${blur}px)`;
     // 形：付け根（下）から先（上）へ。先にはっきりした切れ込み。curl で左右の膨らみを変える
     const wl = w * (1 + curl),
       wr = w * (1 - curl);
     const path = () => {
-      ctx.beginPath();
-      ctx.moveTo(0, l * 0.5);
-      ctx.bezierCurveTo(wr * 0.55, l * 0.42, wr * 1.05, l * 0.05, wr * 0.92, -l * 0.22);
-      ctx.bezierCurveTo(wr * 0.82, -l * 0.42, wr * 0.48, -l * 0.52, wr * 0.22, -l * 0.5);
-      ctx.quadraticCurveTo(wr * 0.06, -l * 0.47, 0, -l * 0.36);
-      ctx.quadraticCurveTo(-wl * 0.06, -l * 0.47, -wl * 0.22, -l * 0.5);
-      ctx.bezierCurveTo(-wl * 0.48, -l * 0.52, -wl * 0.82, -l * 0.42, -wl * 0.92, -l * 0.22);
-      ctx.bezierCurveTo(-wl * 1.05, l * 0.05, -wl * 0.55, l * 0.42, 0, l * 0.5);
-      ctx.closePath();
+      c.beginPath();
+      c.moveTo(0, l * 0.5);
+      c.bezierCurveTo(wr * 0.55, l * 0.42, wr * 1.05, l * 0.05, wr * 0.92, -l * 0.22);
+      c.bezierCurveTo(wr * 0.82, -l * 0.42, wr * 0.48, -l * 0.52, wr * 0.22, -l * 0.5);
+      c.quadraticCurveTo(wr * 0.06, -l * 0.47, 0, -l * 0.36);
+      c.quadraticCurveTo(-wl * 0.06, -l * 0.47, -wl * 0.22, -l * 0.5);
+      c.bezierCurveTo(-wl * 0.48, -l * 0.52, -wl * 0.82, -l * 0.42, -wl * 0.92, -l * 0.22);
+      c.bezierCurveTo(-wl * 1.05, l * 0.05, -wl * 0.55, l * 0.42, 0, l * 0.5);
+      c.closePath();
     };
     const tone = (c) => c.map((v, i) => Math.round(Math.min(255, (v + ([236, 228, 206][i] - v) * tint * 0.28) * light)));
     const deep = tone(back ? [206, 128, 146] : [222, 138, 158]),
       mid = tone(back ? [234, 186, 196] : [244, 196, 206]),
       edge = tone(back ? [246, 226, 228] : [255, 244, 244]);
     // 色：付け根を中心に、紅 → 淡い桃 → 白
-    const g = ctx.createRadialGradient(0, l * 0.5, 0, 0, l * 0.5, l * 1.02);
+    const g = c.createRadialGradient(0, l * 0.5, 0, 0, l * 0.5, l * 1.02);
     g.addColorStop(0, `rgba(${deep},${alpha})`);
     g.addColorStop(0.32, `rgba(${mid},${alpha})`);
     g.addColorStop(1, `rgba(${edge},${alpha * 0.92})`);
     path();
-    ctx.fillStyle = g;
-    ctx.fill();
+    c.fillStyle = g;
+    c.fill();
     // 光：片側から差す白いつや
-    const gl2 = ctx.createLinearGradient(-w, 0, w, 0);
+    const gl2 = c.createLinearGradient(-w, 0, w, 0);
     gl2.addColorStop(0, `rgba(255,255,255,0)`);
     gl2.addColorStop(back ? 0.3 : 0.7, `rgba(255,255,255,${0.22 * alpha * light})`);
     gl2.addColorStop(1, `rgba(255,255,255,0)`);
-    ctx.fillStyle = gl2;
-    ctx.fill();
+    c.fillStyle = gl2;
+    c.fill();
     // 筋：付け根から扇に5本
-    ctx.lineWidth = 0.45 / sx;
-    ctx.strokeStyle = `rgba(196,112,134,${alpha * 0.28})`;
+    c.lineWidth = 0.45 / sx;
+    c.strokeStyle = `rgba(196,112,134,${alpha * 0.28})`;
     for (const k of [-0.62, -0.3, 0, 0.3, 0.62]) {
-      ctx.beginPath();
-      ctx.moveTo(0, l * 0.46);
-      ctx.quadraticCurveTo(k * w * 0.35, l * 0.05, k * w * 0.78, -l * (0.3 - Math.abs(k) * 0.12));
-      ctx.stroke();
+      c.beginPath();
+      c.moveTo(0, l * 0.46);
+      c.quadraticCurveTo(k * w * 0.35, l * 0.05, k * w * 0.78, -l * (0.3 - Math.abs(k) * 0.12));
+      c.stroke();
     }
     // 縁：うっすら光る細い線（透ける薄さ）
     path();
-    ctx.lineWidth = 0.7 / sx;
-    ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.55})`;
-    ctx.stroke();
-    ctx.restore();
+    c.lineWidth = 0.7 / sx;
+    c.strokeStyle = `rgba(255,255,255,${alpha * 0.55})`;
+    c.stroke();
+    c.restore();
   }
 
   // きらめき：4方向に伸びる細い光（大きな桜のまわりで、ゆっくり明滅する）
@@ -405,13 +402,27 @@
     ctx.restore();
   }
 
+  // 花びらの絵（表・裏）を最初に作っておく。ぼかしもここで1回だけ
+  function petalSprite(p, flip) {
+    const k = Math.min(2, window.devicePixelRatio || 1),
+      span = Math.ceil(p.size * 1.9 + 8),
+      cv = document.createElement("canvas");
+    cv.width = cv.height = Math.ceil(span * k);
+    const c = cv.getContext("2d");
+    c.scale(k, k);
+    c.translate(span / 2, span / 2);
+    paintPetal(c, p.size, flip, 0.72 + p.depth * 0.26, p.tint, p.curl, p.depth > 0.95 ? 0.9 : p.depth < 0.55 ? 0.5 : 0);
+    return { cv, span };
+  }
+
   // ---------- 大きさ ----------
   let W = 0,
     H = 0,
     items = [],
     petals = [];
   function resize() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // 高解像度の画面でも背景は 1.5 倍までで描く（細かく描きすぎると重くなる）
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
     W = canvas.clientWidth;
     H = canvas.clientHeight;
     canvas.width = Math.round(W * dpr);
@@ -426,20 +437,22 @@
       y: narrow && o.kind === "sakura" ? 0.2 : o.y,
       size: narrow ? W * o.s * 1.4 : Math.min(W, H) * o.s + W * o.s * 0.3,
     }));
-    petals = makePetals(narrow ? 12 : 30);
+    petals = makePetals(narrow ? 12 : 30).map((p) => ({ ...p, front: petalSprite(p, 1), back: petalSprite(p, -1) }));
     if (calm) draw(0);
   }
 
   // ---------- 毎フレーム ----------
-  let mx = 0,
+  let easedScroll = window.scrollY || 0,
+    mx = 0,
     my = 0,
     tx = 0,
     ty = 0;
   function draw(time) {
     ctx.clearRect(0, 0, W, H);
     gl?.clear();
+    easedScroll += ((window.scrollY || 0) - easedScroll) * (calm ? 1 : 0.18);
     const t = time / 1000,
-      sc = window.scrollY || 0,
+      sc = easedScroll,
       spread = Math.min(1, sc / Math.max(1, H)); // 1画面ぶんスクロールするまでに散る
     mx += (tx - mx) * 0.05;
     my += (ty - my) * 0.05;
@@ -453,7 +466,13 @@
         xx = p.x * W + Math.sin(t * p.swayF + p.phase) * p.sway + mx * 24 * p.depth,
         rot = p.phase + t * p.spin + Math.sin(t * p.swayF + p.phase) * 0.6,
         flip = Math.cos(t * p.flipF + p.phase);
-      drawPetal(xx, yy, p.size, rot, flip, 0.72 + p.depth * 0.26, p.tint, p.curl, p.depth > 0.95 ? 0.9 : p.depth < 0.55 ? 0.5 : 0);
+      const sp = flip < 0 ? p.back : p.front;
+      ctx.save();
+      ctx.translate(xx, yy);
+      ctx.rotate(rot);
+      ctx.scale(Math.max(0.1, Math.abs(flip)), 1);
+      ctx.drawImage(sp.cv, -sp.span / 2, -sp.span / 2, sp.span, sp.span);
+      ctx.restore();
     }
     for (const o of items) {
       // 最初の大きな桜はヒーローの「俸給を調べる」の後ろだけ（繰り返して本文に重ねない）
@@ -505,8 +524,17 @@
     },
     { passive: true },
   );
+  // 描き直しは1秒30回まで（ゆっくりした動きなので十分。60回より軽い）。
+  // スクロールしている間は描き直さず、ページのスクロールを優先する（止まって0.2秒たったら再開）
+  let last = -1e9,
+    scrollingUntil = 0;
+  // ページ全体だけでなく、俸給表などの枠の中のスクロールも見る（capture で拾う）
+  addEventListener("scroll", () => (scrollingUntil = performance.now() + 200), { passive: true, capture: true });
   const loopFrame = (time) => {
-    if (!document.hidden && !document.querySelector("dialog[open]")) draw(time);
+    if (time - last >= 32 && time > scrollingUntil && !document.hidden && !document.querySelector("dialog[open]")) {
+      last = time;
+      draw(time);
+    }
     raf(loopFrame);
   };
   raf(loopFrame);

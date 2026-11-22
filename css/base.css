@@ -944,9 +944,7 @@ a {
   gap: 2px;
   padding: 9px 12px;
   border-radius: 10px;
-  background: rgba(43, 50, 23, 0.92);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: rgba(43, 50, 23, 0.96);
   color: #edf0e8;
   font-size: 0.75rem;
   line-height: 1.5;
