@@ -315,10 +315,12 @@
             label.htmlFor = pick.id;
             wrap.append(label, pick, note);
             amountBox.parentNode.insertBefore(wrap, amountBox);
-            // 階級で決まる区分のときは、金額の欄を隠す（額は model() で毎月その階級の額にする）
+            // 階級で決まる区分と、額が決まっている区分（上限額でないもの）のときは、金額の欄を隠す（手入力しない）。
+            // 階級で決まる区分の額は model() で毎月その階級の額にする
             const sync = () => {
-              const byRank = pick.value.startsWith("rank:");
-              amountBox.hidden = byRank;
+              const byRank = pick.value.startsWith("rank:"),
+                fixed = pick.value !== "" && !byRank && rates[Number(pick.value)]?.[2] !== "max";
+              amountBox.hidden = byRank || fixed;
               if (byRank) amount.value = "0";
             };
             pick.addEventListener("change", () => {
@@ -409,6 +411,8 @@
             calcOut.hidden = !auto;
             calcState.value = JSON.stringify({ mode: calcMode.value, v: calcValues() });
             amountInput.readOnly = calcOn();
+            // 条件から計算しているときは、金額の欄を出さない（計算結果の文だけ見せる）
+            container.querySelector(".a-amount-wrap").hidden = calcOn();
             if (!calcOn()) return;
             const r = calc.compute(calcValues());
             amountInput.value = String(r.amount);
@@ -444,8 +448,17 @@
             regionCustomWrap.hidden = !regional || region.value !== "custom";
             methodWrap.hidden = fixedMethod;
             methodFixedWrap.hidden = !fixedMethod;
-            // 階級で額が決まる区分を選んでいるときも、金額の欄は出さない（container.syncRate）
-            amountWrap.hidden = regional || wide || (container.querySelector(".a-rate")?.value || "").startsWith("rank:");
+            // 額が自動で決まるときは、金額の欄を出さない（手入力しない）：地域手当・広域異動手当、条件から計算、
+            // 階級で額が決まる区分、額が決まっている区分（上限額の区分は額を入れるので出す）
+            const rateValue = container.querySelector(".a-rate")?.value || "";
+            amountWrap.hidden =
+              regional ||
+              wide ||
+              calcOn() ||
+              rateValue.startsWith("rank:") ||
+              (rateValue !== "" && A.specialRates[kind]?.[Number(rateValue)]?.[2] !== "max");
+            // 手当名は手当の種類で決まるので、「その他（自由入力）」のときだけ入力欄を出す
+            container.querySelector(".a-name").closest("div").hidden = kind !== OTHER;
             if (fixedMethod) method.value = defaultMethod(kind);
             methodFixed.textContent =
               method.value === "daily"
