@@ -314,7 +314,7 @@
             wrap.className = "a-rate-wrap";
             label.textContent = "区分（法令の額）";
             pick.className = "a-rate";
-            pick.append(new Option("選んでください（額を直接入力するときはそのまま）", ""));
+            // 額を手入力する選択肢は出さない（区分を選ぶと額が決まる。上限額の区分だけ額の欄を出す）
             for (const [value, o] of rankOpts) pick.append(new Option(o.label, value));
             rates.forEach(([, text, type], i) => pick.append(new Option(type === "max" ? `${text}［上限額］` : text, String(i))));
             note.className = "fixed-note";
@@ -341,13 +341,10 @@
               amount.dispatchEvent(new Event("input", { bubbles: true }));
             });
             container.syncRate = sync;
-            // 区分が1つだけで、上限額でないときは最初から選んでおく
-            const only = rankOpts.length + rates.length === 1;
-            if (only && (rankOpts.length || rates[0][2] !== "max")) {
-              pick.value = rankOpts.length ? rankOpts[0][0] : "0";
-              if (!rankOpts.length) amount.value = rates[0][0];
-              sync();
-            }
+            // 最初の区分を選んでおく（額もその区分の額にする）
+            pick.selectedIndex = 0;
+            if (!pick.value.startsWith("rank:")) amount.value = rates[Number(pick.value)][0];
+            sync();
           }
           const prefectureWrap = container.querySelector(".a-prefecture-wrap"),
             regionWrap = container.querySelector(".a-region-wrap"),
@@ -604,6 +601,11 @@
               const el = container.querySelector(sel);
               if (saved[i] != null && i !== 6 && sel !== ".a-kind" && el) el.value = saved[i];
             });
+            const ratePick = container.querySelector(".a-rate");
+            if (ratePick && ratePick.selectedIndex < 0) {
+              ratePick.selectedIndex = 0;
+              ratePick.dispatchEvent(new Event("change", { bubbles: true }));
+            }
             container.syncRate?.();
             container.syncPeriodFrom?.();
             // 旧データは都道府県を保存していないため、保存済み率を「官署指定」に移して引き継ぐ。
@@ -627,9 +629,11 @@
             try {
               s = JSON.parse(calcState.value || "null");
             } catch {}
-            if (saved && !s) calcMode.value = "manual";
+            // 額を手入力する「金額を直接入力」はなくしたので、いつも条件から計算する（以前の版の手入力の額は使わない）
+            calcMode.value = "auto";
+            calcMode.closest(".a-calc-top").hidden = true;
             if (s) {
-              calcMode.value = s.mode === "manual" ? "manual" : "auto";
+              calcMode.value = "auto";
               for (const el of calcBox.querySelectorAll("[data-k]"))
                 // 選択肢にない値（壊れた・古いURL）は戻さない
                 if (s.v?.[el.dataset.k] != null && (el.tagName !== "SELECT" || [...el.options].some((o) => o.value === String(s.v[el.dataset.k]))))

@@ -272,7 +272,7 @@ module.exports = async function allowances(env, { quick, log }) {
       let it;
       it = H.add("扶養手当"); H.calcIn(it, "p1", "16"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p2", "4"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p3", "26"); H.period(it, "2030", "7", "20", "5");
       it = H.add("住居手当"); H.calcIn(it, "rent", "55000"); H.period(it, "2027", "1", "3", "0");
-      it = H.add("通勤手当"); H.setIn(it, ".a-calc-mode", "manual"); H.setIn(it, ".a-amount", "4321", "input"); H.period(it, "2027", "1", "3", "0");
+      it = H.add("通勤手当"); H.calcIn(it, "pass", "4321"); H.period(it, "2027", "1", "3", "0");
       it = H.add("単身赴任手当"); H.calcIn(it, "km", it.querySelector(".a-calc [data-k=km]").options[3].value); H.period(it, "2040", "4", "2", "6");
       it = H.add("寒冷地手当"); H.calcIn(it, "grade", "3"); H.calcIn(it, "household", "1"); H.calcIn(it, "barracks", "yes"); H.period(it, "2035", "11", "1", "0");
       it = H.add("地域手当"); H.setIn(it, ".a-prefecture", "東京都"); H.setIn(it, ".a-region", it.querySelector(".a-region").options[1].value); H.setIn(it, ".a-start", "1", "input"); H.setIn(it, ".a-end", "12");
