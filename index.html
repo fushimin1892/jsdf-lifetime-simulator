@@ -52,10 +52,10 @@
     <link rel="preload" href="fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261122-38" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261122-38" />
-    <link rel="stylesheet" href="css/design.css?v=20261122-38" />
-    <link rel="stylesheet" href="css/print.css?v=20261122-38" />
+    <link rel="stylesheet" href="css/base.css?v=20261123-1" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261123-1" />
+    <link rel="stylesheet" href="css/design.css?v=20261123-1" />
+    <link rel="stylesheet" href="css/print.css?v=20261123-1" />
   </head>
   <body>
     <i class="scroll-progress" aria-hidden="true"></i>
@@ -329,14 +329,14 @@
             <div data-step="2曹" hidden>
               <label for="stepSgt2">3曹から2曹まで</label>
               <div class="unit">
-                <input id="stepSgt2" type="number" min="1.6" max="30" step="0.1" value="4" /><span>年</span>
+                <input id="stepSgt2" type="number" min="1.6" max="30" step="0.1" value="8" /><span>年</span>
               </div>
               <small class="fixed-note">法令の在職期間は3曹で2年</small>
             </div>
             <div data-step="1曹" hidden>
               <label for="stepSgt1">2曹から1曹まで</label>
               <div class="unit">
-                <input id="stepSgt1" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
+                <input id="stepSgt1" type="number" min="1.6" max="30" step="0.1" value="10" /><span>年</span>
               </div>
               <small class="fixed-note">法令の在職期間は2曹で2年</small>
             </div>
@@ -898,9 +898,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261122-38"></script>
-    <script src="data/promotion-table.js?v=20261122-38"></script>
-    <script src="js/pay-lookup.js?v=20261122-38"></script>
+    <script src="data/pay-table.js?v=20261123-1"></script>
+    <script src="data/promotion-table.js?v=20261123-1"></script>
+    <script src="js/pay-lookup.js?v=20261123-1"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -911,11 +911,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261122-38"></script>
-    <script src="js/regional-rate.js?v=20261122-38"></script>
-    <script src="js/allowances.js?v=20261122-38"></script>
-    <script src="js/simulator.js?v=20261122-38"></script>
-    <script src="js/simulator-dialog.js?v=20261122-38"></script>
+    <script src="data/rules.js?v=20261123-1"></script>
+    <script src="js/regional-rate.js?v=20261123-1"></script>
+    <script src="js/allowances.js?v=20261123-1"></script>
+    <script src="js/simulator.js?v=20261123-1"></script>
+    <script src="js/simulator-dialog.js?v=20261123-1"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -924,11 +924,11 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261122-38"></script>
-    <script src="js/effects.js?v=20261122-38"></script>
-    <script src="js/crystals-core.js?v=20261122-38"></script>
-    <script src="js/crystals.js?v=20261122-38"></script>
-    <script src="js/scroll-lock.js?v=20261122-38"></script>
-    <script src="js/print.js?v=20261122-38"></script>
+    <script src="js/notes-page.js?v=20261123-1"></script>
+    <script src="js/effects.js?v=20261123-1"></script>
+    <script src="js/crystals-core.js?v=20261123-1"></script>
+    <script src="js/crystals.js?v=20261123-1"></script>
+    <script src="js/scroll-lock.js?v=20261123-1"></script>
+    <script src="js/print.js?v=20261123-1"></script>
   </body>
 </html>

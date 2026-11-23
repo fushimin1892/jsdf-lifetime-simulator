@@ -1564,7 +1564,8 @@
             sotsu: { entryType: "sotsu", targetRank: "曹長", startAge: 18, steps: "def" },
             koka: { entryType: "koka", targetRank: "曹長", startAge: 18, steps: "def", branch: "ground" },
             bunai: { entryType: "sotsu", targetRank: "1尉", startAge: 18, steps: "def" },
-            kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def" },
+            // 防大・大卒の幹部：2尉→1尉は一斉昇任のため3年（法令の在職期間3年と同じ）
+            kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def", set: { first: "3" } },
           };
         for (const button of document.querySelectorAll(".sim-preset"))
           button.addEventListener("click", () => {
@@ -1582,7 +1583,7 @@
             // 選択欄の最初の選択肢が法令の最短期間、初期値は画面を開いたときの値
             for (const id of PRESET_STEPS) {
               const el = $(id);
-              el.value = p.steps === "min" && el.tagName === "SELECT" ? el.options[0].value : stepDefaults[id];
+              el.value = p.set?.[id] ?? (p.steps === "min" && el.tagName === "SELECT" ? el.options[0].value : stepDefaults[id]);
             }
             $("targetRank").dispatchEvent(new Event("change", { bubbles: true }));
             $("shareStatus").textContent = `ひな形「${button.textContent}」を入れました。`;
