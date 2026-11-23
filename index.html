@@ -52,10 +52,10 @@
     <link rel="preload" href="fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
-    <link rel="stylesheet" href="css/base.css?v=20261123-1" />
-    <link rel="stylesheet" href="css/simulator-fix.css?v=20261123-1" />
-    <link rel="stylesheet" href="css/design.css?v=20261123-1" />
-    <link rel="stylesheet" href="css/print.css?v=20261123-1" />
+    <link rel="stylesheet" href="css/base.css?v=20261123-2" />
+    <link rel="stylesheet" href="css/simulator-fix.css?v=20261123-2" />
+    <link rel="stylesheet" href="css/design.css?v=20261123-2" />
+    <link rel="stylesheet" href="css/print.css?v=20261123-2" />
   </head>
   <body>
     <i class="scroll-progress" aria-hidden="true"></i>
@@ -405,6 +405,8 @@
                 >
               </div>
               <small class="fixed-note">法令の在職期間は3年</small>
+              <!-- 防大・大卒の幹部のひな形を使ったときだけ出す（欄を3年で固定する） -->
+              <small id="firstLock" class="preset-lock" hidden>防大・大卒の幹部のひな形：一斉昇任のため3年で固定しています。ほかのひな形を選ぶか、入隊区分を変えると選べるようになります。</small>
             </div>
             <div data-step="3佐" hidden>
               <label for="stepMaj">1尉から3佐まで</label>
@@ -898,9 +900,9 @@
       </div>
     </footer>
     <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
-    <script src="data/pay-table.js?v=20261123-1"></script>
-    <script src="data/promotion-table.js?v=20261123-1"></script>
-    <script src="js/pay-lookup.js?v=20261123-1"></script>
+    <script src="data/pay-table.js?v=20261123-2"></script>
+    <script src="data/promotion-table.js?v=20261123-2"></script>
+    <script src="js/pay-lookup.js?v=20261123-2"></script>
     <button
       class="sim-launch"
       id="simLaunch"
@@ -911,11 +913,11 @@
       <span class="sim-launch-icon" aria-hidden="true">↗</span
       ><span class="sim-launch-text">生涯年収を試算</span>
     </button>
-    <script src="data/rules.js?v=20261123-1"></script>
-    <script src="js/regional-rate.js?v=20261123-1"></script>
-    <script src="js/allowances.js?v=20261123-1"></script>
-    <script src="js/simulator.js?v=20261123-1"></script>
-    <script src="js/simulator-dialog.js?v=20261123-1"></script>
+    <script src="data/rules.js?v=20261123-2"></script>
+    <script src="js/regional-rate.js?v=20261123-2"></script>
+    <script src="js/allowances.js?v=20261123-2"></script>
+    <script src="js/simulator.js?v=20261123-2"></script>
+    <script src="js/simulator-dialog.js?v=20261123-2"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <div class="notes-head">
@@ -924,11 +926,11 @@
       </div>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
-    <script src="js/notes-page.js?v=20261123-1"></script>
-    <script src="js/effects.js?v=20261123-1"></script>
-    <script src="js/crystals-core.js?v=20261123-1"></script>
-    <script src="js/crystals.js?v=20261123-1"></script>
-    <script src="js/scroll-lock.js?v=20261123-1"></script>
-    <script src="js/print.js?v=20261123-1"></script>
+    <script src="js/notes-page.js?v=20261123-2"></script>
+    <script src="js/effects.js?v=20261123-2"></script>
+    <script src="js/crystals-core.js?v=20261123-2"></script>
+    <script src="js/crystals.js?v=20261123-2"></script>
+    <script src="js/scroll-lock.js?v=20261123-2"></script>
+    <script src="js/print.js?v=20261123-2"></script>
   </body>
 </html>

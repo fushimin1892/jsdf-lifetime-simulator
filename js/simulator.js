@@ -764,6 +764,9 @@
         }
         // 入隊区分を変えたら、入隊時の年齢をその区分の目安にする
         $("entryType").addEventListener("change", () => {
+          // 入隊区分を変えたら、ひな形で固定した2尉→1尉の欄を外す（ひな形から入隊区分を入れるときは、このあとでまた固定する）
+          $("first").disabled = false;
+          $("firstLock").hidden = true;
           $("startAge").value = String(window.RULES.entry.defaultAge[$("entryType").value] ?? 18);
           updateRetirement();
         });
@@ -1565,7 +1568,7 @@
             koka: { entryType: "koka", targetRank: "曹長", startAge: 18, steps: "def", branch: "ground" },
             bunai: { entryType: "sotsu", targetRank: "1尉", startAge: 18, steps: "def" },
             // 防大・大卒の幹部：2尉→1尉は一斉昇任のため3年（法令の在職期間3年と同じ）
-            kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def", set: { first: "3" } },
+            kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def", set: { first: "3" }, lock: ["first"] },
           };
         for (const button of document.querySelectorAll(".sim-preset"))
           button.addEventListener("click", () => {
@@ -1584,7 +1587,10 @@
             for (const id of PRESET_STEPS) {
               const el = $(id);
               el.value = p.set?.[id] ?? (p.steps === "min" && el.tagName === "SELECT" ? el.options[0].value : stepDefaults[id]);
+              // ひな形が固定する欄（防大・大卒の幹部の2尉→1尉）だけ変えられなくする。ほかのひな形では外す
+              el.disabled = !!p.lock?.includes(id);
             }
+            $("firstLock").hidden = !p.lock?.includes("first");
             $("targetRank").dispatchEvent(new Event("change", { bubbles: true }));
             $("shareStatus").textContent = `ひな形「${button.textContent}」を入れました。`;
           });

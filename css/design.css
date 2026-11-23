@@ -2524,3 +2524,24 @@ html body #notesPage::backdrop {
 .colophon dd {
   margin: 0;
 }
+
+/* ひな形で固定した選択欄（防大・大卒の幹部の2尉→1尉）：矢印の代わりに錠の印、色を落として変えられないことを示す */
+html body #simulatorDialog select:disabled {
+  border-style: dashed;
+  background-color: #ebe9e2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='14' viewBox='0 0 12 14'%3E%3Crect x='1' y='6' width='10' height='7' rx='1.5' fill='none' stroke='%234a5a26' stroke-width='1.4'/%3E%3Cpath d='M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6' fill='none' stroke='%234a5a26' stroke-width='1.4'/%3E%3C/svg%3E");
+  color: var(--ink-2);
+  cursor: not-allowed;
+  opacity: 1;
+}
+html body #simulatorDialog .preset-lock {
+  display: block;
+  margin-top: 6px;
+  color: var(--od);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+html body #simulatorDialog .preset-lock[hidden] {
+  display: none;
+}
