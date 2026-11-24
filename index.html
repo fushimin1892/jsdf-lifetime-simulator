@@ -97,10 +97,10 @@
         </div>
         <!-- 最初の画面で、そのまま俸給を調べられるようにする -->
         <section class="lookup" id="lookup" aria-labelledby="lookupTitle">
-          <div class="lookup-head">
+          <header class="lookup-head">
             <h2 id="lookupTitle">俸給を調べる</h2>
             <span>俸給月額</span>
-          </div>
+          </header>
           <div class="fields">
             <div>
               <label for="rank">階級</label
@@ -132,14 +132,14 @@
       <dialog id="simulatorDialog" aria-labelledby="simulatorTitle">
         <section class="card simulator" id="simulator">
           <!-- スクロールしても常に見える結果の要約 -->
-          <div class="sim-sticky">
+          <header class="sim-sticky">
             <div class="sim-sticky-text" aria-live="polite">
               <small>在職中の給与の総額</small><strong id="stickyTotal">—</strong
               ><span id="stickyRank"></span>
             </div>
             <a href="#simResult" class="sim-jump" id="simJump">結果へ ↓</a>
             <button class="sim-close" type="button" aria-label="シミュレーターを閉じる">×</button>
-          </div>
+          </header>
           <div class="cap">CAREER SIMULATOR</div>
           <h2 class="section-title" id="simulatorTitle">生涯年収シミュレーター</h2>
           <p class="sub">
@@ -470,8 +470,8 @@
               >
             </div>
           </div>
-          <div class="allowance-panel">
-            <h3 class="sim-group">手当の条件</h3>
+          <section class="allowance-panel" aria-labelledby="allowanceTitle">
+            <h3 class="sim-group" id="allowanceTitle">手当の条件</h3>
             <p class="sub">該当する勤務・生活条件を選ぶと、対応する手当を自動で計算します。</p>
             <h4 class="branch-title">所属の主な手当（配置手当）</h4>
             <!-- 所属に応じた配置手当の選択欄（スクリプトが所属ごとに作る） -->
@@ -583,7 +583,7 @@
                 >給与制度の概要 ↗</a
               >
             </p>
-          </div>
+          </section>
           <h3 class="sim-group">賞与</h3>
           <div class="sim-grid">
             <div>
@@ -705,7 +705,7 @@
             未選択・不明の手当は試算に含まれません。初期条件は試算用です。2士として入隊し、1士・士長を経て3曹へ昇任します（初期値は入隊6か月で1士、1年で士長）。予想階級までの昇任を、入力した年数どおりに順番に行う仮定で計算します。3尉以上を選んだ場合は部内幹部へ昇任するものとし、初期値では3曹昇任から4年後（部内幹部候補生の受験資格である3曹昇任後4年。最後の8か月は幹部候補生学校の教育期間）に3尉へ昇任し、2尉へは3尉昇任から2年（固定）で昇任します。昇任までの期間はすべて選べます。選択肢は昇任の機会（年1回、3曹は年2回、部内幹部候補生の試験は年1回）の間隔で、いちばん短い選択肢は自衛隊法施行規則 別表第七の在職期間です（勤務成績が極めて良好な場合に認められる8割への短縮は含みません。1士から士長までは、採用後約1年で士長になる実際の運用に合わせて6か月からとしています）。昇任までの年数・賞与4.7か月分の初期値は試算用の目安で、実際の昇任時期や選考結果を示すものではありません。定年までに予想階級へ届かない場合は、届いた階級までで計算します。定年年齢は2024年10月以降のもので、2028年度以降に予定されている引き上げは含みません。
           </p>
           <div id="simError" class="sim-error" role="alert"></div>
-          <div id="simResult" hidden aria-live="polite">
+          <section id="simResult" hidden aria-live="polite" aria-label="試算の結果">
             <!-- 在職中の給与・退職手当・若年定年退職者給付金を分けて出す（いずれも額面） -->
             <div class="sim-total">
               <div class="sim-split">
@@ -727,14 +727,14 @@
             </div>
             <p class="note" id="deductionDetail"></p>
             <!-- 2つの条件を比べる：保存した結果（A）と今の結果（B） -->
-            <div class="sim-compare" id="simCompare">
-              <div class="sim-compare-head">
-                <h3>条件を比べる</h3>
+            <section class="sim-compare" id="simCompare" aria-labelledby="compareTitle">
+              <header class="sim-compare-head">
+                <h3 id="compareTitle">条件を比べる</h3>
                 <div class="sim-compare-actions">
                   <button type="button" id="compareSave" class="allowance-add">今の結果をAとして保存</button>
                   <button type="button" id="compareClear" class="sim-compare-clear" hidden>比べるのをやめる</button>
                 </div>
-              </div>
+              </header>
               <p class="sim-compare-help" id="compareHelp">
                 今の結果をAとして保存してから条件を変えると、Aと今の結果（B）を並べて比べられます。例：「任期制で2任期」と「一般曹候補生で定年まで」
               </p>
@@ -751,13 +751,13 @@
                   <tbody id="compareRows"></tbody>
                 </table>
               </div>
-            </div>
-            <div class="sim-section-head">
+            </section>
+            <header class="sim-section-head">
               <h3>年収の推移</h3>
               <span class="sim-legend"
                 ><i class="sw-salary"></i>俸給 <i class="sw-extra"></i>賞与・手当 <i class="sw-net"></i>手取り</span
               >
-            </div>
+            </header>
             <div class="sim-chart" id="simChart"></div>
             <details class="sim-fold">
               <summary class="sim-section-head">
@@ -794,17 +794,17 @@
               </div>
             </details>
             <!-- 再就職の年収によって、若年定年退職者給付金（60歳までの分）がどれだけ減るか -->
-            <div id="reemploySection" hidden>
-              <div class="sim-section-head">
-                <h3>再就職の年収と若年定年退職者給付金</h3>
+            <section id="reemploySection" hidden aria-labelledby="reemployTitle">
+              <header class="sim-section-head">
+                <h3 id="reemployTitle">再就職の年収と若年定年退職者給付金</h3>
                 <span>60歳までの分（1回目・2回目）。<span class="screen-only">グラフに触れると、その年収での受け取り額が出ます</span></span>
-              </div>
+              </header>
               <p class="reemploy-summary" id="reemploySummary"></p>
               <div class="sim-chart" id="reemployChart"></div>
               <small class="fixed-note" data-note-title="再就職の年収と若年定年退職者給付金のグラフ"
                 >◯は「退職の翌年の年収見込み」に入力した年収です。年収が下限額を超えると2回目が減り、上限額以上で2回目は0、さらに1回目の一部を返納します（給与法第27条の4）。年収は再就職先の給与の額（額面）で、事業所得がある場合はそれも加えます。年の途中から勤めた場合は、ボーナスを除いた給与を12か月分に直した額にボーナスを足して入れてください（施行令第24条の2）。境目の計算に使う「給与年額相当額」は、退職時の俸給・扶養手当・営外手当が翌年も同じとして、期末手当2.525か月・勤勉手当2.125か月分（施行令第24条）を足した額です。60歳以後の分（3回目・4回目）は、このグラフに含みません。</small
               >
-            </div>
+            </section>
             <p class="note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
               退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜・附則第12項・第13項と施行令第22条・附則第15項の率で計算します（俸給月額は3佐の最高号俸が上限）。60歳以後の分（後期）は所得による調整を含みません。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の2回目以降は、退職手当と勤続期間が重なるため、重なる年数分の退職所得控除を引き（前の退職手当等が控除額に満たないときは重なる期間を縮めて計算）、下限の80万円を控除して課税します（所得税法第30条第6項、施行令第70条）。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
               <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>
@@ -825,14 +825,14 @@
                 >シミュレーターを閉じると、入力した条件は初期値に戻ります。</small
               >
             </div>
-          </div>
-          <div class="source">
+          </section>
+          <footer class="source">
             試算は2026年の俸給表（令和8年法律第89号）を将来も固定し、毎年1月1日に入力した号俸数だけ昇給する仮定です。入隊後最初の昇給は、入隊から12月末までの月数で月割りします（施行令第6条の14第2項。10〜12月に入隊した場合は、入力した号俸数にかかわらず標準の4号俸を月割り）。55歳以降（全階級）と1佐（1）（2）欄以上は昇給抑制の対象で、勤務成績「極めて良好」（8号俸以上）なら2号俸、「特に良好」（6号俸）なら1号俸、それ以外は昇給しません。その階級の最高号俸に達した後は、昇任するまで昇給しません。昇任後の号俸は施行令別表第一ロの対応表で決め、2階級以上の昇任は1階級ずつ順に当てはめます。将の俸給は官職ごとに定められた号俸で、昇給はありません（施行令第6条の20）。賞与は6月・12月に、期末手当と勤勉手当に分けて計算します。1回あたりの割合は、令和9年度（2027年4月）からは6月・12月とも、一般の自衛官が期末手当1.275か月・勤勉手当1.035か月、1佐以上で管理職が一種・二種の場合（特定管理職員）が1.075か月・1.235か月、将・将補（1）欄（指定職と同じ扱い）が0.6875か月・1.0275か月です（一般職給与法第19条の4、人事院規則9-40第13条、防衛省給与法第18条の2。令和8年法律第79号・人事院規則9-40-66）。令和8年度までは6月と12月で違い、一般の自衛官は6月が1.2625か月・1.0225か月、12月が1.2875か月・1.0475か月です（年の合計は同じ）。過去の年も今の制度で計算します。法律の「年4.7か月」は勤勉手当の総額の上限を含む月数で、標準の成績の人は一般の自衛官で年4.62か月になります。年間月数の入力を4.7から変えると、各割合を同じ比率で増減します。計算の基礎となる額は、俸給に階級による加算（施行令別表第八：2曹〜2尉5％、3佐・1尉9％、2佐・1佐（3）14％、1佐（1）（2）・将補（2）18％、将・将補（1）20％。管理職の加算は含みません）と、扶養手当（期末手当のみ）・地域手当・広域異動手当・営外手当を加えた額です。入隊から6か月未満の賞与は、期末手当を在職期間割合（3か月未満30％、3か月以上60％、5か月以上80％）、勤勉手当を期間率（人事院規則9-40別表第二：半月刻みで5〜95％）で減額します。勤勉手当の成績率は標準（人事院規則9-40第13条第1項第1号ハ・第3号ロの区分）として計算します。入隊は月の初日とみなし、入隊した月から俸給・手当を満額で計算します。退職後の賞与は含みません。年ごとの推移は入隊月から1年ごとに区切っています。追加した手当は指定期間と入力した金額・割合に基づき、年額は月割り、日額は月平均日数で計算します。「在職中の給与の総額」は税・共済掛金を引く前の額で、退職手当・若年定年退職者給付金は含みません（どちらも、税・共済掛金・手取りとあわせて結果の欄で別に計算します）。俸給表や手当の額の将来の改定は含みません。AIによる予測ではなく入力条件に基づく計算です。
-          </div>
+          </footer>
         </section>
       </dialog>
       <section class="card paytable" id="paytable">
-        <div class="titleline">
+        <header class="titleline">
           <div>
             <div class="cap">PAY TABLE</div>
             <p class="sec-meta" aria-hidden="true"><span>RANKS — 19</span><span>STEPS — 145</span><span>UNIT — JPY / MONTH</span></p>
@@ -840,14 +840,14 @@
             <p class="sub">2026年11月公布法令の表をもとに作成</p>
           </div>
           <span class="hint">↔ 横にスクロールできます</span>
-        </div>
+        </header>
         <div class="scroll" role="region" aria-label="自衛官俸給表" tabindex="0">
           <table>
             <thead id="thead"></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
-        <div class="source">
+        <footer class="source">
           <dl class="source-body colophon">
             <div>
               <dt>SOURCE</dt><dd>出典：<a
@@ -879,7 +879,7 @@
               <dt>NOTE</dt><dd>正式な金額・適用条件は法令等をご確認ください。</dd>
             </div>
           </dl>
-        </div>
+        </footer>
       </section>
     </main>
     <footer class="foot" id="site-info">
@@ -928,10 +928,10 @@
     <script src="assets/js/simulator-dialog.js?v=20261124-6"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
-      <div class="notes-head">
+      <header class="notes-head">
         <h2 id="notesTitle">説明・計算の前提</h2>
         <button type="button" class="notes-back">← 戻る</button>
-      </div>
+      </header>
       <div class="notes-body" id="notesBody"></div>
     </dialog>
     <script src="assets/js/notes-page.js?v=20261124-6"></script>

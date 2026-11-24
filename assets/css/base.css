@@ -21,7 +21,9 @@ body {
     "Noto Sans JP",
     sans-serif;
 }
-header {
+/* ページ上部のヘッダーと、印刷の紙面の見出し（print.js が作る）。ほかの header には付けない */
+.site-head,
+.pa-head {
   background: #fff;
   border-bottom: 1px solid #e4e6e0;
 }
