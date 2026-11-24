@@ -1,5 +1,5 @@
 {
-  "reviewedOn": "2026-11-22",
+  "reviewedOn": "2026-11-24",
   "sinks": [
     {
       "file": "js/allowances.js",
@@ -79,37 +79,37 @@
     {
       "file": "js/simulator.js",
       "line": "tip.innerHTML = html;",
-      "hash": "b2b6f7908f0cee6c"
+      "hash": "a9987188b2ecf729"
     },
     {
       "file": "js/simulator.js",
       "line": "box.innerHTML = `<svg viewBox=\"0 0 ${W} ${H}\" role=\"img\" aria-label=\"年収の推移。${years[0].age}歳の${man(ye",
-      "hash": "31aac5ff6a2b5a3e"
+      "hash": "a0f07dd5dedea3a8"
     },
     {
       "file": "js/simulator.js",
       "line": "$(\"reemploySummary\").innerHTML =",
-      "hash": "86b3671334869abd"
+      "hash": "b1a5d9f192a3fb85"
     },
     {
       "file": "js/simulator.js",
       "line": "box.innerHTML = `<svg viewBox=\"0 0 ${W} ${H}\" role=\"img\" aria-label=\"退職の翌年の年収と若年定年退職者給付金の受け取り額。年収${m",
-      "hash": "a76a1f6e1a1d473e"
+      "hash": "8f5fec794a1e5100"
     },
     {
       "file": "js/simulator.js",
       "line": "$(\"compareRows\").innerHTML =",
-      "hash": "dbae884467df97cd"
+      "hash": "79842be93f46d9da"
     },
     {
       "file": "js/simulator.js",
       "line": "$(\"simRows\").innerHTML = x.years",
-      "hash": "cc172df9732aa8fe"
+      "hash": "a27b9004c3f2bc24"
     },
     {
       "file": "js/simulator.js",
       "line": "$(\"retireRows\").innerHTML = r.ninkiExit",
-      "hash": "7cf584e448e7f5a1"
+      "hash": "b6082eb86d609357"
     }
   ]
 }
