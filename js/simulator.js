@@ -263,7 +263,7 @@
             for (const p of c.promotions)
               if (m === p.month) {
                 if (p.grade) {
-                  const from = c.payOverride && m === c.payOverride.until ? "曹長（幹部候補生）" : label();
+                  const from = c.payOverride && m === c.payOverride.until ? "幹部候補生（教育中）" : label();
                   rank = p.col;
                   level = p.grade - 1;
                   events.push({ month: m, from, to: label() });
@@ -360,7 +360,7 @@
               pay,
               basePay: pay,
               col: rank,
-              rank: candidate ? "曹長（幹部候補生）" : rankNames[rank],
+              rank: candidate ? "幹部候補生（教育中）" : rankNames[rank],
               grade: candidate ? null : level + 1,
               promotions: events.filter((e) => e.month === m),
               bonus,
