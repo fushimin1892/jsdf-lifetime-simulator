@@ -413,16 +413,23 @@ function build(R, W) {
   add("若年給付金", `支給の要件 在職${YP.minYears}年以上 youngPension.minYears`, "boeiKyuyo", "27_2", P(`としての在職期間が${nen(YP.minYears)}以上である者`));
   add("若年給付金", `1回目・2回目の倍率 ${YP.earlyMultiplier.join("・")} youngPension.earlyMultiplier`, "boeiKyuyo", "27_3", P("第一回目の給付金にあつては", kanjiNum(YP.earlyMultiplier[0]), "を、第二回目の給付金にあつては", kanjiNum(YP.earlyMultiplier[1]), "を"));
   add("若年給付金", `3回目・4回目の倍率 ${YP.lateMultiplier.join("・")} youngPension.lateMultiplier`, "boeiKyuyo", "附則", P("第三回目の給付金にあつては", kanjiNum(YP.lateMultiplier[0]), "を、第四回目の給付金にあつては", kanjiNum(YP.lateMultiplier[1]), "を"));
-  // 経過措置（令和8年法律第53号 附則第3条）：令和8年4月〜令和9年3月に退職した人の倍率。「「二・五七一」とあるのは「二」と」の形
-  if (YP.transition) {
-    const T = YP.transition,
-      sub = (from, to) => `「${kanjiNum(from)}」とあるのは「${kanjiNum(to)}」と`;
-    add("若年給付金", `経過措置の倍率（令和8年4月〜令和9年3月の退職）youngPension.transition`, "boeiKyuyo", "附則(令和八年七月三日法律第五三号)",
-      P(`令和八年四月一日から令和九年三月三十一日までの間に退職した新若年定年退職者`, ANY(200),
+  // 経過措置（令和8年法律第53号 附則第3条・第4条）：令和8年度・令和9年度に退職した人の倍率。「「二・五七一」とあるのは「二」と」の形。
+  // 60歳以後の分の調整の数（附則第13項・第15項の「四・六」）も同じ条で読み替える
+  const PERIOD_TEXT = { "2026,4": ["令和八年四月一日から令和九年三月三十一日", "附則第3条"], "2027,4": ["令和九年四月一日から令和十年三月三十一日", "附則第4条"] };
+  for (const T of YP.periods || []) {
+    const key = T.from.join(),
+      text = PERIOD_TEXT[key];
+    if (!text) continue; // 令和8年3月以前（改正前の法）は、改正前の版の本則の値（ここでは照合しない）
+    // 附則第4条は公布済み・未施行（改正法附則第1条本文の「令和9年3月31日までの間において政令で定める日」に施行）で、
+    // e-Gov では 2027-03-31 施行の版から載る。今の版には無いので、ここでは照合せず手作業の確認として記録する
+    if (key === "2027,4") continue;
+    const sub = (from, to) => `「${kanjiNum(from)}」とあるのは「${kanjiNum(to)}」と`;
+    add("若年給付金", `経過措置の倍率（${text[0]}の退職。${text[1]}）youngPension.periods`, "boeiKyuyo", "附則(令和八年七月三日法律第五三号)",
+      P(`${text[0]}までの間に退職した新若年定年退職者`, ANY(200),
         sub(YP.earlyMultiplier[0], T.earlyMultiplier[0]), ANY(10), sub(YP.earlyMultiplier[1], T.earlyMultiplier[1]), ANY(80),
         sub(YP.lowerMultiplier, T.lowerMultiplier), ANY(10), sub(YP.upperMultiplier, T.upperMultiplier), ANY(120),
-        sub(YP.lateMultiplier[0], T.lateMultiplier[0]), ANY(10), sub(YP.lateMultiplier[1], T.lateMultiplier[1])));
-    if (T.from.join() !== "2026,4" || T.to.join() !== "2027,3") list.push({ area: "若年給付金", what: "youngPension.transition の期間が附則第3条（令和8年4月1日〜令和9年3月31日）と違う", fail: true });
+        sub(YP.lateMultiplier[0], T.lateMultiplier[0]), ANY(10), sub(YP.lateMultiplier[1], T.lateMultiplier[1]), ANY(400),
+        sub(YP.lateLower, T.lateLower)));
   }
   // 率の表（施行令第22条）：「四年 〇・九九五一九二 〇・九八六五三八」の行。表にない短い年数は「三年以下 一・〇〇〇〇〇〇 一・〇〇〇〇〇〇」
   const r6 = (v) => kanjiNum(v, 6);
@@ -457,6 +464,8 @@ const manual = [
   ["階級", "一般幹部候補生の候補生の号俸と任官時の号俸 entry.candidate", "その年度の一般幹部候補生採用要項"],
   ["階級", "高等工科学校の卒業生の任官時の号俸（陸士長1号俸）・3曹昇任までの1年・任官直後の教育3か月 entry.koka", "号俸は公表資料になし（防衛大臣の定め）。自衛隊の広報に問い合わせて陸士長1号俸と確認済み（2026-11-24）。1年と教育は陸上自衛隊高等工科学校の公式Q&A（https://www.mod.go.jp/gsdf/yt_sch/q-a/ 。自動取得は403なのでブラウザで確かめる）"],
   ["若年給付金", "自衛官以外の職員の定年 youngPension.civilRetireAge", "国家公務員法 附則（定年の段階的引上げ）"],
+  ["若年給付金", "経過措置の倍率（令和9年4月〜令和10年3月の退職。令和8年法律第53号附則第4条）youngPension.periods", "未施行のため e-Gov の 2027-03-31 施行版（327AC0000000266_20270331_508AC0000000053）で 2026-11-24 に照合"],
+  ["若年給付金", "令和10年4月以後の新制度 youngPension.newSystem（3回払いの倍率・所得調整の0.75・0.25・下限9・上限3）", "未施行のため e-Gov の 2028-04-01 施行版（327AC0000000266_20280401_508AC0000000053）で 2026-11-24 に照合。給与年額調整額などの政令は未公布"],
   ["賞与", "令和9年度からの期末手当の割合 bonus.kimatsuPer、勤勉手当の標準の成績率 bonus.kinbenStandard（令和9年度から）・bonus.split の12月の割合", "官報 令和8年11月18日 号外第251号（令和8年法律第79号第2条・人事院規則9-40-66）で確認。e-Gov は施行・改正後に載る（令和9年4月以後に values で照合し直す）"],
   ["手当", "単身赴任手当の距離の加算の廃止 calcRates.tanshin.addUntilFy と転居手当の上限 calcRates.tenkyo", "官報 令和8年11月18日 号外第251号（令和8年法律第79号第2条。令和9年4月1日施行）で確認。転居手当の距離区分ごとの額は人事院規則（未公布）"],
   ["年金・共済", "afterRetire（老齢基礎年金・国民年金保険料）、kyosai（掛金率・標準報酬・上限）", "日本年金機構・防衛省共済組合の公表資料"],

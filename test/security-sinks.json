@@ -109,7 +109,7 @@
     {
       "file": "assets/js/simulator.js",
       "line": "$(\"retireRows\").innerHTML = r.ninkiExit",
-      "hash": "b6082eb86d609357"
+      "hash": "50d54018d4bb7088"
     }
   ]
 }

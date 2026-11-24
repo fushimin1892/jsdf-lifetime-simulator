@@ -27,6 +27,30 @@ const retireTax = (a, ded, years) => {
 // 控除額から逆に、受け取った退職手当等に対応する勤続年数（所得税法施行令第70条：前の退職手当等があるときの控除の調整）
 const yearsFor = (received) => (received <= T.deduction.base ? Math.floor(received / T.deduction.perYear) : Math.floor((received - T.deduction.base) / T.deduction.perYearAfter) + T.deduction.border);
 
+// 給与所得（所得税法別表第五。2026・2027年分は最低保障74万円（収入220万円未満）、それ以外69万円、2025年分以前65万円）
+const salaryIncome = (x, y) => {
+  const min = y < 2026 ? 650000 : y <= 2027 && x < 2200000 ? 740000 : 690000,
+    f = (v) => (v <= 1625000 ? 550000 : v <= 1800000 ? v * 0.4 - 100000 : v <= 3600000 ? v * 0.3 + 80000 : v <= 6600000 ? v * 0.2 + 440000 : v <= 8500000 ? v * 0.1 + 1100000 : 1950000);
+  if (x <= 0) return 0;
+  if (f(x) <= min) return Math.max(0, x - min);
+  const A = x < 6600000 ? Math.floor(x / 4000) * 4000 : x;
+  return Math.floor(A - f(A));
+};
+// その年の所得税・住民税（給与と、ほかの所得 extra。配偶者・扶養親族なし）
+const yearTax = (salary, extra, y) => {
+  const g = salaryIncome(salary, y) + extra,
+    basic = T.basicByYear.find(([until]) => y <= until)[1].find(([mx]) => g <= mx)[1],
+    f1000 = (v) => Math.max(0, Math.floor(v / 1000) * 1000),
+    it = Math.floor((incomeTax(f1000(g - basic)) * (1 + T.surtax)) / 100) * 100,
+    R = T.resident,
+    t = f1000(g - R.basic),
+    adj = t <= R.adjBorder ? Math.min(R.diff, t) * R.adjRate : Math.max((R.diff - (t - R.adjBorder)) * R.adjRate, R.adjMin),
+    rt = g <= R.exempt ? 0 : Math.max(0, Math.floor((t * T.residentRate - adj) / 100) * 100) + R.kintou;
+  return it + rt;
+};
+// 一時所得（給付金の2回目以降）で増える税：50万円の特別控除の後の2分の1を、その年の給与の所得に加える
+const ichijiTax = (amount, salary, y) => yearTax(salary, Math.floor(Math.max(0, amount - T.ichijiSpecial) / 2), y) - yearTax(salary, 0, y);
+
 const rankAddOf = (col) => LAW.bonus.rankAdd.find(([mx]) => col <= mx)?.[1] ?? 0;
 // 曹・准尉・尉官・佐官の列番号（俸給表の列）
 const COL = { "3曹": 15, "2曹": 14, "1曹": 13, 曹長: 12, 准尉: 11, "3尉": 10, "2尉": 9, "1尉": 8, "3佐": 7, "2佐": 6 };
@@ -80,16 +104,20 @@ module.exports = async function verify(env, { quick, log }) {
         termTax += retireTax(yen(c[1]), deduction(yrs), yrs);
       }
       const allowance = yen(r.allowanceText) - termSum;
-      const pays = r.retireRows.filter((c) => c[0].startsWith("若年定年退職者給付金 ")).map((c) => yen(c[1]));
-      let exp = termTax + retireTax(allowance + (pays[0] || 0), deduction(n), n);
-      let received = allowance + (pays[0] || 0);
-      for (const a of pays.slice(1)) {
-        const prev = received < deduction(n) ? yearsFor(received) : n;
-        const d = Math.max(T.deduction.min, rawDeduction(n) - rawDeduction(Math.min(n, prev)));
-        exp += retireTax(a, d, n);
-        received += a;
-      }
-      const shown = -yen(rows["退職所得の税（所得税・住民税）"]?.[1]);
+      // 給付金の各回：（支給年月）と、税の区分（説明欄の「税は退職所得／一時所得」）
+      const payRows = r.retireRows
+        .filter((c) => c[0].startsWith("若年定年退職者給付金 "))
+        .map((c) => ({ amount: yen(c[1]), year: Number(c[0].match(/（(\d{4})年/)?.[1]), retire: /税は退職所得/.test(c[2]) }));
+      const pays = payRows.map((x) => x.amount);
+      // 退職手当と、給付金の1回目（退職所得）。この検算の条件は4月入隊なので退職は3月、1回目は同じ年の4月 → 合わせて1つの控除
+      const first = payRows.filter((x) => x.retire).reduce((s, x) => s + x.amount, 0);
+      let exp = termTax + retireTax(allowance + first, deduction(n), n);
+      // 2回目以降（一時所得）：同じ年の分をまとめて、50万円の特別控除の後の2分の1を再就職の給与の所得に加える
+      const salary = (p.reemployIncome || 0) * 10000,
+        byYear = new Map();
+      for (const x of payRows.filter((x) => !x.retire)) byYear.set(x.year, (byYear.get(x.year) || 0) + x.amount);
+      for (const [y, a] of byYear) exp += ichijiTax(a, salary, y);
+      const shown = -yen(rows["退職手当・給付金の税（所得税・住民税）"]?.[1]);
       rep.expect(Math.abs(shown - exp) <= 1, "retireTax", `退職所得の税：勤続${n}年・退職手当${allowance}円・給付金${JSON.stringify(pays)}で、画面 ${shown}円、検算 ${exp}円`, p);
     }
 
@@ -115,7 +143,7 @@ module.exports = async function verify(env, { quick, log }) {
         rep.expect(Math.abs(exp - amt) <= 1, "ninkiTerm", `${c[0]}：画面 ${amt}円、俸給月額${pay}円÷30×${days}日＝${exp}円`, p);
         tax += retireTax(amt, deduction(yrs), yrs);
       }
-      const shown = -yen(Object.fromEntries(r.retireRows.map((c) => [c[0], c]))["退職所得の税（所得税・住民税）"]?.[1]);
+      const shown = -yen(Object.fromEntries(r.retireRows.map((c) => [c[0], c]))["退職所得の税（所得税・住民税）"]?.[1] ?? Object.fromEntries(r.retireRows.map((c) => [c[0], c]))["退職手当・給付金の税（所得税・住民税）"]?.[1]);
       rep.expect(Math.abs(shown - tax) <= 1, "retireTax", `任期満了金の税：画面 ${shown}円、検算 ${tax}円`, p);
     }
 

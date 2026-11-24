@@ -78,12 +78,34 @@
   // 厚生年金の標準報酬月額の上限。ym＝年×12＋(月−1)
   const pensionCap = (ym) => KY.pensionCaps.reduce((cap, [y, m, v]) => (ym >= y * 12 + m - 1 ? v : cap), KY.pensionCaps[0][2]);
   // ---- 所得税・住民税 ----
-  // 給与所得控除
+  // 給与所得控除（所得税法第28条第3項の式。最低保障額は租税特別措置法第29条の4）
+  const salaryFormula = (x) => {
+    const [, r, add] = TX.salaryDeduction.find(([max]) => x <= max);
+    return x * r + add;
+  };
+  const salaryMinimum = (x, y) => {
+    const m = TX.salaryMin;
+    return y < m.specialYears[0] ? m.before2026 : y <= m.specialYears[1] && x < m.specialIncomeBelow ? m.special : m.base;
+  };
   function salaryDeduction(x, y) {
-    const [, r, add] = TX.salaryDeduction.find(([max]) => x <= max),
-      d = x * r + add,
-      m = TX.salaryMin;
-    return Math.max(d, y < m.specialYears[0] ? m.before2026 : y <= m.specialYears[1] && x < m.specialIncomeBelow ? m.special : m.base);
+    return Math.max(salaryFormula(x), salaryMinimum(x, y));
+  }
+  // 給与所得の金額（所得税法第28条第4項・別表第五）。収入が660万円未満のときは別表第五による：
+  // 収入を4,000円単位に切り捨てた額に式を当てはめる（国税庁 No.1410 の「収入金額÷4（千円未満切捨て）×4」と同じ）。
+  // 最低保障額のほうが大きいときは、収入から最低保障額を引いた額
+  function salaryIncome(x, y) {
+    if (x <= 0) return 0;
+    const min = salaryMinimum(x, y);
+    if (salaryFormula(x) <= min) return Math.max(0, x - min);
+    const base = x < TX.salaryTable.below ? Math.floor(x / TX.salaryTable.unit) * TX.salaryTable.unit : x;
+    return Math.max(0, Math.floor(base - salaryFormula(base)));
+  }
+  // 所得金額調整控除（租税特別措置法第41条の3の11第1項）：給与収入が850万円を超え、本人・同一生計配偶者・扶養親族が特別障害者か、
+  // 23歳未満の扶養親族がいる場合に、（収入（1,000万円が上限）−850万円）×10％を給与所得から引く。
+  // 入力で分かる条件は「23歳未満の扶養親族」（特定扶養親族、扶養手当を受けている子）だけ。特別障害者は入力がないので含めない
+  function incomeAdjustment(x, eligible) {
+    const A = TX.incomeAdjust;
+    return eligible && x > A.threshold ? Math.ceil((Math.min(x, A.cap) - A.threshold) * A.rate) : 0;
   }
   // 所得税の基礎控除。g：合計所得金額
   function basicDeduction(g, y) {
@@ -99,8 +121,9 @@
   // 復興特別所得税（2027年以後は防衛特別所得税と合わせて同じ率）を加え、100円未満を切り捨て
   const withSurtax = (tax) => Math.floor((tax * (1 + TX.surtax)) / 100) * 100;
   // 給与の所得税（年末調整で精算した年額）と住民税（その年の所得に対する年額）。f：配偶者・扶養親族
-  function salaryTaxes(income, social, y, f) {
-    const g = Math.max(0, Math.floor(income - salaryDeduction(income, y))),
+  // under23：その年に23歳未満の扶養親族がいる（所得金額調整控除の条件）。other：給与以外の所得（一時所得の課税対象額など）
+  function salaryTaxes(income, social, y, f, under23 = false, other = 0) {
+    const g = Math.max(0, salaryIncome(income, y) - incomeAdjustment(income, under23)) + other,
       sp = f.spouse ? pick(TX.spouse, g) : null,
       floor1000 = (v) => Math.max(0, Math.floor(v / 1000) * 1000),
       dep = TX.dependent,
@@ -311,14 +334,16 @@
         added = pay + Math.floor(rankAddBase * bonusRate(rank)) + Math.floor(pay * managerRate) + eigai,
         kimatsuBase = added + kimatsuAllow,
         kinbenBase = added + kinbenAllow;
-      let bonus = 0;
+      let bonus = 0,
+        kinben = 0;
       // 入隊は月の初日とみなすので、基準日（6月1日・12月1日）までの在職期間は入隊からの月数になる
       if (month === 6 || month === 12) {
         // 入力した年間月数が法律の合計（4.70か月）と違うときは、同じ比率で増減する
         const scale = c.bonus / B.annualMonths,
           cls = bonusClass(rank, special, c.manager),
           [kimatsuPer, kinbenPer] = bonusPer(cls, fyNow, month);
-        bonus = Math.floor(kimatsuBase * kimatsuPer * scale * kimatsuRate(m)) + Math.floor(kinbenBase * kinbenPer * scale * kinbenRate(m, 0));
+        kinben = Math.floor(kinbenBase * kinbenPer * scale * kinbenRate(m, 0));
+        bonus = Math.floor(kimatsuBase * kimatsuPer * scale * kimatsuRate(m)) + kinben;
       }
       const sum = (filter) => window.allowanceSimulator.monthly(list.filter(filter), pay, m, firstPay, regionalExtra),
         allowances = Math.floor(sum(() => true) + eigai + special),
@@ -336,9 +361,18 @@
         allowances,
         lump,
         // 非課税の通勤手当、若年定年退職者給付金の計算に使う扶養手当・営外手当
-        nontax: Math.floor(sum((a) => (a.kind ?? a.name) === "通勤手当")),
+        // 通勤手当は、所得税の非課税限度額（定期代と、車の片道距離ごとの限度額。合わせて月15万円）までが非課税
+        nontax: Math.floor(
+          list
+            .filter((a) => (a.kind ?? a.name) === "通勤手当")
+            .reduce((s, a) => s + Math.min(window.allowanceSimulator.monthly([a], pay, m, firstPay, regionalExtra), a.nontaxAmount ?? Infinity), 0),
+        ),
         fuyou: sum((a) => (a.kind ?? a.name) === "扶養手当"),
         eigai,
+        // 所得金額調整控除の条件に使う：扶養手当を受けている子（22歳になった後の最初の3月まで）がいる月
+        childUnder23: list.some((a) => (a.children || []).some((k) => ymNow >= k.from && ymNow <= k.end)),
+        // 令和10年4月以後に退職した人の加算調整上限額に使う手当（給与法第27条の4第1項）：俸給の特別調整額・対象の手当・勤勉手当
+        kasan: Math.floor(special + sum((a) => YP.newSystem.kasanNames.includes(a.kind ?? a.name)) + kinben),
         year: Math.floor(ym / 12),
         ym,
         age: c.startAge + Math.floor(m / 12),
@@ -433,6 +467,7 @@
           list.reduce((s, x) => s + x.social, 0),
           y,
           family,
+          family.specific > 0 || list.some((x) => x.childUnder23),
         );
       let left = it;
       list.forEach((x, k) => {
@@ -485,6 +520,233 @@
     }
     return { total, years, monthly, events, afterResident, retire: retirement(table, c, monthly) };
   }
+  // ---- 若年定年退職者給付金（給与法第27条の2〜第27条の6、附則第12項〜第15項、施行令第22条〜第24条、省令第1条） ----
+  // 所得金額（第27条の4第4項。令和10年4月以後の版は第6項）：事業所得と給与所得の合計を給与所得とみなしたときの「給与等の収入金額」。
+  // 事業所得がなければ給与収入そのもの。あれば、給与所得がその合計以上になる最小の収入（給与所得は収入について減らないので、範囲を半分ずつ狭めて見つける）
+  function ypIncome(pair, year) {
+    const salary = Math.max(0, pair?.salary || 0),
+      biz = Math.max(0, pair?.biz || 0);
+    if (!biz) return salary;
+    const target = salaryIncome(salary, year) + biz;
+    let lo = 0,
+      hi = salary + biz + 4000000;
+    while (salaryIncome(hi, year) < target) hi *= 2;
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (salaryIncome(mid, year) >= target) hi = mid;
+      else lo = mid;
+    }
+    return hi;
+  }
+  // 1回目の支給月（省令第1条第1号）：基準の月が1〜3月・10〜12月なら次の4月、4〜9月なら次の10月。ym＝年×12＋(月−1)
+  const firstPayYm = (fromYm) => {
+    const y = Math.floor(fromYm / 12),
+      m = (fromYm % 12) + 1;
+    return m <= 3 ? y * 12 + 3 : m <= 9 ? y * 12 + 9 : (y + 1) * 12 + 3;
+  };
+  const ymText = (ym) => `${Math.floor(ym / 12)}年${(ym % 12) + 1}月`;
+  function youngPension(table, c, monthly, age, civil) {
+    const last = monthly.at(-1),
+      P = last.basePay,
+      Pc = Math.min(P, Math.max(...table.map((row) => row[YP.capCol] ?? 0))), // 俸給月額は3佐の最高号俸の額が上限
+      ry = Math.floor(last.ym / 12), // 退職した年
+      startYm = monthly[0].ym,
+      // その年齢になる年月（誕生月は入隊月とみなす。試算の前提）
+      ymAtAge = (a) => startYm + Math.round((a - c.startAge) * 12),
+      ym60 = ymAtAge(YP.splitAge),
+      civYm = ymAtAge(civil),
+      early = Math.max(0, YP.splitAge - age),
+      late = civil - Math.max(YP.splitAge, age),
+      over60 = age >= YP.splitAge,
+      inPeriod = (p) => last.ym >= p.from[0] * 12 + p.from[1] - 1 && (!p.to || last.ym <= p.to[0] * 12 + p.to[1] - 1),
+      NS = YP.newSystem,
+      isNew = inPeriod(NS),
+      period = YP.periods.find(inPeriod),
+      YM = { ...YP, ...(period || {}) },
+      inc = c.ypIncome || {},
+      pairOf = (k) => (inc[k] && (inc[k].salary != null || inc[k].biz != null) ? inc[k] : inc.after) || { salary: 0, biz: 0 },
+      assumptions = [];
+    // 給与年額相当額（施行令第24条）：退職の翌年まで在職したと仮定した俸給・扶養手当・営外手当・期末手当・勤勉手当
+    // （55歳以上で良好な成績なら昇給しないので、退職時の俸給月額の12か月分。扶養手当は退職時の額が続くとする）
+    const br = bonusRate(last.col),
+      base = P + last.fuyou + last.eigai,
+      kimatsu = Math.floor(base + (P + last.eigai) * br) * YP.kimatsuMonths,
+      kinbenBase = Math.floor((P + last.eigai) * (1 + br)),
+      G = base * 12 + kimatsu + kinbenBase * YP.kinbenMonths,
+      // 60歳以後の分（定年が60歳未満）：勤勉手当の率を省令の表（退職の翌々年）にして100分の70（施行令附則第15項・省令附則第5項）
+      lateKinben = (() => {
+        const row = YP.lateKinbenByYear.find(([y]) => y === ry + 2) || YP.lateKinbenByYear.at(-1);
+        if (!YP.lateKinbenByYear.some(([y]) => y === ry + 2) && late > 0 && !over60)
+          assumptions.push(`60歳以後の分の勤勉手当の率は、省令の表に${ry + 2}年がないため、表の最後の年（${row[0]}年）の率を使っています`);
+        return row[1][0] + row[1][1];
+      })(),
+      Gl = Math.floor((base * 12 + kimatsu + kinbenBase * lateKinben) * YP.lateSalaryRate),
+      // 定年が60歳以上（附則第13項）：第24条の額に将55％・将補（1）欄60％・その他70％（施行令附則第16項）
+      Go = Math.floor(G * (YP.over60SalaryRate[last.col] ?? YP.over60SalaryRate.other));
+    // 所得を判定する年と、その所得金額
+    const y61 = Math.floor(ym60 / 12) + 1,
+      civPayYear = Math.floor(civYm / 12) + (civYm - last.ym <= 12 ? 1 : 0),
+      age60PayYear = Math.floor(ym60 / 12) + (ym60 - last.ym <= 12 ? 1 : 0),
+      I = {
+        after: ypIncome(pairOf("after"), ry + 1),
+        y59: ypIncome(pairOf("y59"), age60PayYear - 1),
+        y61: ypIncome(pairOf("y61"), y61),
+        civ: ypIncome(pairOf("civ"), civPayYear - 1),
+      };
+    const payments = [],
+      pay = (label, amount, ym, taxKind, incomeKey, extra = {}) =>
+        payments.push({ label: `${label}（${ymText(ym)}${extra.monthUnknown ? "ごろ・月は省令で未定" : ""}）`, amount: Math.max(0, Math.floor(amount)), ym, taxKind, income: pairOf(incomeKey), ...extra });
+    // 算定基礎期間の年数ごとの率（施行令第22条。改正前の制度と令和10年3月までの退職だけ）
+    const yearRate = (rates, years) => {
+      const keys = Object.keys(rates).map(Number);
+      return years < Math.min(...keys) ? [1, 1] : rates[Math.min(years, Math.max(...keys))];
+    };
+    // 2回払いの調整（令和10年3月までに退職）：2回目＝満額×（上限−所得）÷（上限−下限）、上限を超えたら1回目の一部を返納、
+    // 給与年額相当額（full）以上なら1回目を全額返納（第27条の4第1項〜第3項）
+    const adjust2 = (first, second, x, L, U, full) => {
+      if (x <= L) return [first, second];
+      const s = x >= U ? 0 : Math.floor((second * (U - x)) / (U - L)),
+        back = x <= U ? 0 : x >= full ? first : Math.floor((first * (x - U)) / (full - U));
+      return [first - back, s];
+    };
+    // 3回払いの調整（令和10年4月以後に退職。第27条の4）：支給調整額＝0.75×（合計−合計×（加算調整上限額−所得）÷（加算調整上限額−下限））
+    //   ＝0.75×合計×（所得−下限）÷（加算調整上限額−下限）。2回目から引き、支給調整上限額以上で2回目は0。
+    //   支給調整上限額を超え給与年額調整額未満なら（支給調整額−2回目の満額）を1回目から返納、給与年額調整額以上なら1回目を全額返納。
+    //   3回目は3回目の判定年の所得で、0.25×合計×（所得−下限）÷（加算調整上限額−下限）を引き、給与年額調整額以上なら0
+    const adjust3 = ([e1, e2, e3], x2, x3, L, A, Y, U) => {
+      const T = e1 + e2 + e3,
+        cut = (share, x) => (x > L ? Math.floor((share * T * (x - L)) / (A - L)) : 0);
+      let s1 = e1,
+        s2 = e2,
+        s3 = e3;
+      if (x2 > L) {
+        const d = cut(NS.secondShare, x2);
+        s2 = x2 >= U ? 0 : Math.max(0, e2 - d);
+        if (x2 >= Y) s1 = 0;
+        else if (x2 > U) s1 = Math.max(0, e1 - Math.max(0, d - e2));
+      }
+      s3 = x3 >= Y ? 0 : Math.max(0, e3 - cut(NS.thirdShare, x3));
+      return [s1, s2, s3];
+    };
+    // 加算調整上限額に使う、退職前5年間の各年（退職日から12か月ずつ）の対象手当の合計額のうち最も高い額
+    // （政令の定め方は未公布のため、12か月ずつに区切る方法は試算の仮定）
+    const kasanMax = isNew
+      ? Math.max(0, ...[0, 1, 2, 3, 4].map((k) => monthly.slice(Math.max(0, monthly.length - 12 * (k + 1)), monthly.length - 12 * k).reduce((s, x) => s + (x.kasan || 0), 0)))
+      : 0;
+    const lump = c.ypLump === "lump";
+    let chart = null,
+      detail;
+    if (!isNew) {
+      // ---- 令和10年3月までに退職（2回払い。60歳以後の分も2回払い） ----
+      const name = period ? (period.to[0] === 2026 && period.to[1] === 3 ? "改正前の制度（令和8年3月までの退職）" : `経過措置（${period.from[0]}年${period.from[1]}月〜${period.to[0]}年${period.to[1]}月の退職）`) : "本則";
+      detail = { name, L: null, U: null };
+      if (early > 0) {
+        const [r1, r2] = yearRate(EARLY_RATE, early),
+          f = Math.floor(Pc * early * YM.earlyMultiplier[0] * r1),
+          s = Math.floor(Pc * early * YM.earlyMultiplier[1] * r2),
+          L = G - Pc * YM.lowerMultiplier,
+          U = G - Pc * YM.upperMultiplier,
+          [a1, a2] = adjust2(f, s, I.after, L, U, G);
+        chart = { L, U, G, first: f, second: s, got: (x) => adjust2(f, s, x, L, U, G).reduce((p, q) => p + q, 0) };
+        Object.assign(detail, { L, U, G, full: f + s, incomeAfter: I.after });
+        if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
+        else {
+          pay("1回目", a1, firstPayYm(last.ym), "retire", "after", { full: f });
+          pay("2回目", a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { full: s });
+        }
+      }
+      if (late > 0) {
+        const [r1, r2] = yearRate(LATE_RATE, late),
+          f = Math.floor(Pc * late * YM.lateMultiplier[0] * r1),
+          s = Math.floor(Pc * late * YM.lateMultiplier[1] * r2);
+        if (over60) {
+          // 定年が60歳以上（附則第13項）：退職の翌年の所得で調整。給与年額相当額は55〜70％
+          const L = Go - Pc * YM.lateLower,
+            U = Go - Pc * YM.lateUpper,
+            [a1, a2] = adjust2(f, s, I.after, L, U, Go);
+          chart = { L, U, G: Go, first: f, second: s, got: (x) => adjust2(f, s, x, L, U, Go).reduce((p, q) => p + q, 0) };
+          Object.assign(detail, { L, U, G: Go, full: f + s, incomeAfter: I.after });
+          if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
+          else {
+            pay("1回目", a1, firstPayYm(last.ym), "retire", "after", { full: f });
+            pay("2回目", a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { full: s });
+          }
+        } else {
+          // 60歳以後の分（附則第12項・第15項）：61歳の年の所得で調整。給与年額相当額は勤勉手当の率を変えて100分の70
+          const L = Gl - Pc * YM.lateLower,
+            U = Gl - Pc * YM.lateUpper,
+            [a1, a2] = adjust2(f, s, I.y61, L, U, Gl);
+          Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, income61: I.y61 });
+          assumptions.push("60歳以後の分の支給月は、1回目の支給月と同じ決まり（60歳になった月の後の4月か10月）として表示しています");
+          if (lump) pay("3回目・4回目を一時に・60歳以後の分", a1 + a2, (Math.floor(ym60 / 12) + 2) * 12 + YP.secondMonth - 1, "ichiji", "y61", { lump: true });
+          else {
+            pay("3回目・60歳以後の分", a1, firstPayYm(ym60), "ichiji", "y61", { full: f });
+            pay("4回目・60歳以後の分", a2, (Math.floor(ym60 / 12) + 2) * 12 + YP.secondMonth - 1, "ichiji", "y61", { full: s });
+          }
+        }
+      }
+    } else {
+      // ---- 令和10年4月以後に退職（新制度。3回払い。60歳以後の分も3回払い） ----
+      const assume = c.ypAssume === "base" ? "base" : "upper";
+      assumptions.push(
+        `給与年額調整額（「加算調整上限額までの範囲内で政令で定める額」）の政令は未公布のため、${assume === "base" ? "給与年額相当額と同じ（加算なし）" : "加算調整上限額と同じ（法律の上限）"}と仮定しています`,
+        "加算調整上限額の手当は、退職日から12か月ずつ区切った5年間のうち合計が最も高い1年分としています（政令の定め方は未公布）",
+        "3回目の支給月は省令で未定のため、8月として表示しています",
+      );
+      detail = { name: "令和10年4月以後の退職（3回払いの新制度）", kasanMax, assume };
+      const Y = (g, a) => (assume === "base" ? g : a);
+      if (early > 0) {
+        const E = NS.early.map((k) => Math.floor(Pc * early * k)),
+          L = G - Pc * NS.lowerMultiplier,
+          A = G + kasanMax,
+          Yv = Y(G, A),
+          U = Yv - Pc * NS.upperMultiplier,
+          [a1, a2, a3] = adjust3(E, I.after, I.y59, L, A, Yv, U);
+        chart = { L, U, G: Yv, first: E[0], second: E[1], got: (x) => adjust3(E, x, -Infinity, L, A, Yv, U).slice(0, 2).reduce((p, q) => p + q, 0) };
+        Object.assign(detail, { L, U, G, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, income59: I.y59 });
+        if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
+        else {
+          pay("1回目", a1, firstPayYm(last.ym), "retire", "after", { full: E[0] });
+          pay("2回目", a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { full: E[1] });
+        }
+        pay("3回目", a3, age60PayYear * 12 + YP.secondMonth - 1, "ichiji", "y59", { full: E[2], monthUnknown: true });
+      }
+      if (late > 0) {
+        const E = NS.late.map((k) => Math.floor(Pc * late * k));
+        if (over60) {
+          // 定年が60歳以上（附則第13項）：退職の翌年の所得で2回目、自衛官以外の職員の定年の前年の所得で3回目を調整
+          const rate = YP.over60SalaryRate[last.col] ?? YP.over60SalaryRate.other,
+            L = Go - Pc * NS.lateLower,
+            A = Go + Math.floor(kasanMax * rate),
+            Yv = Y(Go, A),
+            U = Yv - Pc * NS.lateUpper,
+            [a1, a2, a3] = adjust3(E, I.after, I.civ, L, A, Yv, U);
+          assumptions.push("定年が60歳以上の人の給与年額相当額の割合（55〜70％）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第16項の割合を使っています");
+          chart = { L, U, G: Yv, first: E[0], second: E[1], got: (x) => adjust3(E, x, -Infinity, L, A, Yv, U).slice(0, 2).reduce((p, q) => p + q, 0) };
+          Object.assign(detail, { L, U, G: Go, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, incomeCiv: I.civ });
+          if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
+          else {
+            pay("1回目", a1, firstPayYm(last.ym), "retire", "after", { full: E[0] });
+            pay("2回目", a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { full: E[1] });
+          }
+          pay("3回目", a3, civPayYear * 12 + YP.secondMonth - 1, "ichiji", "civ", { full: E[2], monthUnknown: true });
+        } else {
+          // 60歳以後の分（附則第12項・第15項）：61歳の年の所得で5回目、自衛官以外の職員の定年の前年の所得で6回目を調整
+          const L = Gl - Pc * NS.lateLower,
+            A = Gl + Math.floor(kasanMax * YP.lateSalaryRate),
+            Yv = Y(Gl, A),
+            U = Yv - Pc * NS.lateUpper,
+            [a1, a2, a3] = adjust3(E, I.y61, I.civ, L, A, Yv, U);
+          assumptions.push("60歳以後の分の給与年額相当額（100分の70）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第15項と同じとしています");
+          Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, lateA: A, income61: I.y61, incomeCiv: I.civ });
+          pay("4回目・60歳以後の分", a1, firstPayYm(ym60), "ichiji", "y61", { full: E[0] });
+          pay("5回目・60歳以後の分", a2, (Math.floor(ym60 / 12) + 2) * 12 + YP.secondMonth - 1, "ichiji", "y61", { full: E[1] });
+          pay("6回目・60歳以後の分", a3, civPayYear * 12 + YP.secondMonth - 1, "ichiji", "civ", { full: E[2], monthUnknown: true });
+        }
+      }
+    }
+    return { payments, chart, detail: { ...detail, assumptions, early, late, Pc } };
+  }
   // 退職手当と若年定年退職者給付金、それぞれの退職所得の税
   function retirement(table, c, monthly) {
     // 任期制自衛官の任期満了の退職手当（防衛省給与法第28条第1項・第5項）：任期ごとに、満了時の俸給日額（月額÷30）×日数。
@@ -527,6 +789,9 @@
       nAll = Math.floor(monthly.length / 12),
       // 自己都合で勤続42年を超える場合は、定年退職（法第5条）・勤続35年として附則第6項の例により計算する
       // （平成15年改正法（国家公務員退職手当法の一部を改正する法律）附則第4項）。調整額も定年退職と同じに扱う
+      // 退職所得控除の勤続年数は、1年未満の端数を1年に切り上げる（所得税法施行令第69条第2項。国税庁 No.1420）。
+      // 退職手当の勤続期間（端数切捨て）とは別に数える。任期満了金を受けた任期は除く
+      nt = Math.max(1, Math.ceil((monthly.length - paidMonths) / 12)),
       selfLong = c.retireReason === "self" && n > RT.selfAdjustMaxYears,
       teinen = c.retireReason !== "self" || selfLong;
     // 基本額（法第3条〜第5条、附則第6項〜第8項）。35年を超える定年退職は35年として計算し、83.7％を掛ける
@@ -560,63 +825,52 @@
       return years < Math.min(...keys) ? [1, 1] : rates[Math.min(years, Math.max(...keys))];
     };
     // 若年定年退職者給付金は実際の定年退職だけ（自己都合で42年超を定年退職として計算する場合は対象外）
-    // 令和8年4月〜令和9年3月に退職した人は、経過措置の倍率（改正法 附則第3条。RULES.youngPension.transition）
-    const T = YP.transition,
-      // 退職日（最後に勤めた月の末日）の年月で判定する（retireYm は退職の翌月）
-      inTransition = T && last.ym >= T.from[0] * 12 + T.from[1] - 1 && last.ym <= T.to[0] * 12 + T.to[1] - 1,
-      YM = inTransition ? { ...YP, ...T } : YP;
-    if (c.retireReason !== "self" && nAll >= YP.minYears && age < civil) {
-      // 俸給月額は3佐の最高号俸の額が上限
-      const maxMajor = Math.max(...table.map((row) => row[YP.capCol] ?? 0)),
-        Pc = Math.min(P, maxMajor),
-        early = Math.max(0, YP.splitAge - age),
-        late = civil - Math.max(YP.splitAge, age);
-      if (early > 0) {
-        const [r1, r2] = yearRate(EARLY_RATE, early);
-        let first = Math.floor(Pc * early * YM.earlyMultiplier[0] * r1),
-          second = Math.floor(Pc * early * YM.earlyMultiplier[1] * r2);
-        // 所得による調整（法第27条の4）：退職の翌年の所得（給与収入の額）で2回目を減らし、上限以上なら1回目の一部を返納
-        const I = c.reemployIncome || 0,
-          br = bonusRate(last.col),
-          base = P + last.fuyou + last.eigai,
-          G = base * 12 + Math.floor(base + (P + last.eigai) * br) * YP.kimatsuMonths + Math.floor((P + last.eigai) * (1 + br)) * YP.kinbenMonths,
-          L = G - Pc * YM.lowerMultiplier,
-          U = G - Pc * YM.upperMultiplier;
-        // 再就職の年収ごとの受け取り額のグラフ用（調整前の満額と、調整の境目）
-        reemploy = { L, U, G, first, second };
-        if (I > L) {
-          second = I >= U ? 0 : Math.floor((second * (U - I)) / (U - L));
-          if (I > U) first -= I >= G ? first : Math.floor((first * (I - U)) / (G - U));
-        }
-        payments.push({ label: "1回目（退職の翌月ごろ）", amount: first, first: true }, { label: "2回目（退職の翌々年）", amount: second });
-      }
-      if (late > 0) {
-        const [r1, r2] = yearRate(LATE_RATE, late);
-        payments.push(
-          { label: `${early > 0 ? "3回目（60歳以後" : "1回目（退職後"}）`, amount: Math.floor(Pc * late * YM.lateMultiplier[0] * r1), first: early === 0 },
-          { label: `${early > 0 ? "4回目" : "2回目"}（その翌々年）`, amount: Math.floor(Pc * late * YM.lateMultiplier[1] * r2) },
-        );
-      }
+    const yp = c.retireReason !== "self" && nAll >= YP.minYears && age < civil ? youngPension(table, c, monthly, age, civil) : null;
+    if (yp) {
+      payments.push(...yp.payments);
+      reemploy = yp.chart;
     }
-    // 退職所得の税：退職手当と同じ年に受ける1回目は合わせて退職所得控除を使う。
-    // 2回目以降は、前年以前4年内に受けた退職手当等（退職手当と、それまでの給付金）と勤続期間が重なるので、
-    // 重なる年数分の控除を引く（所得税法第30条第6項、施行令第70条第1項第2号イ・第2項）。前の退職手当等が
-    // その控除額に満たないときは、前の勤続期間を「前の額÷40万円（800万円超は20年＋超えた額÷70万円）」年に縮める。控除は80万円が下限
+    // 税：
+    //   ・退職手当と、給付金の1回目（退職を理由として退職直後に支払う分）は退職所得。1回目が退職手当と同じ年に支払われるときは、
+    //     合わせて1つの退職所得控除を使う。別の年（12月退職→翌年4月など）なら、前年以前4年内に受けた退職手当等と勤続期間が
+    //     重なる分の控除を引く（所得税法第30条第6項、施行令第70条第1項第2号イ・第2項。控除は80万円が下限）
+    //   ・2回目以降（と一時に受ける分）は一時所得（退職から2年ほど後に、所得に応じて額が決まって支払われるため。
+    //     東京国税局「所得税消費税誤りやすい事例集」による。国税庁の一次資料の明文は未確認）。50万円の特別控除の後の2分の1を、
+    //     その年の他の所得（入力した再就職の給与・事業所得）に加えたときに増える所得税・住民税を計算する
     const rawDeduction = (y) => (y <= rd.border ? rd.perYear * y : rd.base + rd.perYearAfter * (y - rd.border)),
-      firstAmount = allowance + payments.filter((p) => p.first).reduce((s, p) => s + p.amount, 0);
+      retireYear = Math.floor(last.ym / 12),
+      firsts = payments.filter((p) => p.taxKind === "retire"),
+      sameYear = firsts.filter((p) => Math.floor(p.ym / 12) === retireYear),
+      laterYear = firsts.filter((p) => Math.floor(p.ym / 12) !== retireYear),
+      firstAmount = allowance + sameYear.reduce((s, p) => s + p.amount, 0);
     let received = firstAmount;
-    const taxes = [retirementTaxes(firstAmount, n, retirementDeduction(n))].concat(
-        payments
-          .filter((p) => !p.first)
-          .map((p) => {
-            const prevYears =
-                received < rawDeduction(n) ? Math.floor(received <= rd.base ? received / rd.perYear : (received - rd.base) / rd.perYearAfter + rd.border) : n,
-              deduction = Math.max(rd.min, rawDeduction(n) - rawDeduction(Math.min(n, prevYears)));
-            received += p.amount;
-            return retirementTaxes(p.amount, n, deduction);
-          }),
-      ),
-      tax = taxes.reduce((s, t) => s + t.it + t.rt, 0),
+    const taxes = [retirementTaxes(firstAmount, nt, retirementDeduction(nt))].concat(
+      laterYear.map((p) => {
+        const prevYears = received < rawDeduction(nt) ? Math.floor(received <= rd.base ? received / rd.perYear : (received - rd.base) / rd.perYearAfter + rd.border) : nt,
+          deduction = Math.max(rd.min, rawDeduction(nt) - rawDeduction(Math.min(nt, prevYears)));
+        received += p.amount;
+        return retirementTaxes(p.amount, nt, deduction);
+      }),
+    );
+    // 一時所得：同じ年の分はまとめて1回の特別控除
+    const ichijiByYear = new Map();
+    for (const p of payments.filter((p) => p.taxKind === "ichiji" && p.amount > 0)) {
+      const y = Math.floor(p.ym / 12),
+        e = ichijiByYear.get(y) || { amount: 0, income: p.income };
+      e.amount += p.amount;
+      ichijiByYear.set(y, e);
+    }
+    const family = c.family || { spouse: false, general: 0, specific: 0 };
+    for (const [y, e] of ichijiByYear) {
+      const half = Math.floor(Math.max(0, e.amount - TX.ichijiSpecial) / 2),
+        before = salaryTaxes(e.income.salary, 0, y, family, false, e.income.biz),
+        after = salaryTaxes(e.income.salary, 0, y, family, false, e.income.biz + half),
+        it = after.it - before.it,
+        rt = after.rt - before.rt;
+      taxes.push({ it, rt });
+      for (const p of payments.filter((p) => p.taxKind === "ichiji" && Math.floor(p.ym / 12) === y)) p.taxYear = y;
+    }
+    const tax = taxes.reduce((s, t) => s + t.it + t.rt, 0),
       pension = payments.reduce((s, p) => s + p.amount, 0);
     // 任期制から3曹へ昇任した場合は、昇任前に受けた任期満了金も合わせて出す
     return {
@@ -632,9 +886,12 @@
       tax: tax + termTax,
       net: allowance + termTotal + pension - tax - termTax,
       reemploy,
+      yp: yp?.detail || null,
     };
   }
   window.salarySimulatorModel = model;
+  // テスト用（test/law-cases.js が条文から作った期待値と比べる）。画面の動作には使わない
+  window.salarySimulatorTax = { salaryIncome, salaryTaxes, ypIncome, incomeAdjustment, firstPayYm };
   // 俸給表はこのページに埋め込んだ PAY_TABLE を使う
   const table = window.PAY_TABLE;
   if (!table) $("simError").textContent = "俸給データの読み込みに失敗しました。";
@@ -702,6 +959,8 @@
     // 任期制で満了退職する場合は3曹へ昇任しないので、3曹昇任の欄と3曹昇任前の教育の欄も出さない
     if (ninkiExit) for (const id of ["stepSgt", "eduSgt"]) $(id).closest("[data-enlisted]").hidden = true;
     $("ninkiPlanWrap").hidden = type !== "ninki";
+    // 自己都合退職のときだけ、退職する年齢の欄を出す（任期満了で退職する場合は出さない）
+    $("selfRetireAgeWrap").hidden = $("retireReason").value !== "self" || ninkiExit;
     $("targetRankWrap").hidden = ninkiExit;
     // 退職の年齢：定年（予想階級）か、任期満了（任期の合計）
     if (ninkiExit) {
@@ -723,7 +982,7 @@
     $("startAge").value = String(window.RULES.entry.defaultAge[$("entryType").value] ?? 18);
     updateRetirement();
   });
-  for (const id of ["targetRank", "ninkiPlan", "branch", "startAge", "ofcRoute"]) $(id).addEventListener("change", updateRetirement);
+  for (const id of ["targetRank", "ninkiPlan", "branch", "startAge", "ofcRoute", "retireReason"]) $(id).addEventListener("change", updateRetirement);
   $("startAge").addEventListener("input", updateRetirement);
   updateRetirement();
   $("simJump").addEventListener("click", (e) => {
@@ -854,8 +1113,8 @@
     if (!a) return;
     const { L, U, G, first, second } = a,
       full = first + second,
-      // 年収 x のときに受け取る額（2回目の減額と、1回目の返納を差し引いた額）
-      got = (x) => (x <= L ? full : x < U ? first + Math.floor((second * (U - x)) / (U - L)) : x < G ? first - Math.floor((first * (x - U)) / (G - U)) : 0);
+      // 年収 x のときに受け取る1回目と2回目の合計（2回目の減額と、1回目の返納を差し引いた額。計算本体と同じ式）
+      got = a.got;
     $("reemploySummary").innerHTML =
       `退職の翌年の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
       `${man(U)}円で2回目が0、${man(G)}円以上で1回目も全額返納になります。`;
@@ -872,7 +1131,8 @@
       yMax = yStep * 4,
       X = (v) => left + (v / xMax) * plotW,
       Y = (v) => top + plotH - (v / yMax) * plotH,
-      xs = [0, Math.max(0, L), U, G, xMax].filter((v, i, s) => v >= 0 && (i === 0 || v > s[i - 1]));
+      // 区切り（下限・上限・全額返納）と、その間を細かく刻んだ点で線を描く（令和10年4月以後の式は折れ点が増えるため）
+      xs = [...new Set([0, Math.max(0, L), U, G, xMax, ...Array.from({ length: 121 }, (_, i) => (xMax * i) / 120)])].filter((v) => v >= 0 && v <= xMax).sort((p, q) => p - q);
     let svg = `<defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aaa175" stop-opacity=".55"/><stop offset="1" stop-color="#aaa175" stop-opacity=".05"/></linearGradient></defs>`;
     for (let i = 0; i <= 4; i++) {
       svg += `<line x1="${left}" x2="${W - right}" y1="${Y(yStep * i)}" y2="${Y(yStep * i)}" stroke="${i ? "#e9ebe6" : "#d6d9cf"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
@@ -1089,7 +1349,19 @@
           general: value("dependents"),
           specific: value("specificDependents"),
         },
-        reemployIncome: value("reemployIncome") * 10000,
+        // 若年定年退職者給付金の所得による調整と、給付金の税に使う再就職の所得（円）。空欄の年は退職の翌年と同じ
+        ypIncome: (() => {
+          const yen = (id) => ($(id).value.trim() === "" ? null : Number($(id).value) * 10000),
+            pair = (s, b) => ({ salary: yen(s), biz: yen(b) });
+          const after = { salary: yen("reemployIncome") || 0, biz: yen("reemployBiz") || 0 },
+            later = (s, b) => {
+              const p = pair(s, b);
+              return p.salary == null && p.biz == null ? null : { salary: p.salary ?? after.salary, biz: p.biz ?? after.biz };
+            };
+          return { after, y61: later("incomeY61", "incomeY61Biz"), y59: later("incomeY59", "incomeY59Biz"), civ: later("incomeCiv", "incomeCivBiz") };
+        })(),
+        ypLump: $("ypLump").value,
+        ypAssume: $("ypAssume").value,
         promotionTable: window.PROMOTION_TABLE,
         // 営舎の外に住み始める月（住まない場合は null）
         eigaiStart: $("eigaiStart").value === "none" ? null : $("eigaiStart").value === "sergeant" ? sergeantMonths : value("eigaiStart") * 12,
@@ -1186,7 +1458,8 @@
       }
     }
     $("simError").textContent = "";
-    const inputs = [...document.querySelectorAll(".c-simulator__grid input")].filter((el) => !el.closest("[hidden]"));
+    // 空欄でよい欄（data-optional：空欄なら退職の翌年と同じ）は、空欄のときは確かめない
+    const inputs = [...document.querySelectorAll(".c-simulator__grid input")].filter((el) => !el.closest("[hidden]") && !(el.dataset.optional && el.value.trim() === ""));
     const messages = {
       startAge: "入隊時の年齢は16〜60歳の整数で入力してください。",
       initialGrade: "入隊時の2士の号俸は1〜17号俸の整数で入力してください。",
@@ -1195,7 +1468,15 @@
       entryYear: "入隊した年は2000〜2060年の整数で入力してください。",
       dependents: "扶養親族の人数は0〜10人の整数で入力してください。",
       specificDependents: "特定扶養親族の人数は0〜10人の整数で入力してください。",
-      reemployIncome: "退職の翌年の年収見込みは0〜5,000万円で入力してください。",
+      reemployIncome: "退職の翌年の給与収入は0〜5,000万円で入力してください。",
+      reemployBiz: "退職の翌年の事業所得は0〜5,000万円で入力してください（赤字の場合は0）。",
+      incomeY61: "61歳の年の給与収入は0〜5,000万円で入力するか、空欄にしてください。",
+      incomeY61Biz: "61歳の年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
+      incomeY59: "60歳になる年の前年の給与収入は0〜5,000万円で入力するか、空欄にしてください。",
+      incomeY59Biz: "60歳になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
+      incomeCiv: "自衛官以外の職員の定年になる年の前年の給与収入は0〜5,000万円で入力するか、空欄にしてください。",
+      incomeCivBiz: "自衛官以外の職員の定年になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
+      selfRetireAge: "自己都合で退職する年齢は整数で入力してください。",
     };
     const invalid = inputs.find((el) => el.value.trim() === "" || !el.checkValidity());
     // 昇任までの期間などは、入力欄の最小値（法令の最短）〜最大値と単位を使って案内する
@@ -1212,6 +1493,13 @@
     if (!message && c.eigaiStart != null && c.eigaiStart < value("barracksYears") * 12)
       message = "「営舎内・艦内で生活する年数」と「営舎の外に住み始める時期」が重なっています。どちらかを変更してください。";
     if (!message && entryMessage) message = entryMessage;
+    // 自己都合退職：入力した年齢で退職する（定年より後にはできない）
+    if (!message && c.retireReason === "self" && !c.ninki?.exit) {
+      const a = value("selfRetireAge");
+      if (!Number.isInteger(a) || a <= c.startAge || a > c.retireAge)
+        message = `自己都合で退職する年齢は、入隊時の年齢（${c.startAge}歳）より大きく、定年（${c.retireAge}歳）以下の整数で入力してください。`;
+      else c.retireAge = a;
+    }
     if (!message && c.retireAge <= c.startAge) message = "入隊時の年齢は定年年齢より小さくしてください。";
     if (!message && table[c.initialGrade - 1]?.[18] == null) {
       const max = table.reduce((n, row, i) => (row[18] != null ? i + 1 : n), 0);
@@ -1264,13 +1552,13 @@
       $("lastRank").textContent = lastRank;
       $("lastYear").textContent = fmt(x.years.at(-1).total);
       $("stickyTotal").textContent = fmt(x.total);
-      $("stickyRank").textContent = `${lastRank}・${c.retireAge}歳で${c.ninki?.exit ? "任期満了" : "定年"}`;
+      $("stickyRank").textContent = `${lastRank}・${c.retireAge}歳で${c.ninki?.exit ? "任期満了" : c.retireReason === "self" ? "自己都合退職" : "定年"}`;
       stickyError(false);
       $("simJump").hidden = false;
       // グラフは表示幅に合わせて描くので、先に結果欄を表示する
       $("simResult").hidden = false;
       drawChart(x.years);
-      drawReemployChart(x.retire, c.reemployIncome);
+      drawReemployChart(x.retire, x.retire.yp?.incomeAfter ?? 0);
       $("simRows").innerHTML = x.years
         .map(
           (y) =>
@@ -1319,7 +1607,7 @@
       $("retireRows").innerHTML = r.ninkiExit
         ? termRows +
           row("若年定年退職者給付金", "対象外", "任期満了で退職するため（定年退職ではない）") +
-          row("退職所得の税（所得税・住民税）", "−" + fmt(r.tax), "任期ごとに、その任期の年数の退職所得控除を使って課税") +
+          row("退職手当・給付金の税（所得税・住民税）", "−" + fmt(r.tax), "任期満了金は退職所得。任期ごとに、その任期の年数の退職所得控除を使って課税") +
           row("差し引きの受取額", fmt(r.net)) +
           row(
             "退職後に納める住民税（在職中の給与の分）",
@@ -1356,7 +1644,26 @@
           ) +
           row("退職手当（調整額）", fmt(r.adjust), "在職中の階級ごとの調整月額のうち多い順に60か月分") +
           (r.payments.length
-            ? r.payments.map((p) => row(`若年定年退職者給付金 ${p.label}`, fmt(p.amount))).join("")
+            ? r.payments
+                .map((p) =>
+                  row(
+                    `若年定年退職者給付金 ${p.label}`,
+                    fmt(p.amount),
+                    `${p.lump ? "一時に受け取る額（所得による調整の後）" : p.full != null && p.full !== p.amount ? `満額 ${fmt(p.full)} を所得による調整で減額` : "満額"}。税は${p.taxKind === "retire" ? "退職所得" : "一時所得"}`,
+                  ),
+                )
+                .join("") +
+              (r.yp
+                ? row(
+                    "若年定年退職者給付金の計算の前提",
+                    "—",
+                    `${r.yp.name}。俸給月額 ${fmt(r.yp.Pc)}、60歳までの年数 ${r.yp.early}年・60歳以後の年数 ${r.yp.late}年` +
+                      (r.yp.L != null ? `。退職の翌年の所得金額 ${fmt(r.yp.incomeAfter)}（調整が始まる額 ${fmt(Math.max(0, r.yp.L))}・2回目が0になる額 ${fmt(r.yp.U)}）` : "") +
+                      (r.yp.A != null ? `。加算調整上限額 ${fmt(r.yp.A)}（給与年額相当額 ${fmt(r.yp.G)}＋退職前5年間の対象手当の最も高い年 ${fmt(r.yp.A - r.yp.G)}）` : "") +
+                      (r.yp.lateL != null ? `。60歳以後の分は61歳の年の所得金額 ${fmt(r.yp.income61)} で調整（調整が始まる額 ${fmt(Math.max(0, r.yp.lateL))}）` : "") +
+                      (r.yp.assumptions.length ? `。仮定：${r.yp.assumptions.join("。")}` : ""),
+                  )
+                : "")
             : row(
                 "若年定年退職者給付金",
                 "対象外",
@@ -1366,7 +1673,13 @@
                     ? "自衛官としての勤務が20年未満のため"
                     : `定年（${c.retireAge}歳）が自衛官以外の職員の定年（${r.civil}歳）より若くないため`,
               )) +
-          row("退職所得の税（所得税・住民税）", "−" + fmt(r.tax), "退職所得控除後の2分の1に課税") +
+          row(
+            "退職手当・給付金の税（所得税・住民税）",
+            "−" + fmt(r.tax),
+            r.payments.some((p) => p.taxKind === "ichiji")
+              ? "退職手当と給付金の1回目は退職所得（退職所得控除後の2分の1に課税）。給付金の2回目以降は一時所得（50万円の特別控除後の2分の1を、その年の再就職の所得に加えて増える税。社会保険料控除などは入れていません）"
+              : "退職所得控除後の2分の1に課税",
+          ) +
           row("差し引きの受取額", fmt(r.net)) +
           row(
             "退職後に納める住民税（在職中の給与の分）",

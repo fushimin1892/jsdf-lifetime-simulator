@@ -38,7 +38,7 @@ await set("spouse", "yes"); await set("dependents", "2"); await set("specificDep
 out.cases.push("manual: " + read());
 await set("reemployIncome", "650"); await wait(); out.cases.push("reemp650: " + read());
 await set("reemployIncome", "800"); await wait(); out.cases.push("reemp800: " + read());
-await set("retireReason", "self"); await wait(); out.cases.push("self: " + read());
+await set("retireReason", "self"); await set("selfRetireAge", g("retireAge").value); await wait(); out.cases.push("self: " + read());
 await set("retireReason", "teinen"); await set("entryYear", "2024"); await wait(); out.cases.push("2024: " + read());
 await set("entryYear", "2030"); await wait(); out.cases.push("2030: " + read());
 await set("startAge", "38"); await wait(); out.cases.push("age38: " + read());
@@ -100,7 +100,7 @@ for (const it of [...document.querySelectorAll(".c-allowance-item")]) it.remove(
 await set("branch", "ground"); await set("entryType", "sotsu"); await set("targetRank", "1曹"); await set("startAge", "18");
 await set("startAge", "30"); await set("entryYear", "2000"); await set("entryMonth", "5"); await set("reemployIncome", "0"); await wait();
 out.cases.push("yp-transition: " + read());
-await set("entryYear", "2026"); await set("entryMonth", "4"); await set("targetRank", "将補"); await set("startAge", "16"); await set("retireReason", "self"); await wait();
+await set("entryYear", "2026"); await set("entryMonth", "4"); await set("targetRank", "将補"); await set("startAge", "16"); await set("retireReason", "self"); await set("selfRetireAge", g("retireAge").value); await wait();
 out.cases.push("self-44: " + read());
 const s = JSON.stringify(out); let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) | 0;
 window.__snapText = s;

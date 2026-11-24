@@ -324,16 +324,51 @@ window.SOURCES = {
       checked: "2026-11-16",
     },
     {
-      path: "RULES.youngPension.transition",
+      path: "RULES.youngPension.periods",
       law: "boeiKyuyo",
-      where: "令和8年法律第53号 附則第三条（令和8年4月〜令和9年3月に退職した人の倍率）",
-      checked: "2026-11-17",
-      how: "node tools/egov-check.js values で照合",
+      where: "令和8年法律第53号 附則第二条〜第四条（令和8年3月以前・令和8年度・令和9年度に退職した人の倍率と調整の数）",
+      checked: "2026-11-24",
+      how: "附則第3条は node tools/egov-check.js values で照合。附則第4条は未施行のため e-Gov の 2027-03-31 施行版で、令和8年3月以前は 2026-04-01 施行版（改正前）で手作業で照合",
+    },
+    {
+      path: "RULES.youngPension.newSystem",
+      law: "boeiKyuyo",
+      where: "令和8年法律第53号 第五条による改正後の第二十七条の三〜第二十七条の六・附則第十二項〜第十五項（令和10年4月1日施行）と同法附則第五条",
+      checked: "2026-11-24",
+      how: "e-Gov の 2028-04-01 施行版で手作業で照合（3回払い 2.25・4.5・2.25／1.15・2.3・1.15、調整 0.75・0.25、下限9（後期4.6）、上限3（後期1.533333）、加算調整上限額の対象手当）",
+    },
+    {
+      path: "RULES.youngPension.lateKinbenByYear・lateSalaryRate・over60SalaryRate・firstMonth・secondMonth",
+      law: "boeiKyuyoRei",
+      where: "施行令附則第十五項・第十六項（60歳以後の分の給与年額相当額）、若年定年退職者給付金に関する省令 第一条（支給月）・附則第五項（勤勉手当の率）",
+      checked: "2026-11-24",
+      how: "e-Gov の施行令 2026-10-01 施行版、省令（421M60002000005）2026-07-03 施行版の本文で確認",
+    },
+    {
+      path: "RULES.tax.salaryTable・incomeAdjust・ichijiSpecial",
+      law: "shotoku",
+      where: "所得税法第二十八条第四項・別表第五、第三十四条第三項、租税特別措置法第四十一条の三の十一、所得税法施行令第六十九条第二項（勤続年数の端数）",
+      checked: "2026-11-24",
+      how: "国税庁 No.1410・No.1411・No.1420 と e-Gov の所得税法施行令で確認。給付金の2回目以降を一時所得とする扱いは東京国税局「所得税消費税誤りやすい事例集（令和6年12月）」による（引用で確認。原本は未確認）",
+    },
+    {
+      path: "RULES.allowances.calcRates.commute.nontaxCar",
+      law: "shotoku",
+      where: "所得税法施行令第二十条の二（通勤手当の非課税限度額）",
+      checked: "2026-11-24",
+      how: "国税庁 No.2582・No.2585（令和8年4月1日現在法令等）で確認",
     },
   ],
 
   // 出ているが、まだ法令になっていないもの（成立・公布したら data に入れる）
   pending: [
+    {
+      what: "令和10年4月1日以後に退職した人の若年定年退職者給付金の政令・省令（給与年額調整額の計算方法、加算調整上限額の「退職前5年間の各年」の手当の計算方法、3回目の支給月、60歳以後の分の給与年額相当額の割合）",
+      status:
+        "法律（令和8年法律第53号第5条。令和10年4月1日施行）は公布済み。2026-11-24 時点で e-Gov の施行令・省令に令和10年4月施行の版はない。試算は youngPension.newSystem と画面の「給与年額調整額の仮定」で計算している。政令・省令が公布されたら、仮定をその定めに置き換える",
+      url: "https://laws.e-gov.go.jp/law/327AC0000000266",
+      checked: "2026-11-24",
+    },
     {
       what: "地域手当の令和9年度（2027年度）の支給割合（経過措置の表。allowances.regionalTransition.byFy に 2027 がまだない。令和9年4月1日までに足さないと test/check.js が NG になる）",
       status:

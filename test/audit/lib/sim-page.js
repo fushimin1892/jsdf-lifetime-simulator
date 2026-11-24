@@ -42,6 +42,8 @@ function pageSetup(STEP_IDS) {
       const o = opts(el);
       el.value = mode === "min" ? o[0] : mode === "max" ? o.at(-1) : mode === "def" ? defVal[id] : String(mode);
     }
+    // 自己都合退職：退職する年齢の指定がなければ、その時点の定年年齢（今までの点検の条件と同じ意味）
+    if (g("selfRetireAge")) g("selfRetireAge").value = String(p.selfRetireAge ?? g("retireAge").value);
     g("simError").textContent = "";
     g("simLaunch").click(); // requestAnimationFrame がすぐ呼ばれるので、計算は同期で終わる
     return window.__readResult();

@@ -52,10 +52,10 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261124-8" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-8" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261124-8" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261124-8" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261124-9" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-9" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261124-9" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261124-9" />
   </head>
   <body>
     <i class="c-scroll-progress" aria-hidden="true"></i>
@@ -623,10 +623,20 @@
           <div class="c-simulator__grid">
             <div>
               <label for="retireReason">退職の理由</label
-              ><select id="retireReason">
+              ><select id="retireReason" aria-describedby="retireReasonNote">
                 <option value="teinen" selected>定年退職</option>
-                <option value="self">自己都合（定年の年齢で）</option>
+                <option value="self">自己都合（退職する年齢を指定）</option>
               </select>
+              <small id="retireReasonNote" class="c-field-note"
+                >自己都合退職は若年定年退職者給付金の対象外です（定年前1年内に定員の減少などで退職した場合の例外は試算に含めません）</small
+              >
+            </div>
+            <div id="selfRetireAgeWrap" hidden>
+              <label for="selfRetireAge">自己都合で退職する年齢</label>
+              <div class="c-unit-input">
+                <input id="selfRetireAge" type="number" min="17" max="60" step="1" value="40" aria-describedby="selfRetireAgeNote" /><span>歳</span>
+              </div>
+              <small id="selfRetireAgeNote" class="c-field-note">入隊時の年齢より大きく、定年年齢以下の整数。その年齢になる月の前月末に退職として計算します</small>
             </div>
             <div>
               <label for="spouse">配偶者控除</label
@@ -649,7 +659,7 @@
               </div>
             </div>
             <div>
-              <label for="reemployIncome">退職の翌年の年収見込み（再就職）</label>
+              <label for="reemployIncome">退職の翌年の給与収入（再就職・額面）</label>
               <div class="c-unit-input">
                 <input
                   id="reemployIncome"
@@ -662,7 +672,73 @@
                 /><span>万円</span>
               </div>
               <small id="reemployNote" class="c-field-note"
-                >若年定年退職者給付金（60歳まで分）の所得による調整に使います。0なら調整なし</small
+                >若年定年退職者給付金の所得による調整と、給付金の税に使います。給与の支払金額（年末の源泉徴収の書類に書かれる額）（年の途中から勤めた場合は12か月分に直した額）。0なら調整なし</small
+              >
+            </div>
+            <div>
+              <label for="reemployBiz">退職の翌年の事業所得</label>
+              <div class="c-unit-input">
+                <input id="reemployBiz" type="number" min="0" max="5000" step="any" value="0" aria-describedby="reemployBizNote" /><span>万円</span>
+              </div>
+              <small id="reemployBizNote" class="c-field-note"
+                >自営などの事業所得（収入から必要経費を引いた額）。給付金の調整では、給与所得と事業所得の合計を給与収入に直した額を使います（給与法第27条の4）</small
+              >
+            </div>
+            <div>
+              <label for="ypLump">若年定年退職者給付金の受け取り方</label
+              ><select id="ypLump" aria-describedby="ypLumpNote">
+                <option value="split" selected>分けて受け取る</option>
+                <option value="lump">1回目と2回目を一時に受け取る</option>
+              </select>
+              <small id="ypLumpNote" class="c-field-note">分けて受け取ると1回目は退職後の4月か10月、2回目は退職の翌々年8月です。退職時に申し出ると、1回目と2回目を退職の翌々年8月にまとめて受け取れます（給与法第27条の5）</small>
+            </div>
+            <div>
+              <label for="ypAssume">令和10年4月以後に退職する場合の給与年額調整額</label
+              ><select id="ypAssume" aria-describedby="ypAssumeNote">
+                <option value="upper" selected>加算調整上限額と同じ（上限）</option>
+                <option value="base">給与年額相当額と同じ（加算なし）</option>
+              </select>
+              <small id="ypAssumeNote" class="c-field-note"
+                >新しい制度の所得調整に使う額で、「加算調整上限額までの範囲内で政令で定める」とされ、その政令はまだ公布されていません（2026年11月24日時点）。どちらを選んでも仮定の試算です</small
+              >
+            </div>
+            <div>
+              <label for="incomeY61">61歳の年の給与収入（再就職・額面）</label>
+              <div class="c-unit-input">
+                <input id="incomeY61" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+            </div>
+            <div>
+              <label for="incomeY61Biz">61歳の年の事業所得</label>
+              <div class="c-unit-input">
+                <input id="incomeY61Biz" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+            </div>
+            <div>
+              <label for="incomeY59">60歳になる年の前年の給与収入（令和10年4月以後に退職）</label>
+              <div class="c-unit-input">
+                <input id="incomeY59" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+            </div>
+            <div>
+              <label for="incomeY59Biz">60歳になる年の前年の事業所得</label>
+              <div class="c-unit-input">
+                <input id="incomeY59Biz" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+            </div>
+            <div>
+              <label for="incomeCiv">自衛官以外の職員の定年になる年の前年の給与収入（令和10年4月以後に退職）</label>
+              <div class="c-unit-input">
+                <input id="incomeCiv" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+            </div>
+            <div>
+              <label for="incomeCivBiz">自衛官以外の職員の定年になる年の前年の事業所得</label>
+              <div class="c-unit-input">
+                <input id="incomeCivBiz" type="number" min="0" max="5000" step="any" placeholder="翌年と同じ" data-optional="1" aria-describedby="incomeLaterNote" /><span>万円</span>
+              </div>
+              <small id="incomeLaterNote" class="c-field-note"
+                >空欄なら退職の翌年と同じとして計算します。61歳の年は60歳以後の分（定年が60歳未満の人）、60歳になる年の前年は令和10年4月以後に退職した人の3回目、自衛官以外の職員の定年になる年の前年は60歳以後の分の最後の回の調整に使います</small
               >
             </div>
             <div>
@@ -797,16 +873,16 @@
             <section id="reemploySection" hidden aria-labelledby="reemployTitle">
               <header class="c-section-head">
                 <h3 id="reemployTitle">再就職の年収と若年定年退職者給付金</h3>
-                <span>60歳までの分（1回目・2回目）。<span class="u-screen-only">グラフに触れると、その年収での受け取り額が出ます</span></span>
+                <span>1回目と2回目の合計（退職の翌年の所得で決まる分）。<span class="u-screen-only">グラフに触れると、その年収での受け取り額が出ます</span></span>
               </header>
               <p class="c-reemploy-summary" id="reemploySummary"></p>
               <div class="c-chart" id="reemployChart"></div>
               <small class="c-field-note" data-note-title="再就職の年収と若年定年退職者給付金のグラフ"
-                >◯は「退職の翌年の年収見込み」に入力した年収です。年収が下限額を超えると2回目が減り、上限額以上で2回目は0、さらに1回目の一部を返納します（給与法第27条の4）。年収は再就職先の給与の額（額面）で、事業所得がある場合はそれも加えます。年の途中から勤めた場合は、ボーナスを除いた給与を12か月分に直した額にボーナスを足して入れてください（施行令第24条の2）。境目の計算に使う「給与年額相当額」は、退職時の俸給・扶養手当・営外手当が翌年も同じとして、期末手当2.525か月・勤勉手当2.125か月分（施行令第24条）を足した額です。60歳以後の分（3回目・4回目）は、このグラフに含みません。</small
+                >◯は「退職の翌年の年収見込み」に入力した年収です。年収が下限額を超えると2回目が減り、上限額以上で2回目は0、さらに1回目の一部を返納します（給与法第27条の4）。グラフの横の目盛りは給付金の調整に使う「所得金額」で、事業所得がないときは再就職先の給与の額（額面）です。事業所得があるときは、給与所得と事業所得の合計を給与所得とみなした場合の給与の収入額に直した額です（給与法第27条の4。単純に足した額ではありません）。年の途中から勤めた場合は、ボーナスを除いた給与を12か月分に直した額にボーナスを足して入れてください（施行令第24条の2）。境目の計算に使う「給与年額相当額」は、退職時の俸給・扶養手当・営外手当が翌年も同じとして、期末手当2.55か月・勤勉手当2.125か月分（施行令第24条。令和10年4月以後に退職する場合は、これに退職前5年間の対象の手当（勤勉手当を含む）の最も高い年の額を加えた加算調整上限額も使います）を足した額です。60歳以後の分と、令和10年4月以後に退職した人の3回目は、このグラフに含みません。</small
               >
             </section>
             <p class="c-note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
-              退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜・附則第12項・第13項と施行令第22条・附則第15項の率で計算します（俸給月額は3佐の最高号俸が上限）。60歳以後の分（後期）は所得による調整を含みません。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の2回目以降は、退職手当と勤続期間が重なるため、重なる年数分の退職所得控除を引き（前の退職手当等が控除額に満たないときは重なる期間を縮めて計算）、下限の80万円を控除して課税します（所得税法第30条第6項、施行令第70条）。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
+              退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜第27条の6・附則第12項〜第15項で計算します（俸給月額は3佐の最高号俸が上限）。倍率は退職した時期で変わり（防衛省設置法等の一部を改正する法律（令和8年法律第53号）附則第2条〜第5条）、令和8年3月までの退職は年6か月分、令和8年度は7か月分、令和9年度は8か月分（いずれも2回に分け、施行令第22条の率を掛ける）、令和10年4月以後は9か月分を3回に分けて支給します（60歳以後の分は令和9年度まで年3.45〜4.21か月分、令和10年4月以後は4.6か月分）。所得による調整は、60歳までの分は退職の翌年、60歳以後の分は61歳の年の所得で行います（令和10年4月以後は3回目にも調整があります）。令和10年4月以後の「給与年額調整額」と加算の計算方法は政令が未公布のため、仮定で計算します。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の1回目は退職所得で、退職手当と同じ年に受けるときは合わせて退職所得控除を使い、別の年なら重なる勤続年数分の控除を引きます（所得税法第30条第6項、施行令第70条。下限80万円）。2回目以降は一時所得として、50万円の特別控除後の2分の1をその年の再就職の所得に加えて増える税を計算します（東京国税局の誤りやすい事例集による扱い。社会保険料控除などは入れていません）。給与所得は、収入660万円未満では所得税法別表第五（4,000円単位）で計算し、収入850万円超で23歳未満の扶養親族がいる年は所得金額調整控除を引きます。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
               <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>
             </p>
             <div class="c-share">
@@ -866,6 +942,7 @@
                     対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
                   </p>
                   <ul>
+                    <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした</li>
                     <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
                     <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
                     <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
@@ -908,9 +985,9 @@
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261124-8"></script>
-    <script src="assets/data/promotion-table.js?v=20261124-8"></script>
-    <script src="assets/js/pay-lookup.js?v=20261124-8"></script>
+    <script src="assets/data/pay-table.js?v=20261124-9"></script>
+    <script src="assets/data/promotion-table.js?v=20261124-9"></script>
+    <script src="assets/js/pay-lookup.js?v=20261124-9"></script>
     <button
       class="c-sim-launch"
       id="simLaunch"
@@ -921,11 +998,11 @@
       <span class="c-sim-launch__icon" aria-hidden="true">↗</span
       ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261124-8"></script>
-    <script src="assets/js/regional-rate.js?v=20261124-8"></script>
-    <script src="assets/js/allowances.js?v=20261124-8"></script>
-    <script src="assets/js/simulator.js?v=20261124-8"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261124-8"></script>
+    <script src="assets/data/rules.js?v=20261124-9"></script>
+    <script src="assets/js/regional-rate.js?v=20261124-9"></script>
+    <script src="assets/js/allowances.js?v=20261124-9"></script>
+    <script src="assets/js/simulator.js?v=20261124-9"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261124-9"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <header class="c-notes__head">
@@ -934,11 +1011,11 @@
       </header>
       <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261124-8"></script>
-    <script src="assets/js/effects.js?v=20261124-8"></script>
-    <script src="assets/js/crystals-core.js?v=20261124-8"></script>
-    <script src="assets/js/crystals.js?v=20261124-8"></script>
-    <script src="assets/js/scroll-lock.js?v=20261124-8"></script>
-    <script src="assets/js/print.js?v=20261124-8"></script>
+    <script src="assets/js/notes-page.js?v=20261124-9"></script>
+    <script src="assets/js/effects.js?v=20261124-9"></script>
+    <script src="assets/js/crystals-core.js?v=20261124-9"></script>
+    <script src="assets/js/crystals.js?v=20261124-9"></script>
+    <script src="assets/js/scroll-lock.js?v=20261124-9"></script>
+    <script src="assets/js/print.js?v=20261124-9"></script>
   </body>
 </html>

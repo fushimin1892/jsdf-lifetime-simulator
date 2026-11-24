@@ -118,7 +118,7 @@
               : `月額 ${yen(amount)}（定期代 ${yen(pass)}＋自動車等 ${yen(car)}${pass + car > R.commute.cap ? "、上限15万円" : ""}）`,
         };
       },
-      note: "片道2km未満は原則として支給されません。車などは片道距離の区分ごとの額（2km以上5km未満は2,000円〜100km以上は66,400円）です。電車と車を両方使う場合、車の距離が2km以上なら両方の額を、2km未満なら高い方の額を支給します（人事院規則9-24第8条の4）。合計の上限は月15万円です。非課税として税金の計算から除きます。",
+      note: "片道2km未満は原則として支給されません。車などは片道距離の区分ごとの額（2km以上5km未満は2,000円〜100km以上は66,400円）です。電車と車を両方使う場合、車の距離が2km以上なら両方の額を、2km未満なら高い方の額を支給します（人事院規則9-24第8条の4）。合計の上限は月15万円です。所得税は、定期代と、車の片道距離ごとの限度額（2km以上10km未満4,200円〜95km以上66,400円。2km未満は全額課税）の合計（月15万円まで）を非課税として計算します（所得税法施行令第20条の2）。共済掛金の計算には全額を含めます。",
     },
     単身赴任手当: {
       fields: [
@@ -803,6 +803,24 @@
       return 0;
     }
   }
+  // 通勤手当のうち所得税がかからない月額（所得税法施行令第20条の2）：定期代は全額、自動車等は片道距離ごとの限度額まで、
+  // 合わせて15万円まで。車だけで2km未満は全額課税。金額を直接入力したときは、15万円までを非課税とする（交通機関とみなす）
+  function calcCommuteNontax(row, amount) {
+    try {
+      const s = JSON.parse(row.querySelector(".c-allowance-item__calc-state")?.value || "null");
+      if (s?.mode !== "auto") return Math.min(amount, R.commute.cap);
+      const pass = Math.max(0, Math.floor(Number(s.v?.pass) || 0)),
+        shortCar = R.commute.car[0][1],
+        carKey = s.v?.car || "none",
+        both = carKey !== "none" && carKey !== "short",
+        car = both ? band(R.commute.car, Number(carKey)) : carKey === "short" && pass > 0 && shortCar > pass ? shortCar : 0,
+        usePass = carKey === "short" ? (pass >= shortCar ? pass : 0) : pass,
+        limit = both ? R.commute.nontaxCar.find(([max]) => Number(carKey) < max)[1] : 0;
+      return Math.min(R.commute.cap, usePass + Math.min(car, limit), amount);
+    } catch {
+      return Math.min(amount, R.commute.cap);
+    }
+  }
   function calcParents(row) {
     try {
       const s = JSON.parse(row.querySelector(".c-allowance-item__calc-state")?.value || "null");
@@ -961,6 +979,7 @@
         // 扶養手当を「条件から計算」したときの父母等の人数（上位の階級で額が変わるので model() で月ごとに直す）
         ...(kind === "扶養手当" ? { parents: calcParents(row), children: calcChildFys(row) } : {}),
         ...(kind === "単身赴任手当" ? { tanshinAdd: calcTanshinAdd(row) } : {}),
+        ...(kind === "通勤手当" ? { nontaxAmount: calcCommuteNontax(row, amount) } : {}),
         ...(area ? { area } : {}),
         ...(rankTable ? { rankTable } : {}),
         ...(method === "daily" && monthMax ? { monthMax } : {}),

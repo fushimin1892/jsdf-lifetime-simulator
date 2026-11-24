@@ -62,7 +62,7 @@ function checkResult(p, r, retireAge, { mustComputeCheck = false } = {}) {
   if (grossAll !== total + allowance + pension) add("grossAll", `額面合計 ${grossAll} ≠ 総額 ${total}＋退職手当 ${allowance}＋給付金 ${pension}`);
 
   // 退職の年齢（予想階級に届かないときは到達階級の定年。任期満了なら満了の年齢）
-  const m = r.stickyRank.match(/・([\d.]+)歳で(定年|任期満了)/);
+  const m = r.stickyRank.match(/・([\d.]+)歳で(定年|任期満了|自己都合退職)/);
   const ninkiExit = p.entryType === "ninki" && p.ninkiPlan !== "sgt";
   if (!m) add("retireAge", `上部の帯に退職の年齢がない：${r.stickyRank}`);
   else {
@@ -75,7 +75,7 @@ function checkResult(p, r, retireAge, { mustComputeCheck = false } = {}) {
     const target = r.targetNow,
       reached = r.lastRank.split(" ")[0];
     if (!ninkiExit) {
-      if (m[2] !== "定年") add("retireAge", `定年まで勤める条件なのに「${m[2]}」`);
+      if (m[2] !== (p.retireReason === "self" ? "自己都合退職" : "定年")) add("retireAge", `${p.retireReason === "self" ? "自己都合退職" : "定年まで勤める"}条件なのに「${m[2]}」`);
       const tAge = retireAge[target];
       if (reached === target) {
         if (effAge !== tAge) add("retireAge", `${target} に届いたのに退職 ${effAge}歳（定年は ${tAge}歳）`);
@@ -94,11 +94,11 @@ function checkResult(p, r, retireAge, { mustComputeCheck = false } = {}) {
   const rr = Object.fromEntries(r.retireRows.map((c) => [c[0], c]));
   const val = (k) => (rr[k] ? yen(rr[k][1]) : 0);
   const netRetire = val("差し引きの受取額"),
-    rtax = -val("退職所得の税（所得税・住民税）"),
+    rtax = -val("退職手当・給付金の税（所得税・住民税）"),
     afterRes = -val("退職後に納める住民税（在職中の給与の分）"),
     kok = -val("退職後に納める国民年金保険料"),
     hl = -val("退職後の健康保険料");
-  if (!rr["差し引きの受取額"] || !rr["退職所得の税（所得税・住民税）"]) add("retireRows", "退職手当の表に「差し引きの受取額」または「退職所得の税」の行がない");
+  if (!rr["差し引きの受取額"] || !rr["退職手当・給付金の税（所得税・住民税）"]) add("retireRows", "退職手当の表に「差し引きの受取額」または「退職所得の税」の行がない");
   const sumNet = rows.reduce((s, x) => s + x.net, 0),
     sumDed = rows.reduce((s, x) => s + x.ded, 0);
   if (sumNet + netRetire - afterRes - kok - hl !== lifetime) add("lifetime", `各年の手取り ${sumNet}＋受取額 ${netRetire}−退職後の負担 ${afterRes + kok + hl} ≠ 生涯の手取り ${lifetime}`);
