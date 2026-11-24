@@ -1,6 +1,15 @@
       (() => {
         "use strict";
         const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        // 文章をコピーしにくくする：文字の選択・右クリックのメニュー・コピー・切り取り・画像のドラッグを止める。
+        // 入力欄（数字・手当・共有用URLの欄など）の中だけは今までどおり選んだり貼り付けたりできる。
+        // 共有用URLのコピーのボタンはクリップボードの仕組み（navigator.clipboard）を使うので、ここでは止まらない。
+        // ※ソースの表示・画面の撮影などまでは止められない（ウェブの仕組み上、完全には防げない）
+        const inField = (t) => !!(t && t.closest && t.closest("input, textarea, select, [contenteditable]"));
+        for (const type of ["copy", "cut", "contextmenu", "dragstart", "selectstart"])
+          document.addEventListener(type, (e) => {
+            if (!inField(e.target)) e.preventDefault();
+          });
         // 少しスクロールしたら、ナビの帯を細くする
         const onScroll = () => document.body.classList.toggle("scrolled", scrollY > 40);
         addEventListener("scroll", onScroll, { passive: true });

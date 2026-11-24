@@ -2545,3 +2545,15 @@ html body #simulatorDialog .preset-lock {
 html body #simulatorDialog .preset-lock[hidden] {
   display: none;
 }
+
+/* 文章を選べなくする（コピーしにくくする）。入力欄の中だけは今までどおり選べる */
+html body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+html body :is(input, textarea, select, [contenteditable]) {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
