@@ -289,6 +289,35 @@ const check = (cond, msg) => {
   });
   check(!self.err && !self.hidden && /45歳で自己都合退職/.test(self.sticky) && self.yp === "対象外", `自己都合退職：${JSON.stringify(self)}`);
 
+  // ---- 7. 航海手当は所属で絞らない（防衛省給与法第17条：自衛隊が使う艦船に乗り組む自衛官）。
+  //         指定場所生活調整金は一般曹候補生・任期制だけ（同法第26条の2）。幹部候補生では年数を選んでも加えない ----
+  const misc = await page.evaluate(() => {
+    const g = (id) => document.getElementById(id),
+      set = (id, v) => {
+        g(id).value = String(v);
+        g(id).dispatchEvent(new Event("change", { bubbles: true }));
+      };
+    set("retireReason", "teinen");
+    const kinds = {};
+    for (const b of ["ground", "maritime", "air"]) {
+      set("branch", b);
+      kinds[b] = [...g("allowanceKind").options].some((o) => o.value === "航海手当");
+    }
+    set("branch", "ground");
+    const total = (entry, years) => {
+      set("entryType", entry);
+      set("targetRank", entry === "sotsu" ? "1曹" : "3佐");
+      set("barracksYears", years);
+      g("simLaunch").click();
+      return g("totalIncome").textContent;
+    };
+    return { kinds, sotsu: [total("sotsu", 0), total("sotsu", 3)], kanko: [total("kanko", 0), total("kanko", 3)] };
+  });
+  check(misc.kinds.ground && misc.kinds.maritime && misc.kinds.air, `航海手当を陸・海・空で選べる ${JSON.stringify(misc.kinds)}`);
+  const yenOf = (s) => Number(s.replace(/[^0-9]/g, ""));
+  check(yenOf(misc.sotsu[1]) - yenOf(misc.sotsu[0]) === 600000, `一般曹候補生の指定場所生活調整金 3年：差 ${yenOf(misc.sotsu[1]) - yenOf(misc.sotsu[0])}（期待 600,000）`);
+  check(misc.kanko[0] === misc.kanko[1], `幹部候補生では指定場所生活調整金を加えない ${misc.kanko.join(" / ")}`);
+
   for (const e of errors) check(false, "ページのエラー: " + e);
   await browser.close();
   server.close();

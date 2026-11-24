@@ -1023,8 +1023,11 @@
           placement: true,
         });
     }
-    const years = Number($("barracksYears").value);
-    if (years > 0)
+    // 指定場所生活調整金（防衛省給与法第26条の2）：対象は任期制の自衛官（自衛隊法第36条第1項）と陸曹・海曹・空曹候補者
+    // （一般曹候補生）のうち防衛大臣の定める者。幹部候補生・高等工科学校の卒業生は対象にしない
+    const years = Number($("barracksYears").value),
+      barracksTarget = ["sotsu", "ninki"].includes($("entryType")?.value);
+    if (years > 0 && barracksTarget)
       auto.push({
         name: "指定場所生活調整金",
         method: "year_end",

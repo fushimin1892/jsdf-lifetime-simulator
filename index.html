@@ -52,10 +52,10 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261124-9" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-9" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261124-9" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261124-9" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261124-10" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-10" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261124-10" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261124-10" />
   </head>
   <body>
     <i class="c-scroll-progress" aria-hidden="true"></i>
@@ -516,7 +516,7 @@
                   <option value="5">5年</option>
                   <option value="6">6年以上</option></select
                 ><small class="c-field-note"
-                  >指定場所生活調整金の対象となる場合、満1年ごとに20万円・最大6年間の仮定で計算します。</small
+                  >指定場所生活調整金（防衛省給与法第26条の2）は、一般曹候補生・任期制で入隊し、採用から6年を1年ずつに区切った期間の全部を営舎内などに住んだ年に20万円（施行令第19条の2）です。入力した年数分を支給するとして計算します（処分などで支給されない年は考えません）。幹部候補生・高等工科学校の卒業生には加えません。</small
                 >
               </div>
               <div>
@@ -568,7 +568,7 @@
               <div id="allowanceList"></div>
             </details>
             <p class="c-note" data-note-title="手当の入力と計算方法">
-              手当名ごとに基本の計算方法を固定しています。月額の手当は月額、日額・勤務1回ごとの手当は単価×支給日数・回数で試算し、地域手当・広域異動手当は勤務地・異動距離から割合を適用します。支給額や対象となる日数・回数は、任務区分・勤務実績・官署の指定などで変わるため、手入力欄がある手当は実際の区分に合った単価・月額・日数等を入力してください。地域手当と広域異動手当の調整、再異動時の期間重複は計算に反映します。法令で額が決まっている手当は「区分（法令の額）」を選ぶと額が入り、本府省業務調整手当・航海手当は昇任に合わせて階級の額で計算します。支給期間は「支給開始（年・月）」と「支給期間（年・か月）」で入力します。途中で止まる・また始まる手当は、期間を分けて何件でも追加できます。同じ手当の期間が重なっているとエラーで知らせます（地域手当・広域異動手当と、区分が違うものは重なってもかまいません）。通勤手当は非課税として税金の計算から除きます。
+              手当名ごとに基本の計算方法を固定しています。月額の手当は月額、日額・勤務1回ごとの手当は単価×支給日数・回数で試算し、地域手当・広域異動手当は勤務地・異動距離から割合を適用します。支給額や対象となる日数・回数は、任務区分・勤務実績・官署の指定などで変わるため、手入力欄がある手当は実際の区分に合った単価・月額・日数等を入力してください。地域手当と広域異動手当の調整、再異動時の期間重複は計算に反映します。法令で額が決まっている手当は「区分（法令の額）」を選ぶと額が入り、本府省業務調整手当・航海手当は昇任に合わせて階級の額で計算します。支給期間は「支給開始（年・月）」と「支給期間（年・か月）」で入力します。途中で止まる・また始まる手当は、期間を分けて何件でも追加できます。同じ手当の期間が重なっているとエラーで知らせます（地域手当・広域異動手当と、区分が違うものは重なってもかまいません）。通勤手当は、所得税の非課税限度額（定期代と、車の片道距離ごとの額。合わせて月15万円まで）を税金の計算から除きます。航海手当は、自衛艦などの自衛隊の艦船に乗り組む自衛官が対象で（防衛省給与法第17条）、陸上・航空自衛官も乗り組む場合は選べます。だれが乗組員に当たるかは防衛大臣の定め（訓令）によります。
             </p>
             <p class="c-allowance-panel__links">
               <a
@@ -883,7 +883,7 @@
             </section>
             <p class="c-note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
               退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜第27条の6・附則第12項〜第15項で計算します（俸給月額は3佐の最高号俸が上限）。倍率は退職した時期で変わり（防衛省設置法等の一部を改正する法律（令和8年法律第53号）附則第2条〜第5条）、令和8年3月までの退職は年6か月分、令和8年度は7か月分、令和9年度は8か月分（いずれも2回に分け、施行令第22条の率を掛ける）、令和10年4月以後は9か月分を3回に分けて支給します（60歳以後の分は令和9年度まで年3.45〜4.21か月分、令和10年4月以後は4.6か月分）。所得による調整は、60歳までの分は退職の翌年、60歳以後の分は61歳の年の所得で行います（令和10年4月以後は3回目にも調整があります）。令和10年4月以後の「給与年額調整額」と加算の計算方法は政令が未公布のため、仮定で計算します。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の1回目は退職所得で、退職手当と同じ年に受けるときは合わせて退職所得控除を使い、別の年なら重なる勤続年数分の控除を引きます（所得税法第30条第6項、施行令第70条。下限80万円）。2回目以降は一時所得として、50万円の特別控除後の2分の1をその年の再就職の所得に加えて増える税を計算します（東京国税局の誤りやすい事例集による扱い。社会保険料控除などは入れていません）。給与所得は、収入660万円未満では所得税法別表第五（4,000円単位）で計算し、収入850万円超で23歳未満の扶養親族がいる年は所得金額調整控除を引きます。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
-              <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>
+              <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>　<a href="https://laws.e-gov.go.jp/law/421M60002000005" target="_blank" rel="noopener">若年定年退職者給付金に関する省令（支給月） ↗</a>　<a href="https://www.sangiin.go.jp/japanese/annai/chousa/rippou_chousa/backnumber/2026pdf/20260430018.pdf" target="_blank" rel="noopener">参議院「立法と調査」483号（給付金の改正） ↗</a>　<a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1410.htm" target="_blank" rel="noopener">国税庁：給与所得控除 ↗</a>　<a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1420.htm" target="_blank" rel="noopener">国税庁：退職所得 ↗</a>　<a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/gensen/2585.htm" target="_blank" rel="noopener">国税庁：通勤手当の非課税限度額 ↗</a>
             </p>
             <div class="c-share">
               <button type="button" id="shareLink" class="c-action-btn">共有用のURLをコピー</button>
@@ -942,7 +942,7 @@
                     対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
                   </p>
                   <ul>
-                    <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした</li>
+                    <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした。航海手当を陸・空でも選べるようにし（給与法第17条）、指定場所生活調整金を一般曹候補生・任期制だけにした（同法第26条の2）</li>
                     <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
                     <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
                     <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
@@ -971,7 +971,8 @@
           </div>
           <nav class="l-footer__nav" aria-label="根拠">
             <p class="l-footer__heading">根拠</p>
-            <a href="https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/21920251224095.htm" target="_blank" rel="noopener">改正法 別表第二（衆議院）</a>
+            <a href="https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/21920251224095.htm" target="_blank" rel="noopener">令和7年の改正法 別表第二（衆議院）</a>
+            <a href="https://laws.e-gov.go.jp/law/327AC0000000266" target="_blank" rel="noopener">防衛省の職員の給与等に関する法律（e-Gov・最新の版）</a>
             <a href="https://laws.e-gov.go.jp/" target="_blank" rel="noopener">e-Gov 法令検索</a>
           </nav>
         </div>
@@ -985,9 +986,9 @@
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261124-9"></script>
-    <script src="assets/data/promotion-table.js?v=20261124-9"></script>
-    <script src="assets/js/pay-lookup.js?v=20261124-9"></script>
+    <script src="assets/data/pay-table.js?v=20261124-10"></script>
+    <script src="assets/data/promotion-table.js?v=20261124-10"></script>
+    <script src="assets/js/pay-lookup.js?v=20261124-10"></script>
     <button
       class="c-sim-launch"
       id="simLaunch"
@@ -998,11 +999,11 @@
       <span class="c-sim-launch__icon" aria-hidden="true">↗</span
       ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261124-9"></script>
-    <script src="assets/js/regional-rate.js?v=20261124-9"></script>
-    <script src="assets/js/allowances.js?v=20261124-9"></script>
-    <script src="assets/js/simulator.js?v=20261124-9"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261124-9"></script>
+    <script src="assets/data/rules.js?v=20261124-10"></script>
+    <script src="assets/js/regional-rate.js?v=20261124-10"></script>
+    <script src="assets/js/allowances.js?v=20261124-10"></script>
+    <script src="assets/js/simulator.js?v=20261124-10"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261124-10"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <header class="c-notes__head">
@@ -1011,11 +1012,11 @@
       </header>
       <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261124-9"></script>
-    <script src="assets/js/effects.js?v=20261124-9"></script>
-    <script src="assets/js/crystals-core.js?v=20261124-9"></script>
-    <script src="assets/js/crystals.js?v=20261124-9"></script>
-    <script src="assets/js/scroll-lock.js?v=20261124-9"></script>
-    <script src="assets/js/print.js?v=20261124-9"></script>
+    <script src="assets/js/notes-page.js?v=20261124-10"></script>
+    <script src="assets/js/effects.js?v=20261124-10"></script>
+    <script src="assets/js/crystals-core.js?v=20261124-10"></script>
+    <script src="assets/js/crystals.js?v=20261124-10"></script>
+    <script src="assets/js/scroll-lock.js?v=20261124-10"></script>
+    <script src="assets/js/print.js?v=20261124-10"></script>
   </body>
 </html>
