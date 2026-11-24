@@ -199,8 +199,8 @@ window.SOURCES = {
   // e-Gov にある値は `node tools/egov-check.js values` が自動で照合する（2026-11-16 に全件一致）。
   // e-Gov にない値（kyosai・afterRetire・tax・地域手当の経過措置・訓令の割合）は、公表資料で人が確かめた日を書く
   items: [
-    { path: "PAY_TABLE", file: "data/pay-table.js", law: "boeiKyuyo", where: "別表第二（自衛官俸給表）", checked: "2026-11-22", how: "令和8年法律第89号（2026-11-20 公布、2026-04-01 から適用）の改正後。node tools/egov-check.js paytable で e-Gov（2026-11-20 施行版）と全1,388欄一致。官報 号外第253号の別表第二とも同じ" },
-    { path: "PROMOTION_TABLE", file: "data/promotion-table.js", law: "boeiKyuyoRei", where: "別表第一ロ（第六条の六関係）", checked: "2026-11-16", how: "node tools/egov-check.js promotion で e-Gov（2026-10-01 施行版）と全145行一致" },
+    { path: "PAY_TABLE", file: "assets/data/pay-table.js", law: "boeiKyuyo", where: "別表第二（自衛官俸給表）", checked: "2026-11-22", how: "令和8年法律第89号（2026-11-20 公布、2026-04-01 から適用）の改正後。node tools/egov-check.js paytable で e-Gov（2026-11-20 施行版）と全1,388欄一致。官報 号外第253号の別表第二とも同じ" },
+    { path: "PROMOTION_TABLE", file: "assets/data/promotion-table.js", law: "boeiKyuyoRei", where: "別表第一ロ（第六条の六関係）", checked: "2026-11-16", how: "node tools/egov-check.js promotion で e-Gov（2026-10-01 施行版）と全145行一致" },
     { path: "RULES.promotion.retireAge", law: "jieitaiRei", where: "別表第九", checked: "2026-11-16" },
     { path: "RULES.promotion.choices", law: "jieitaiKisoku", where: "別表第七ほか", checked: "2026-11-16" },
     { path: "RULES.promotion.restrict*", law: "boeiKyuyoRei", where: "第六条の十四・第六条の十四の二", checked: "2026-11-16" },

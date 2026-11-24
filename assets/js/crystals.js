@@ -1,5 +1,5 @@
-// 背景の飾り（浮かぶ桜のガラスの立体と、舞う花びら）を動かす。描画の中身は js/crystals-core.js。
-// ・ブラウザが対応していれば、別の作業場所（Web Worker：js/crystals-worker.js）で描く。
+// 背景の飾り（浮かぶ桜のガラスの立体と、舞う花びら）を動かす。描画の中身は assets/js/crystals-core.js。
+// ・ブラウザが対応していれば、別の作業場所（Web Worker：assets/js/crystals-worker.js）で描く。
 //   ページのスクロールやボタンの反応と取り合わないので、画面の書き換えの速さいっぱいで滑らかに動く
 // ・対応していないブラウザでは、このページの中で描く（スクロール中は止め、1秒30回まで）
 // ・動きを減らす設定のときは止まった1枚だけを描く。シミュレーターを開いている間と、タブが裏にあるときは描かない
@@ -27,7 +27,7 @@
   // ---------- 別の作業場所で描く ----------
   if (canvas.transferControlToOffscreen && glCanvas.transferControlToOffscreen && typeof Worker !== "undefined") {
     try {
-      const url = (document.currentScript?.src || "js/crystals.js").replace("crystals.js", "crystals-worker.js"),
+      const url = (document.currentScript?.src || "assets/js/crystals.js").replace("crystals.js", "crystals-worker.js"),
         worker = new Worker(url),
         c2 = canvas.transferControlToOffscreen(),
         cg = glCanvas.transferControlToOffscreen();

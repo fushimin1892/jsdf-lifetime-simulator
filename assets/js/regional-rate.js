@@ -1,4 +1,4 @@
-      // 地域手当の割合を data/rules.js の表から引く関数（RULES.regionalRate / RULES.regionalAreaList）
+      // 地域手当の割合を assets/data/rules.js の表から引く関数（RULES.regionalRate / RULES.regionalAreaList）
       // 地域手当の割合（％）：都道府県・地域（市町村名。"" は「その他の地域」）・年度（4月〜翌3月）から決める。
       // 経過措置の期間は附則別表第一（表にない地域は0％）、それ以後は本則。空港の区域（規則9-49第4条）は経過措置の対象外
       window.RULES.regionalRate = (pref, area, fy) => {

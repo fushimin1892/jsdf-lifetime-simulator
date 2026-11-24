@@ -19,7 +19,7 @@ const check = (cond, msg) => {
 
 const ctx = { window: {} };
 vm.createContext(ctx);
-for (const f of ["data/pay-table.js", "data/promotion-table.js", "data/rules.js", "data/sources.js"]) {
+for (const f of ["assets/data/pay-table.js", "assets/data/promotion-table.js", "assets/data/rules.js", "assets/data/sources.js"]) {
   vm.runInContext(read(f), ctx, { filename: f });
 }
 const { PAY_TABLE: P, PROMOTION_TABLE: T, RULES: R, SOURCES: S } = ctx.window;
@@ -101,12 +101,12 @@ for (const k of ["promotion", "bonus", "allowances", "retirement", "entry", "you
 
 // ---- index.html：読み込むファイルがあり、?v= がそろっている。俸給表の公布の表記が画面と一致 ----
 const html = read("index.html");
-const refs = [...html.matchAll(/(?:src|href)="((?:css|js|data)\/[^"?]+)(?:\?v=([^"]+))?"/g)];
-check(refs.length >= 10, `index.html の css/js/data の読み込み ${refs.length} 件`);
+const refs = [...html.matchAll(/(?:src|href)="(assets\/(?:css|js|data)\/[^"?]+)(?:\?v=([^"]+))?"/g)];
+check(refs.length >= 10, `index.html の assets の css/js/data の読み込み ${refs.length} 件`);
 const versions = new Set(refs.map((m) => m[2]));
 check(versions.size === 1 && !versions.has(undefined), `index.html の ?v= がそろっていない：${[...versions].join(", ")}`);
 for (const m of refs) check(fs.existsSync(path.join(ROOT, m[1])), `index.html が読み込む ${m[1]} がない`);
-const koufu = read("data/pay-table.js").match(/(\d{4}年\d{1,2}月公布)/)?.[1];
+const koufu = read("assets/data/pay-table.js").match(/(\d{4}年\d{1,2}月公布)/)?.[1];
 check(!!koufu && html.includes(koufu), `pay-table.js の「${koufu}」が index.html の説明文にない（説明文の直し忘れ）`);
 // 外部のスクリプト・スタイルを読み込まない
 check(!/<script[^>]+src="https?:/i.test(html), "index.html が外部のスクリプトを読み込んでいる");
@@ -114,11 +114,11 @@ check(!/https?:\/\/fonts\.|<link[^>]+rel="preconnect"/.test(html), "index.html �
 // CSP：このサイトのファイルだけを読み込む（default-src 'none'）
 const csp = html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1] || "";
 check(/default-src 'none'/.test(csp) && /script-src 'self'(;|$)/.test(csp) && !/unsafe/.test(csp), `index.html の CSP「${csp}」`);
-// フォントはこのサイトの fonts/ だけ（font-src は 'self' だけ許す）。画面で使う文字がすべて絞ったフォントに入っているか
+// フォントはこのサイトの assets/fonts/ だけ（font-src は 'self' だけ許す）。画面で使う文字がすべて絞ったフォントに入っているか
 check(!/font-src/.test(csp) || /font-src 'self'(;|$)/.test(csp), `index.html の CSP の font-src「${csp}」`);
 {
-  const have = new Set([...read("fonts/charset.txt").trim()]);
-  const files = ["index.html", ...["js", "data", "css"].flatMap((d) => fs.readdirSync(path.join(ROOT, d)).filter((f) => /.(js|css)$/.test(f)).map((f) => d + "/" + f))];
+  const have = new Set([...read("assets/fonts/charset.txt").trim()]);
+  const files = ["index.html", ...["assets/js", "assets/data", "assets/css"].flatMap((d) => fs.readdirSync(path.join(ROOT, d)).filter((f) => /.(js|css)$/.test(f)).map((f) => d + "/" + f))];
   const missing = new Set();
   for (const f of files) for (const ch of read(f)) if (ch.codePointAt(0) > 0x7e && !/[�-�]/.test(ch) && !have.has(ch)) missing.add(ch);
   check(missing.size === 0, `フォントに入っていない文字 ${[...missing].join("")}（node tools/font-subset.js でフォントを作り直す）`);
@@ -126,9 +126,9 @@ check(!/font-src/.test(csp) || /font-src 'self'(;|$)/.test(csp), `index.html の
 const inlineScript = [...html.matchAll(/<script([^>]*)>/gi)].some(([, attrs]) => !/ src=/.test(attrs) && !attrs.includes("application/ld+json"));
 check(!inlineScript && !/ on[a-z]+="/i.test(html) && !/ style="/i.test(html), "index.html にインラインのスクリプト・イベント属性・style 属性がある（CSP で止まる）");
 // 利用者の入力を保存しない（以前の版の保存を消す removeItem だけ許す）
-for (const f of fs.readdirSync(path.join(ROOT, "js"))) {
-  const src = read("js/" + f);
-  check(!/localStorage\.setItem|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|sendBeacon/.test(src), `js/${f} が入力を保存・送信している可能性`);
+for (const f of fs.readdirSync(path.join(ROOT, "assets/js"))) {
+  const src = read("assets/js/" + f);
+  check(!/localStorage\.setItem|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|sendBeacon/.test(src), `assets/js/${f} が入力を保存・送信している可能性`);
 }
 
 // ---- 月次点検の日付・地域手当の経過措置の年度 ----
@@ -138,7 +138,7 @@ for (const p of S.pending || []) check(p.what && /^https:\/\//.test(p.url) && is
 const fyToday = Number(today.slice(0, 4)) - (Number(today.slice(5, 7)) < 4 ? 1 : 0);
 const RT2 = R.allowances.regionalTransition;
 if (RT2 && fyToday <= RT2.untilFy)
-  check(!!RT2.byFy[fyToday], `地域手当の経過措置：今日は${fyToday}年度（≦ untilFy ${RT2.untilFy}）なのに regionalTransition.byFy に ${fyToday} の表がない（人事院の改正通知で表を足す。data/sources.js の pending を参照）`);
+  check(!!RT2.byFy[fyToday], `地域手当の経過措置：今日は${fyToday}年度（≦ untilFy ${RT2.untilFy}）なのに regionalTransition.byFy に ${fyToday} の表がない（人事院の改正通知で表を足す。assets/data/sources.js の pending を参照）`);
 
 // ---- 回帰テストの期待値（test/expected.json）と改修ガイドの hash・初期条件の目安が同じ ----
 const EXP = JSON.parse(read("test/expected.json"));
@@ -146,12 +146,12 @@ check(guide.includes(`hash ${EXP.hash}、${EXP.cases}通り`), `改修ガイド�
 for (const [k, v] of Object.entries(EXP.initial || {})) check(guide.includes(`${k} **${v}**`), `改修ガイドの初期条件の目安「${k} ${v}」が test/expected.json と違う`);
 
 // ---- 画面の説明文の数値 ＝ RULES ----
-// 説明文（index.html・js）に書いた数値が data/rules.js と食い違っていないか。行番号ではなく前後の文言で探す。
+// 説明文（index.html・js）に書いた数値が assets/data/rules.js と食い違っていないか。行番号ではなく前後の文言で探す。
 // 文言が見つからないもの（説明文を書き換えた）は「注意」として出す（NG にはしない）。見つかって値が違えば NG
 const descText = [
   ["index.html", html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ")],
   ["index.html（入力欄）", (html.match(/<input[^>]*>/g) || []).join(" ").replace(/\s+/g, " ")],
-].concat(fs.readdirSync(path.join(ROOT, "js")).map((f) => ["js/" + f, read("js/" + f)]));
+].concat(fs.readdirSync(path.join(ROOT, "assets/js")).map((f) => ["assets/js/" + f, read("assets/js/" + f)]));
 const n = (s) => Number(String(s).replace(/,/g, ""));
 const same = (a, b) => Math.abs(a - b) < 1e-6;
 const X = R.allowances;

@@ -20,8 +20,8 @@
    css / js / data のファイルを直したら、index.html の「?v=日付」を全部新しい値に変える（同じ日に2回目なら 日付-2 など）
    （古いファイルがブラウザに残って、新旧が混ざるのを防ぐため）。
 4. 法令の数値（俸給表・手当の割合や額・賞与の月数・定年・退職手当・若年定年退職者給付金・
-   共済掛金・税金）は、data/rules.js（window.RULES）と、
-   data/pay-table.js（window.PAY_TABLE）・data/promotion-table.js（window.PROMOTION_TABLE）だけに書く。
+   共済掛金・税金）は、assets/data/rules.js（window.RULES）と、
+   assets/data/pay-table.js（window.PAY_TABLE）・assets/data/promotion-table.js（window.PROMOTION_TABLE）だけに書く。
    js フォルダの計算プログラムの中に数値を直接書き込まない。
 5. 数値を変えるときは、必ず一次資料（e-Gov 法令検索、人事院、国税庁、防衛省共済組合など）の
    原文で確認し、どの条文・資料のどの値かを報告する。推測で数値を入れない。
@@ -30,7 +30,7 @@
 6. 数値を変えたら、画面の説明文（「説明・計算の前提」ページに集まる文章、選択肢の文言）に
    同じ数値が書かれていないか検索して、一緒に直す（下の「文章の中の数値」を参照）。
 7. `node test/check.js` が NG 0 であること。改修の前と後に「検証用スクリプト.js」をブラウザで実行し、結果を比べる。
-   法令改正の反映は「AI用/改正対応の手順書.md」の順に進め、出典（data/sources.js）も更新する。
+   法令改正の反映は「AI用/改正対応の手順書.md」の順に進め、出典（assets/data/sources.js）も更新する。
    計算に関係しない改修なら hash が改修前と同じであること。
    数値を変えた改修なら、変わった項目が改正の内容どおりであることを確認して報告する。
 8. スマホ幅（375px）で横にはみ出さないこと、コンソールにエラーが出ないことを確認する。
@@ -46,7 +46,7 @@
 
 | ファイル | 内容 |
 |---|---|
-アップロードする（GitHub Pages で配信する）のは `index.html`・`css/`・`data/`・`js/`・`icons/` です。
+アップロードする（GitHub Pages で配信する）のは `index.html`・`assets/css/`・`assets/data/`・`assets/js/`・`icons/` です。
 
 ### 画面の骨組み（見た目）
 
@@ -58,34 +58,34 @@
 
 | ファイル | 中身 | 改修でよく触るか |
 |---|---|---|
-| `css/base.css` | 骨組みの基本スタイル（レイアウト・部品） | ほぼ触らない |
-| `css/simulator-fix.css` | シミュレーターの細かい調整（ホバーで浮かせない・背景を固定など） | ほぼ触らない |
-| `css/design.css` | **サイトの見た目を決めるデザイン**（2026-11 の v5「作戦地図」。1枚にまとめ直した版。先頭のコメントに決まり〈12列の格子 --edge-x・押せるもの＝丸・箱＝角4px・線1本・影なし・色は墨/オリーブ/カーキ・ラベルは10pxの等幅英字と[番号]〉。下の方にシミュレーター） | 見た目の変更時 |
-| `css/print.css` | 印刷・PDF の紙面 | 印刷の見た目を変えるとき |
+| `assets/css/base.css` | 骨組みの基本スタイル（レイアウト・部品） | ほぼ触らない |
+| `assets/css/simulator-fix.css` | シミュレーターの細かい調整（ホバーで浮かせない・背景を固定など） | ほぼ触らない |
+| `assets/css/design.css` | **サイトの見た目を決めるデザイン**（2026-11 の v5「作戦地図」。1枚にまとめ直した版。先頭のコメントに決まり〈12列の格子 --edge-x・押せるもの＝丸・箱＝角4px・線1本・影なし・色は墨/オリーブ/カーキ・ラベルは10pxの等幅英字と[番号]〉。下の方にシミュレーター） | 見た目の変更時 |
+| `assets/css/print.css` | 印刷・PDF の紙面 | 印刷の見た目を変えるとき |
 
 ### 手当・俸給などの数値（data フォルダ）
 
 | ファイル | 中身 | 改修でよく触るか |
 |---|---|---|
-| `data/pay-table.js` | **俸給表**（`window.PAY_TABLE`。145行×19列） | 俸給表の改定時 |
-| `data/promotion-table.js` | **昇任時の号俸の対応表**（`window.PROMOTION_TABLE`。施行令 別表第一ロ） | 対応表の改定時 |
-| `data/rules.js` | **法令の数値すべて**（`window.RULES`。手当の額・割合、賞与、退職手当、税など） | **法令改正のたびに必ず** |
+| `assets/data/pay-table.js` | **俸給表**（`window.PAY_TABLE`。145行×19列） | 俸給表の改定時 |
+| `assets/data/promotion-table.js` | **昇任時の号俸の対応表**（`window.PROMOTION_TABLE`。施行令 別表第一ロ） | 対応表の改定時 |
+| `assets/data/rules.js` | **法令の数値すべて**（`window.RULES`。手当の額・割合、賞与、退職手当、税など） | **法令改正のたびに必ず** |
 
 ### 計算と動き（js フォルダ）。index.html の中で読み込む順番に意味があるので変えない
 
 | ファイル | 中身 | 改修でよく触るか |
 |---|---|---|
-| `js/pay-lookup.js` | トップの「俸給を調べる」 | ほぼ触らない |
-| `js/regional-rate.js` | 地域手当の割合を `data/rules.js` の表から引く関数（`RULES.regionalRate` など） | 地域手当の仕組みを変えるとき |
-| `js/allowances.js` | 手当の入力欄と計算（`const A = window.RULES.allowances`） | 手当の仕組みを変えるとき |
-| `js/simulator.js` | シミュレーターの計算（`model` `retirement` `run`） | 計算方法を変えるとき |
-| `js/simulator-dialog.js` | シミュレーターの画面の開け閉め（ヘッダーなどのボタンからも開く） | ほぼ触らない |
-| `js/notes-page.js` | 説明ページ（長い説明を自動で集める） | ほぼ触らない |
-| `js/effects.js` | 見た目の演出（数字のカウントアップなど。計算には関わらない） | ほぼ触らない |
-| `js/crystals.js` ・ `js/crystals-core.js` ・ `js/crystals-worker.js` | 背景の飾り（ガラスの桜の立体＝WebGL、舞う花びら・きらめき＝canvas 2D）。描画の中身は crystals-core.js。対応するブラウザでは crystals-worker.js（Web Worker と OffscreenCanvas）で描き、ページのスクロールと取り合わない。対応しないときは crystals.js がページの中で描く（スクロール中は止め、1秒30回まで）。外部ライブラリなし。動きを減らす設定では止まった絵、ダイアログ表示中・タブが裏のときは描かない。大きな面に backdrop-filter（すりガラス）を足すと、動く背景の上で毎回ぼかし直しになり重くなるので使わない（「俸給を調べる」の枠だけ） | ほぼ触らない |
-| `fonts/` と `tools/font-subset.js` | Noto Sans JP と JetBrains Mono を、このサイトで使う文字だけに絞ったもの（OFL。ライセンス文も同じフォルダ）。文言を足して新しい文字が増えると test/check.js が知らせるので、元のフォントを Google Fonts の公式 GitHub から取り、`node tools/font-subset.js <NotoSansJP[wght].ttf> <JetBrainsMono[wght].ttf>` で作り直す（Python の fonttools・brotli が要る） | 文言を足したとき |
-| `js/scroll-lock.js` | モーダル表示中の背景スクロール固定 | ほぼ触らない |
-| `js/print.js` | 印刷・PDF の紙面づくり | ほぼ触らない |
+| `assets/js/pay-lookup.js` | トップの「俸給を調べる」 | ほぼ触らない |
+| `assets/js/regional-rate.js` | 地域手当の割合を `assets/data/rules.js` の表から引く関数（`RULES.regionalRate` など） | 地域手当の仕組みを変えるとき |
+| `assets/js/allowances.js` | 手当の入力欄と計算（`const A = window.RULES.allowances`） | 手当の仕組みを変えるとき |
+| `assets/js/simulator.js` | シミュレーターの計算（`model` `retirement` `run`） | 計算方法を変えるとき |
+| `assets/js/simulator-dialog.js` | シミュレーターの画面の開け閉め（ヘッダーなどのボタンからも開く） | ほぼ触らない |
+| `assets/js/notes-page.js` | 説明ページ（長い説明を自動で集める） | ほぼ触らない |
+| `assets/js/effects.js` | 見た目の演出（数字のカウントアップなど。計算には関わらない） | ほぼ触らない |
+| `assets/js/crystals.js` ・ `assets/js/crystals-core.js` ・ `assets/js/crystals-worker.js` | 背景の飾り（ガラスの桜の立体＝WebGL、舞う花びら・きらめき＝canvas 2D）。描画の中身は crystals-core.js。対応するブラウザでは crystals-worker.js（Web Worker と OffscreenCanvas）で描き、ページのスクロールと取り合わない。対応しないときは crystals.js がページの中で描く（スクロール中は止め、1秒30回まで）。外部ライブラリなし。動きを減らす設定では止まった絵、ダイアログ表示中・タブが裏のときは描かない。大きな面に backdrop-filter（すりガラス）を足すと、動く背景の上で毎回ぼかし直しになり重くなるので使わない（「俸給を調べる」の枠だけ） | ほぼ触らない |
+| `assets/fonts/` と `tools/font-subset.js` | Noto Sans JP と JetBrains Mono を、このサイトで使う文字だけに絞ったもの（OFL。ライセンス文も同じフォルダ）。文言を足して新しい文字が増えると test/check.js が知らせるので、元のフォントを Google Fonts の公式 GitHub から取り、`node tools/font-subset.js <NotoSansJP[wght].ttf> <JetBrainsMono[wght].ttf>` で作り直す（Python の fonttools・brotli が要る） | 文言を足したとき |
+| `assets/js/scroll-lock.js` | モーダル表示中の背景スクロール固定 | ほぼ触らない |
+| `assets/js/print.js` | 印刷・PDF の紙面づくり | ほぼ触らない |
 
 ### アップロードしないもの
 
@@ -97,7 +97,7 @@
 | `test/check.js` | データの形とつじつまの検査（`node test/check.js`。NG 0 で合格） |
 | `tools/egov-check.js`・`tools/value-checks.js` | e-Gov との照合（改正日の変化の検出、俸給表・昇任表の全欄照合、手当・賞与・定年・退職手当・若年給付金・地域手当の数値と条文の照合） |
 | `test/regression.js`・`test/expected.json` | 計算結果の回帰テスト（Playwright で検証用スクリプトを自動実行。CSP 違反・外部通信・スマホ幅も確かめる） |
-| `data/sources.js` | 出典の一覧（法令の e-Gov ID・条・照合日・成立待ちのもの）。画面では読み込まないが、改正のたびに更新する |
+| `assets/data/sources.js` | 出典の一覧（法令の e-Gov ID・条・照合日・成立待ちのもの）。画面では読み込まないが、改正のたびに更新する |
 | `.nojekyll` | 空のファイル。GitHub Pages にファイルをそのまま配信させる目印（消さない） |
 
 分割する前の1ファイル版は、git の履歴（main ブランチの `index.html`）に残っています。
@@ -291,7 +291,7 @@
 
 ## 2026-11-22 に足した機能（どこを直すか）
 
-- よくある経歴のひな形（`.sim-preset`、`js/simulator.js` の `PRESETS`）：入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変える。
+- よくある経歴のひな形（`.sim-preset`、`assets/js/simulator.js` の `PRESETS`）：入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変える。
 - 年ごとの表の CSV 保存（`#csvSim`）：画面の表から端末の中で作り、どこにも送らない。= + @ で始まる値には ' を付ける。
 - 3尉への昇任のしかた（`#ofcRoute`：3曹から・曹長から・准尉から）：`pathTo()` が曹の階級を順に経る道を作る。曹長からの最短2年は自衛隊法施行規則 別表第七、准尉は定めがないので1年から（`promotion.choices.stepOfcSgm / stepOfcWo`）。
 - 扶養手当は子の入隊時の年齢（`c1`〜`c10`。最初は1人目だけ、「＋子を追加」で足す）から生まれた年度（`childFys`）を出し、年度ごとに 13,000円＋（生まれた年度＋16年度から）5,000円、22歳の年度末まで（一般職給与法第11条第2項・第4項）。0歳以上は「入隊年度−年齢−1」、マイナスは入隊後に生まれる子で「入隊年度＋年数」。以前の版の人数（child・teen）と生まれた年度（b1〜b4）は見えない欄で残し、共有URLで使えるようにしている。60歳以上の父母等の欄は「更新中」で入力できず、計算に入れない（階級で額が変わる決まり（施行令第8条の7・第8条の8）の扱いを見直すまで）。

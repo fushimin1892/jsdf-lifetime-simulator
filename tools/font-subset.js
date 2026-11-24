@@ -1,8 +1,8 @@
-// フォントを「このサイトで使う文字だけ」に絞って fonts/ に置く。
+// フォントを「このサイトで使う文字だけ」に絞って assets/fonts/ に置く。
 // 使い方：node tools/font-subset.js <NotoSansJP[wght].ttf> <JetBrainsMono[wght].ttf>
 //   元のフォントは Google Fonts の公式 GitHub（github.com/google/fonts の ofl/notosansjp・ofl/jetbrainsmono）から取る（OFL）。
 //   絞るのに Python の fonttools と brotli が要る（python -m pip install fonttools brotli）。
-// 文言を足して新しい漢字などが増えたら、もう一度これを実行する（test/check.js が fonts/charset.txt にない文字を知らせる）。
+// 文言を足して新しい漢字などが増えたら、もう一度これを実行する（test/check.js が assets/fonts/charset.txt にない文字を知らせる）。
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -18,7 +18,7 @@ if (!noto || !mono) {
 // 画面に出る文字が入っているファイル（コメントの文字も入るが、増えるのはわずか）
 function siteFiles() {
   const list = ["index.html"];
-  for (const dir of ["js", "data", "css"]) for (const f of fs.readdirSync(path.join(root, dir))) if (/\.(js|css)$/.test(f)) list.push(path.join(dir, f));
+  for (const dir of ["assets/js", "assets/data", "assets/css"]) for (const f of fs.readdirSync(path.join(root, dir))) if (/\.(js|css)$/.test(f)) list.push(path.join(dir, f));
   return list;
 }
 function siteChars() {
@@ -29,7 +29,7 @@ function siteChars() {
   return [...set].filter((ch) => !/[\u0000-\u001f\ud800-\udfff]/.test(ch)).sort((a, b) => a.codePointAt(0) - b.codePointAt(0));
 }
 
-const out = path.join(root, "fonts");
+const out = path.join(root, "assets/fonts");
 fs.mkdirSync(out, { recursive: true });
 const chars = siteChars();
 fs.writeFileSync(path.join(out, "charset.txt"), chars.join("") + "\n");

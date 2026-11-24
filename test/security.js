@@ -21,7 +21,7 @@ const fail = (m) => {
   console.log("NG " + m);
 };
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
-const siteFiles = ["index.html", ...["js", "data", "css"].flatMap((d) => fs.readdirSync(path.join(ROOT, d)).map((f) => `${d}/${f}`))];
+const siteFiles = ["index.html", ...["assets/js", "assets/data", "assets/css"].flatMap((d) => fs.readdirSync(path.join(ROOT, d)).map((f) => `${d}/${f}`))];
 
 // ---- 1. 静的な検査 ----
 for (const f of siteFiles.filter((f) => f.endsWith(".js"))) {
@@ -64,7 +64,7 @@ for (const f of tracked) {
 }
 // HTML を組み立てる場所（innerHTML・insertAdjacentHTML・outerHTML）の一覧。前回確かめた一覧と違えば要レビュー
 const sinks = [];
-for (const f of siteFiles.filter((f) => f.startsWith("js/"))) {
+for (const f of siteFiles.filter((f) => f.startsWith("assets/js/"))) {
   const lines = read(f).split("\n");
   lines.forEach((line, i) => {
     if (/\.(innerHTML|outerHTML)\s*=|insertAdjacentHTML\s*\(/.test(line)) {

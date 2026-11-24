@@ -1,7 +1,7 @@
 // data の数値を e-Gov の条文と照合するための一覧（tools/egov-check.js values が使う）。
 // 1件ごとに「どの法令の、どの条・表・附則に、どんな文言があるはずか」を書く。
 // 文言は data の値から作るので、data と法令のどちらかが変わると「NG」になる。
-//   law：data/sources.js の laws の key
+//   law：assets/data/sources.js の laws の key
 //   article：条の番号（e-Gov の Num。第十九条の四 → "19_4"）、"別表第五" などの別表、
 //            "附則"（制定時の附則の項）、"附則(平成一五年六月四日法律第六二号)"（その改正法の附則）
 //   expect：次のどれか（複数可。すべてあれば一致）

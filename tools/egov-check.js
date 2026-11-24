@@ -1,11 +1,11 @@
 // e-Gov 法令API（v2）で、法令の最終改正日と俸給表（防衛省給与法 別表第二）を確かめる道具。
 // 外部ライブラリは使わない（Node.js 18 以上の fetch だけ）。サイトには配信しない。
 //
-//   node tools/egov-check.js            … data/sources.js の各法令について、e-Gov の最終改正（公布日）を
+//   node tools/egov-check.js            … assets/data/sources.js の各法令について、e-Gov の最終改正（公布日）を
 //                                         記録（egovRevision）と比べ、変わっていれば「要確認」と出す
-//   node tools/egov-check.js paytable   … e-Gov の別表第二（自衛官俸給表）を全欄読み、data/pay-table.js と照合する
-//   node tools/egov-check.js promotion  … e-Gov の施行令 別表第一ロ（昇任後の号俸）を data/promotion-table.js と照合する
-//   node tools/egov-check.js values     … data/rules.js の手当・賞与・定年・退職手当・若年給付金の数値を、条文の文言と照合する
+//   node tools/egov-check.js paytable   … e-Gov の別表第二（自衛官俸給表）を全欄読み、assets/data/pay-table.js と照合する
+//   node tools/egov-check.js promotion  … e-Gov の施行令 別表第一ロ（昇任後の号俸）を assets/data/promotion-table.js と照合する
+//   node tools/egov-check.js values     … assets/data/rules.js の手当・賞与・定年・退職手当・若年給付金の数値を、条文の文言と照合する
 //                                         （一覧は tools/value-checks.js。区分と値を組で、前後に数字が続かない形で照合する。
 //                                          e-Gov にない値は最後に「人が確かめる一覧」として出す）
 //   node tools/egov-check.js all        … 上の4つ（改正日・俸給表・昇任表・数値）を全部
@@ -44,7 +44,7 @@ const toNum = (s) => {
   return /^\d+$/.test(z) ? Number(z) : null;
 };
 
-// 別表第二（自衛官俸給表）を [号俸−1][列] の形で読む。列の並びは data/pay-table.js と同じ（将〜2士の19列）
+// 別表第二（自衛官俸給表）を [号俸−1][列] の形で読む。列の並びは assets/data/pay-table.js と同じ（将〜2士の19列）
 function parsePayTable(xml) {
   const tables = [...xml.matchAll(/<AppdxTable[\s\S]*?<\/AppdxTable>/g)].map((m) => m[0]);
   const t = tables.find((s) => /<RelatedArticleNum>[^<]*自衛官俸給表/.test(s.slice(0, 1000)));
@@ -75,7 +75,7 @@ async function checkPayTable(xmlPath) {
     const ri = j.revision_info || {};
     console.log(`e-Gov の版：${ri.law_revision_id}（施行 ${ri.amendment_enforcement_date}、改正法 ${ri.amendment_law_title}）`);
   }
-  const P = loadData("data/pay-table.js").PAY_TABLE;
+  const P = loadData("assets/data/pay-table.js").PAY_TABLE;
   const { byGrade } = parsePayTable(xml);
   let diff = 0;
   let cells = 0;
@@ -96,7 +96,7 @@ async function checkPayTable(xmlPath) {
   return diff === 0 && extra.length === 0;
 }
 
-// 施行令 別表第一ロ（昇任後の号俸）を data/promotion-table.js と照合する
+// 施行令 別表第一ロ（昇任後の号俸）を assets/data/promotion-table.js と照合する
 async function checkPromotion(xmlPath) {
   let xml;
   if (xmlPath) xml = fs.readFileSync(xmlPath, "utf8");
@@ -113,7 +113,7 @@ async function checkPromotion(xmlPath) {
   const rows = [...struct.matchAll(/<TableRow>([\s\S]*?)<\/TableRow>/g)]
     .map((m) => [...m[1].matchAll(/<TableColumn[^>]*>([\s\S]*?)<\/TableColumn>/g)].map((c) => toNum(c[1].replace(/<[^>]+>/g, "").trim())))
     .filter((r) => r.length === 17 && r[0] != null);
-  const T = loadData("data/promotion-table.js").PROMOTION_TABLE;
+  const T = loadData("assets/data/promotion-table.js").PROMOTION_TABLE;
   let diff = 0;
   for (const r of rows) {
     const exp = T[r[0] - 1] || [];
@@ -215,8 +215,8 @@ function compareRegional(spaced, { areas, gradeRate }) {
 }
 
 async function checkValues(cacheDir) {
-  const W = loadData("data/rules.js");
-  const S = loadData("data/sources.js").SOURCES;
+  const W = loadData("assets/data/rules.js");
+  const S = loadData("assets/data/sources.js").SOURCES;
   const { build, manual, P } = require("./value-checks.js");
   const laws = Object.fromEntries(S.laws.map((l) => [l.key, l]));
   if (cacheDir) fs.mkdirSync(cacheDir, { recursive: true });
@@ -308,7 +308,7 @@ async function checkValues(cacheDir) {
 const fetchFailed = new Set();
 
 async function checkRevisions() {
-  const S = loadData("data/sources.js").SOURCES;
+  const S = loadData("assets/data/sources.js").SOURCES;
   let changed = 0;
   let failed = 0;
   for (const law of S.laws) {
@@ -335,7 +335,7 @@ async function checkRevisions() {
     }
   }
   console.log("");
-  if (changed) console.log(`★要確認 ${changed} 件。改正の中身を読み、数値に関係があれば data を直す。関係がなければ data/sources.js の egovRevision だけ更新する。`);
+  if (changed) console.log(`★要確認 ${changed} 件。改正の中身を読み、数値に関係があれば data を直す。関係がなければ assets/data/sources.js の egovRevision だけ更新する。`);
   if (failed) console.log(`★取得失敗 ${failed} 件。改正があったかどうか分からない（要確認とは別）。時間をおいてやり直す。取れるまで data も lastMonthlyCheck も変えない。`);
   if (!changed && !failed) console.log("すべて記録どおり。");
   return changed === 0 && failed === 0;
