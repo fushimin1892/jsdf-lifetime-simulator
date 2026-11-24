@@ -511,7 +511,7 @@ self.CrystalsCore = function createCrystals(opts) {
         for (let k = 0; k < 5; k++) {
           const ang = az + (k * Math.PI * 2) / 5 + 0.25,
             rr = o.size * (1.12 + 0.06 * Math.sin(t * 0.5 + k));
-          drawGlint(x + Math.sin(ang) * rr, y - Math.cos(ang) * rr * Math.cos(ax), 7 + 3 * k % 4, Math.max(0, Math.sin(t * 0.9 + k * 1.3)) * 0.9);
+          drawGlint(x + Math.sin(ang) * rr, y - Math.cos(ang) * rr * Math.cos(ax), 7 + ((3 * k) % 4), Math.max(0, Math.sin(t * 0.9 + k * 1.3)) * 0.9);
         }
       if (gl) gl.draw(o.kind, x, y, o.size, R);
       else draw2d(MESH[o.kind], x, y, o.size, R);

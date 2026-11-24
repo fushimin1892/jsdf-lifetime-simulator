@@ -106,9 +106,7 @@ html body main .paytable .source::before,
 .bg-scene .bg-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(27, 30, 23, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(27, 30, 23, 0.03) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(27, 30, 23, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(27, 30, 23, 0.03) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 .bg-scene .bg-cols {
@@ -1630,7 +1628,9 @@ html body #simulatorDialog {
 /* 入力の誤り：重なった手当の行と、誤りのある欄（allowances.js が a-error・aria-invalid を付ける） */
 html body #simulatorDialog .allowance-item.a-error {
   border-color: #b3261e;
-  box-shadow: 0 0 0 1px #b3261e, 0 6px 18px -12px rgba(179, 38, 30, 0.35);
+  box-shadow:
+    0 0 0 1px #b3261e,
+    0 6px 18px -12px rgba(179, 38, 30, 0.35);
 }
 html body #simulatorDialog .allowance-item.a-error .allowance-title::before {
   content: "!";
@@ -1946,7 +1946,6 @@ html body #simulatorDialog .sim-sticky-text :is(small, span) {
   color: #cfcbb4;
 }
 
-
 /* シミュレーターの「詳しい説明」：紙の上で読める濃さのオリーブに */
 html body #simulatorDialog .note-link {
   color: var(--od);
@@ -2084,7 +2083,9 @@ html body #simulatorDialog :is(.sim-jump, .sim-close) {
   border: 1px solid rgba(244, 242, 234, 0.28);
   background: rgba(255, 255, 255, 0.06);
   color: #f4f2ea;
-  box-shadow: inset 0 0 0 2px rgba(27, 30, 23, 0.9), inset 0 0 0 3px rgba(210, 197, 149, 0.25);
+  box-shadow:
+    inset 0 0 0 2px rgba(27, 30, 23, 0.9),
+    inset 0 0 0 3px rgba(210, 197, 149, 0.25);
   transition:
     border-color 0.25s,
     background-color 0.25s;
@@ -2123,7 +2124,9 @@ html body .lookup::after {
 }
 /* 選んだ号俸：墨の面に真鍮の細い輪 */
 html body .paytable td.highlight {
-  box-shadow: inset 0 0 0 2px #1b1e17, inset 0 0 0 3px rgba(210, 197, 149, 0.55) !important;
+  box-shadow:
+    inset 0 0 0 2px #1b1e17,
+    inset 0 0 0 3px rgba(210, 197, 149, 0.55) !important;
 }
 /* 流れる帯の菱形は真鍮色に */
 .ticker-track span i {

@@ -30,7 +30,9 @@
   }
   html.printing .print-area {
     display: block !important;
-    font: 9.5pt/1.6 "Noto Sans JP", sans-serif;
+    font:
+      9.5pt/1.6 "Noto Sans JP",
+      sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -47,7 +49,9 @@
   .pa-brand {
     margin: 0;
     color: #736a3c !important;
-    font: 700 8pt/1 Inter, sans-serif;
+    font:
+      700 8pt/1 Inter,
+      sans-serif;
     letter-spacing: 0.2em;
   }
   .pa-head h1 {
@@ -132,7 +136,9 @@
   .print-area .sim-split strong {
     display: block;
     color: #fff !important;
-    font: 800 13pt/1.25 Inter, sans-serif;
+    font:
+      800 13pt/1.25 Inter,
+      sans-serif;
     white-space: nowrap;
   }
   .print-area .sim-metrics {
@@ -156,7 +162,9 @@
     font-size: 7.5pt;
   }
   .print-area .sim-metrics strong {
-    font: 700 11pt/1.3 Inter, sans-serif;
+    font:
+      700 11pt/1.3 Inter,
+      sans-serif;
   }
   .print-area .sim-metrics > .sim-net:last-child {
     border-color: #8d824d;

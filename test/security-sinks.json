@@ -9,72 +9,72 @@
     {
       "file": "assets/js/allowances.js",
       "line": "calcBox.innerHTML = calc.fields",
-      "hash": "bc0d5daae8b22794"
+      "hash": "ac28017c93590f5e"
     },
     {
       "file": "assets/js/notes-page.js",
       "line": "p.innerHTML = el.innerHTML.trim();",
-      "hash": "3b95eb7cdca0b861"
+      "hash": "30afae4c40f46b75"
     },
     {
       "file": "assets/js/notes-page.js",
       "line": "full.innerHTML = p.innerHTML;",
-      "hash": "73393df5d83c0211"
+      "hash": "b5849d26f8d27953"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "grade.innerHTML = valid.map((g) => `<option value=\"${g}\">${g + 1}号俸</option>`).join(\"\");",
-      "hash": "cadff9152dc56be4"
+      "hash": "59cac9abaa8907df"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "outlook.innerHTML = \"\";",
-      "hash": "12193577a349c03d"
+      "hash": "8541e48f3f0b30de"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "outlook.innerHTML = '<li><span class=\"outlook-max\">将の俸給は官職ごとに号俸が決まり、昇給はありません。</span></li>';",
-      "hash": "63c0529339fa2641"
+      "hash": "668bfea9904c0894"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "outlook.innerHTML = '<li><span class=\"outlook-max\">この階級の最高号俸です。同じ階級のままでは、これ以上昇給しません。</span></li>';",
-      "hash": "821b07fe6cddbbde"
+      "hash": "44fd3b225de04405"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "outlook.innerHTML = items.join(\"\");",
-      "hash": "ff874093ea026955"
+      "hash": "ee36115bdf11ca43"
     },
     {
       "file": "assets/js/pay-lookup.js",
-      "line": "amount.innerHTML =",
-      "hash": "c9ef6538645a3a11"
+      "line": "amount.innerHTML = v != null ? `${yen.format(v)} <span>円 / 月</span>` : '<span class=\"empty\">該当する金額はあ",
+      "hash": "ef4572c8a4c0e99e"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "rank.innerHTML = ranks.map((v, i) => `<option value=\"${i}\">${v}</option>`).join(\"\");",
-      "hash": "b7a50778111f5418"
+      "hash": "060d66de595d5e74"
     },
     {
       "file": "assets/js/pay-lookup.js",
-      "line": "document.querySelector(\"#thead\").innerHTML =",
-      "hash": "970ac4363a97ffd2"
+      "line": "document.querySelector(\"#thead\").innerHTML = '<tr><th scope=\"col\">号俸</th>' + ranks.map((x) => `<th s",
+      "hash": "401b9d92699bc0aa"
     },
     {
       "file": "assets/js/pay-lookup.js",
       "line": "document.querySelector(\"#tbody\").innerHTML = data",
-      "hash": "ce9e4ea1ca6e4bda"
+      "hash": "02cc1a274dded140"
     },
     {
       "file": "assets/js/print.js",
       "line": "area.innerHTML =",
-      "hash": "514000bb5e88c079"
+      "hash": "53a504d315b8af2c"
     },
     {
       "file": "assets/js/print.js",
       "line": "area.insertAdjacentHTML(",
-      "hash": "1a47ea5df4d338c8"
+      "hash": "d8b8d58588ba1bd0"
     },
     {
       "file": "assets/js/simulator.js",

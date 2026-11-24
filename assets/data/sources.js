@@ -53,7 +53,11 @@ window.SOURCES = {
       // e-Gov では全部改正した規則（九―四九―三二）の番号で載っている。経過措置の九―四九―五七の附則別表は載らないので人事院の改正通知で確かめる
       egovId: "418RJNJ09049032",
       url: "https://laws.e-gov.go.jp/law/418RJNJ09049032",
-      egovRevision: { promulgated: "2026-02-13", enforced: "2026-04-01", by: "人事院規則九―四九―五七（人事院規則九―四九（地域手当）の一部を改正する人事院規則）の一部を改正する人事院規則" },
+      egovRevision: {
+        promulgated: "2026-02-13",
+        enforced: "2026-04-01",
+        by: "人事院規則九―四九―五七（人事院規則九―四九（地域手当）の一部を改正する人事院規則）の一部を改正する人事院規則",
+      },
     },
     {
       key: "jinjiin9_24",
@@ -142,7 +146,11 @@ window.SOURCES = {
       num: "昭和三十四年法律第百四十一号",
       egovId: "334AC0000000141",
       url: "https://laws.e-gov.go.jp/law/334AC0000000141",
-      egovRevision: { promulgated: "2025-06-20", enforced: "2025-06-20", by: "社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律" },
+      egovRevision: {
+        promulgated: "2025-06-20",
+        enforced: "2025-06-20",
+        by: "社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律",
+      },
     },
     {
       key: "kosei",
@@ -150,7 +158,11 @@ window.SOURCES = {
       num: "昭和二十九年法律第百十五号",
       egovId: "329AC0000000115",
       url: "https://laws.e-gov.go.jp/law/329AC0000000115",
-      egovRevision: { promulgated: "2025-06-20", enforced: "2025-06-20", by: "社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律" },
+      egovRevision: {
+        promulgated: "2025-06-20",
+        enforced: "2025-06-20",
+        by: "社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律",
+      },
     },
     {
       key: "shotoku",
@@ -186,7 +198,6 @@ window.SOURCES = {
     },
   ],
 
-
   // e-Gov にない公表資料（法令ではないが値の確認に使う）
   pages: [
     { key: "modHouan", title: "防衛省「国会提出法案」（給与法改正案の提出日・法律番号・公布日）", url: "https://www.mod.go.jp/j/presiding/houan/index.html" },
@@ -199,13 +210,39 @@ window.SOURCES = {
   // e-Gov にある値は `node tools/egov-check.js values` が自動で照合する（2026-11-16 に全件一致）。
   // e-Gov にない値（kyosai・afterRetire・tax・地域手当の経過措置・訓令の割合）は、公表資料で人が確かめた日を書く
   items: [
-    { path: "PAY_TABLE", file: "assets/data/pay-table.js", law: "boeiKyuyo", where: "別表第二（自衛官俸給表）", checked: "2026-11-22", how: "令和8年法律第89号（2026-11-20 公布、2026-04-01 から適用）の改正後。node tools/egov-check.js paytable で e-Gov（2026-11-20 施行版）と全1,388欄一致。官報 号外第253号の別表第二とも同じ" },
-    { path: "PROMOTION_TABLE", file: "assets/data/promotion-table.js", law: "boeiKyuyoRei", where: "別表第一ロ（第六条の六関係）", checked: "2026-11-16", how: "node tools/egov-check.js promotion で e-Gov（2026-10-01 施行版）と全145行一致" },
+    {
+      path: "PAY_TABLE",
+      file: "assets/data/pay-table.js",
+      law: "boeiKyuyo",
+      where: "別表第二（自衛官俸給表）",
+      checked: "2026-11-22",
+      how: "令和8年法律第89号（2026-11-20 公布、2026-04-01 から適用）の改正後。node tools/egov-check.js paytable で e-Gov（2026-11-20 施行版）と全1,388欄一致。官報 号外第253号の別表第二とも同じ",
+    },
+    {
+      path: "PROMOTION_TABLE",
+      file: "assets/data/promotion-table.js",
+      law: "boeiKyuyoRei",
+      where: "別表第一ロ（第六条の六関係）",
+      checked: "2026-11-16",
+      how: "node tools/egov-check.js promotion で e-Gov（2026-10-01 施行版）と全145行一致",
+    },
     { path: "RULES.promotion.retireAge", law: "jieitaiRei", where: "別表第九", checked: "2026-11-16" },
     { path: "RULES.promotion.choices", law: "jieitaiKisoku", where: "別表第七ほか", checked: "2026-11-16" },
     { path: "RULES.promotion.restrict*", law: "boeiKyuyoRei", where: "第六条の十四・第六条の十四の二", checked: "2026-11-16" },
-    { path: "RULES.bonus.kimatsuMonths / kinbenMonths / kimatsuPer / split", law: "ippanKyuyo", where: "第十九条の四・第十九条の七（令和8年法律第79号の改正後。令和9年度からの割合は同法第2条）", checked: "2026-11-22", how: "令和8年度の割合は e-Gov（2026-11-18 施行版）で照合。令和9年度からは官報 令和8年11月18日 号外第251号で確認（e-Gov 未掲載）" },
-    { path: "RULES.bonus.kinbenStandard / split.kinbenStandard / kinbenPeriod", law: "jinjiin9_40", where: "第十三条・別表第二（人事院規則9-40-66 の改正後）", checked: "2026-11-22", how: "官報 令和8年11月18日 号外第251号の新旧対照表で確認。e-Gov 未掲載（6月の割合は改正前の e-Gov 本文とも一致）" },
+    {
+      path: "RULES.bonus.kimatsuMonths / kinbenMonths / kimatsuPer / split",
+      law: "ippanKyuyo",
+      where: "第十九条の四・第十九条の七（令和8年法律第79号の改正後。令和9年度からの割合は同法第2条）",
+      checked: "2026-11-22",
+      how: "令和8年度の割合は e-Gov（2026-11-18 施行版）で照合。令和9年度からは官報 令和8年11月18日 号外第251号で確認（e-Gov 未掲載）",
+    },
+    {
+      path: "RULES.bonus.kinbenStandard / split.kinbenStandard / kinbenPeriod",
+      law: "jinjiin9_40",
+      where: "第十三条・別表第二（人事院規則9-40-66 の改正後）",
+      checked: "2026-11-22",
+      how: "官報 令和8年11月18日 号外第251号の新旧対照表で確認。e-Gov 未掲載（6月の割合は改正前の e-Gov 本文とも一致）",
+    },
     { path: "RULES.bonus.rankAdd / managerAdd", law: "boeiKyuyoRei", where: "別表第八・第十二条の六", checked: "2026-11-16" },
     { path: "RULES.allowances.eigai", law: "boeiKyuyo", where: "第十八条第二項（令和8年法律第89号で八千二百円）", checked: "2026-11-22" },
     { path: "RULES.allowances.barracksBonus", law: "boeiKyuyo", where: "第二十六条の二（額は施行令）", checked: "2026-11-16" },
@@ -214,7 +251,12 @@ window.SOURCES = {
     { path: "RULES.allowances.manualGroups / branchOnly / defaultAmount", law: "boeiKyuyoRei", where: "別表第五", checked: "2026-11-16" },
     { path: "RULES.allowances.regionalAreas / regionalTransition", law: "jinjiin9_49", where: "別表第一・九―四九―五七 附則別表第一", checked: "2026-11-16" },
     { path: "RULES.allowances.wideRates", law: "ippanKyuyo", where: "第十一条の八第一項（令和8年法律第79号の改正後の8％・16％）", checked: "2026-11-16" },
-    { path: "RULES.allowances.calcRates", law: "ippanKyuyo", where: "第十一条・第十一条の十・第十二条・第十二条の二（寒冷地は寒冷地手当法第二条）", checked: "2026-11-16" },
+    {
+      path: "RULES.allowances.calcRates",
+      law: "ippanKyuyo",
+      where: "第十一条・第十一条の十・第十二条・第十二条の二（寒冷地は寒冷地手当法第二条）",
+      checked: "2026-11-16",
+    },
     { path: "RULES.retirement", law: "taishoku", where: "第三条〜第六条の五・附則（83.7％）", checked: "2026-11-16" },
     { path: "RULES.entry", law: "jieitai", where: "第三十六条（任期）・防衛省給与法第二十八条（任期満了金）", checked: "2026-11-16" },
     { path: "RULES.youngPension", law: "boeiKyuyo", where: "第二十七条の二〜・施行令第二十二条〜第二十四条", checked: "2026-11-16" },
@@ -223,39 +265,93 @@ window.SOURCES = {
     { path: "RULES.tax", law: "shotoku", where: "所得税法・租税特別措置法・地方税法", checked: "2026-11-16" },
     { path: "RULES.tax（措置法の特例）", law: "sozei", where: "給与所得控除の最低額の特例・基礎控除の上乗せ・復興特別所得税以外の特例", checked: "2026-11-16" },
     { path: "RULES.tax.resident", law: "chihozei", where: "個人住民税（所得割・均等割・控除）", checked: "2026-11-16" },
-    { path: "RULES.allowances.specialRates", law: "boeiKyuyoRei", where: "別表第五（特殊勤務手当）・附則第三項（小笠原手当）・第十二条の三（航海手当の南極）・第十一条の二（管理職員特別勤務手当）", checked: "2026-11-17", how: "node tools/egov-check.js values で区分の並びと額・月の上限を照合" },
-    { path: "RULES.allowances.rankRates", law: "boeiKyuyoRei", where: "別表第四の二（本府省業務調整手当）・別表第七（航海手当）", checked: "2026-11-17", how: "node tools/egov-check.js values で表の行ごとに照合" },
+    {
+      path: "RULES.allowances.specialRates",
+      law: "boeiKyuyoRei",
+      where: "別表第五（特殊勤務手当）・附則第三項（小笠原手当）・第十二条の三（航海手当の南極）・第十一条の二（管理職員特別勤務手当）",
+      checked: "2026-11-17",
+      how: "node tools/egov-check.js values で区分の並びと額・月の上限を照合",
+    },
+    {
+      path: "RULES.allowances.rankRates",
+      law: "boeiKyuyoRei",
+      where: "別表第四の二（本府省業務調整手当）・別表第七（航海手当）",
+      checked: "2026-11-17",
+      how: "node tools/egov-check.js values で表の行ごとに照合",
+    },
     { path: "RULES.allowances.calcRates.commute", law: "jinjiin9_24", where: "第八条の二（自動車等の距離の区分と額）", checked: "2026-11-17" },
-    { path: "RULES.allowances.calcRates.tanshin", law: "jinjiin9_89", where: "第四条（交通距離の区分と加算額）。加算は令和8年法律第79号第2条で令和9年4月1日に廃止（addUntilFy）", checked: "2026-11-22" },
-    { path: "RULES.allowances.calcRates.tenkyo", law: "ippanKyuyo", where: "第十二条の三（令和8年法律第79号第2条で新設。令和9年4月1日施行）第二項の上限", checked: "2026-11-22", how: "官報 令和8年11月18日 号外第251号で確認（e-Gov 未掲載）" },
+    {
+      path: "RULES.allowances.calcRates.tanshin",
+      law: "jinjiin9_89",
+      where: "第四条（交通距離の区分と加算額）。加算は令和8年法律第79号第2条で令和9年4月1日に廃止（addUntilFy）",
+      checked: "2026-11-22",
+    },
+    {
+      path: "RULES.allowances.calcRates.tenkyo",
+      law: "ippanKyuyo",
+      where: "第十二条の三（令和8年法律第79号第2条で新設。令和9年4月1日施行）第二項の上限",
+      checked: "2026-11-22",
+      how: "官報 令和8年11月18日 号外第251号で確認（e-Gov 未掲載）",
+    },
     { path: "RULES.allowances.calcRates.kanreichi", law: "kanreichi", where: "第二条（級地と世帯等の区分ごとの額）", checked: "2026-11-17" },
     { path: "RULES.allowances.calcRates.kanreichi.barracksRates", law: "kanreichiBoei", where: "第四条（営内者等の額）", checked: "2026-11-22" },
-    { path: "RULES.allowances.calcRates.kanreichi.bases", law: "jieitaiRei", where: "別表第七・別表第八・別表第二の二・別表第三（駐屯地・基地の位置）と、寒冷地手当法 別表（級地）・寒冷地手当支給規則 別表（高田駐屯地）", checked: "2026-11-22", how: "node tools/egov-check.js values で照合。北海道の振興局の管内（上富良野町・別海町）は北海道庁の振興局の一覧で確認" },
-    { path: "RULES.retirement.adjustMonthly（職員の区分）", law: "taishokuRei", where: "第六条の三ほか（自衛官の階級ごとの調整月額の区分）。区分の当てはめは目で確認、額は法第六条の四で照合", checked: "2026-11-17" },
+    {
+      path: "RULES.allowances.calcRates.kanreichi.bases",
+      law: "jieitaiRei",
+      where: "別表第七・別表第八・別表第二の二・別表第三（駐屯地・基地の位置）と、寒冷地手当法 別表（級地）・寒冷地手当支給規則 別表（高田駐屯地）",
+      checked: "2026-11-22",
+      how: "node tools/egov-check.js values で照合。北海道の振興局の管内（上富良野町・別海町）は北海道庁の振興局の一覧で確認",
+    },
+    {
+      path: "RULES.retirement.adjustMonthly（職員の区分）",
+      law: "taishokuRei",
+      where: "第六条の三ほか（自衛官の階級ごとの調整月額の区分）。区分の当てはめは目で確認、額は法第六条の四で照合",
+      checked: "2026-11-17",
+    },
     { path: "RULES.kyosai.pensionCaps", law: "kosei", where: "第二十条（標準報酬月額の等級）・附則（上限の引上げ）", checked: "2026-11-16" },
     { path: "RULES.afterRetire.hireiRate", law: "kosei", where: "第四十三条（報酬比例の年金額の乗率 千分の五・四八一）", checked: "2026-11-16" },
-    { path: "RULES.entry.koka（退職手当の通算）", law: "boeiKyuyo", where: "第二十八条の二第四項（生徒の在職期間の2分の1を通算）", checked: "2026-11-22", how: "node tools/egov-check.js values で照合。号俸・3曹昇任までの期間は公式Q&A とサイトの前提（tools/value-checks.js の manual）" },
-    { path: "RULES.youngPension.civilRetireAge", law: "kokkoKomuin", where: "附則（定年の段階的な引上げ：令和5年度60歳→令和13年度65歳）", checked: "2026-11-16" },
-    { path: "RULES.youngPension.transition", law: "boeiKyuyo", where: "令和8年法律第53号 附則第三条（令和8年4月〜令和9年3月に退職した人の倍率）", checked: "2026-11-17", how: "node tools/egov-check.js values で照合" },
+    {
+      path: "RULES.entry.koka（退職手当の通算）",
+      law: "boeiKyuyo",
+      where: "第二十八条の二第四項（生徒の在職期間の2分の1を通算）",
+      checked: "2026-11-22",
+      how: "node tools/egov-check.js values で照合。号俸・3曹昇任までの期間は公式Q&A とサイトの前提（tools/value-checks.js の manual）",
+    },
+    {
+      path: "RULES.youngPension.civilRetireAge",
+      law: "kokkoKomuin",
+      where: "附則（定年の段階的な引上げ：令和5年度60歳→令和13年度65歳）",
+      checked: "2026-11-16",
+    },
+    {
+      path: "RULES.youngPension.transition",
+      law: "boeiKyuyo",
+      where: "令和8年法律第53号 附則第三条（令和8年4月〜令和9年3月に退職した人の倍率）",
+      checked: "2026-11-17",
+      how: "node tools/egov-check.js values で照合",
+    },
   ],
 
   // 出ているが、まだ法令になっていないもの（成立・公布したら data に入れる）
   pending: [
     {
       what: "地域手当の令和9年度（2027年度）の支給割合（経過措置の表。allowances.regionalTransition.byFy に 2027 がまだない。令和9年4月1日までに足さないと test/check.js が NG になる）",
-      status: "人事院 令和8年勧告「本年の給与勧告のポイント」に「地域手当の支給割合について、令和9年度の支給割合を設定」とある。人事院規則（9-49-57 の附則別表の改正）の公布を待つ。2026-11-22 時点で、官報 令和8年11月18日 号外第251号・11月20日 号外第253号には載っていない",
+      status:
+        "人事院 令和8年勧告「本年の給与勧告のポイント」に「地域手当の支給割合について、令和9年度の支給割合を設定」とある。人事院規則（9-49-57 の附則別表の改正）の公布を待つ。2026-11-22 時点で、官報 令和8年11月18日 号外第251号・11月20日 号外第253号には載っていない",
       url: "https://www.jinji.go.jp/content/000017812.pdf",
       checked: "2026-11-22",
     },
     {
       what: "転居手当の往来距離の区分ごとの月額（令和9年4月1日新設。一般職給与法第12条の3、自衛官は防衛省給与法第14条）と、単身赴任手当の加算の廃止に伴う人事院規則9-89 の改正",
-      status: "法律（令和8年法律第79号第2条・令和8年法律第89号第2条）は公布済みで、上限（月43,000円、単身赴任手当を受ける人は105,000円）と加算の廃止は calcRates.tenkyo・calcRates.tanshin.addUntilFy に入れた。区分ごとの額を決める人事院規則は 2026-11-22 時点で未公布。公布されたら転居手当を「条件から計算」に変える",
+      status:
+        "法律（令和8年法律第79号第2条・令和8年法律第89号第2条）は公布済みで、上限（月43,000円、単身赴任手当を受ける人は105,000円）と加算の廃止は calcRates.tenkyo・calcRates.tanshin.addUntilFy に入れた。区分ごとの額を決める人事院規則は 2026-11-22 時点で未公布。公布されたら転居手当を「条件から計算」に変える",
       url: "https://www.kanpo.go.jp/20261118/20261118.fullcontents.html",
       checked: "2026-11-22",
     },
     {
       what: "人事院規則9-40-66（勤勉手当の成績率。令和8年11月18日公布）の e-Gov への掲載",
-      status: "官報 令和8年11月18日 号外第251号の本文で bonus.split（令和8年度 6月・12月）と bonus.kinbenStandard（令和9年度から）を入れた。e-Gov の人事院規則9-40 は 2026-11-22 時点で改正前（2026-02-13 公布の版）。載ったら node tools/egov-check.js values で照合し直す（照合は改正前・令和8年度・令和9年度のどの形でもできるように書いてある）",
+      status:
+        "官報 令和8年11月18日 号外第251号の本文で bonus.split（令和8年度 6月・12月）と bonus.kinbenStandard（令和9年度から）を入れた。e-Gov の人事院規則9-40 は 2026-11-22 時点で改正前（2026-02-13 公布の版）。載ったら node tools/egov-check.js values で照合し直す（照合は改正前・令和8年度・令和9年度のどの形でもできるように書いてある）",
       url: "https://www.kanpo.go.jp/20261118/20261118.fullcontents.html",
       checked: "2026-11-22",
     },

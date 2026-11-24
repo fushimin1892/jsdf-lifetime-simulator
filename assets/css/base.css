@@ -1050,8 +1050,10 @@ summary {
 }
 main.layout > section.card:hover {
   transform: none;
-  border-color: rgba(113, 120, 92,.17);
-  box-shadow: 0 18px 44px rgba(45, 53, 26,.075), 0 2px 5px rgba(45, 53, 26,.04);
+  border-color: rgba(113, 120, 92, 0.17);
+  box-shadow:
+    0 18px 44px rgba(45, 53, 26, 0.075),
+    0 2px 5px rgba(45, 53, 26, 0.04);
 }
 @media (prefers-reduced-motion: reduce) {
   .scroll {

@@ -21,7 +21,9 @@ body:has(#simulatorDialog[open]) {
   overflow: hidden;
   overscroll-behavior: none;
 }
-#simulatorDialog { overscroll-behavior: contain; }
+#simulatorDialog {
+  overscroll-behavior: contain;
+}
 
 /* simulator-ui-polish */
 /* 数値入力と単位を別々のグリッド列にして、スピナーが単位に重ならないようにする */
@@ -31,7 +33,10 @@ body:has(#simulatorDialog[open]) {
   grid-template-columns: minmax(0, 1fr) max-content;
   align-items: stretch;
   border-radius: 11px;
-  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 .unit input {
   box-sizing: border-box;
@@ -53,10 +58,16 @@ body:has(#simulatorDialog[open]) {
 .unit:focus-within {
   outline: 0;
   border-color: #828b68;
-  box-shadow: 0 0 0 4px rgba(106, 118, 73, .13), 0 5px 14px rgba(59, 68, 32, .07);
+  box-shadow:
+    0 0 0 4px rgba(106, 118, 73, 0.13),
+    0 5px 14px rgba(59, 68, 32, 0.07);
 }
-.unit input:focus { box-shadow: none !important; }
-.sim-grid > div { min-width: 0; }
+.unit input:focus {
+  box-shadow: none !important;
+}
+.sim-grid > div {
+  min-width: 0;
+}
 .note-link {
   display: inline;
   margin-top: 4px;
@@ -67,27 +78,42 @@ body:has(#simulatorDialog[open]) {
   text-decoration: underline;
   text-decoration-color: #c4c8b9;
   text-underline-offset: 3px;
-  transition: color .18s ease, text-decoration-color .18s ease;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
 }
 .note-link:hover {
   color: #3b4420;
   text-decoration-color: #6c7456;
 }
 #simulatorDialog[open] {
-  animation: simulator-dialog-in .24s cubic-bezier(.2,.75,.25,1) both;
+  animation: simulator-dialog-in 0.24s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 #simulatorDialog[open]::backdrop {
-  animation: simulator-backdrop-in .22s ease-out both;
+  animation: simulator-backdrop-in 0.22s ease-out both;
 }
 @keyframes simulator-dialog-in {
-  from { opacity: 0; transform: translateY(9px) scale(.992); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(9px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes simulator-backdrop-in {
   /* 後ろはぼかさない（全画面のぼかしは、中をスクロールするたびにかけ直しになり重い） */
-  from { background: rgba(27, 30, 23, 0); }
-  to { background: rgba(27, 30, 23, .66); }
+  from {
+    background: rgba(27, 30, 23, 0);
+  }
+  to {
+    background: rgba(27, 30, 23, 0.66);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  #simulatorDialog[open], #simulatorDialog[open]::backdrop { animation: none; }
+  #simulatorDialog[open],
+  #simulatorDialog[open]::backdrop {
+    animation: none;
+  }
 }
