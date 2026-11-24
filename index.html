@@ -52,10 +52,10 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261124-10" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-10" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261124-10" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261124-10" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261124-11" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-11" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261124-11" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261124-11" />
   </head>
   <body>
     <i class="c-scroll-progress" aria-hidden="true"></i>
@@ -271,6 +271,17 @@
                 <input id="retireAge" type="number" value="56" readonly tabindex="-1" /><span>歳</span>
               </div>
             </div>
+            <div>
+              <label for="retireSpecial">定年の特例</label
+              ><select id="retireSpecial" aria-describedby="retireSpecialNote">
+                <option value="none" selected>なし（階級の定年）</option>
+                <option value="chief">統合幕僚長・陸海空幕僚長・統合作戦司令官（将。62歳）</option>
+                <option value="expert">医官などの医療職・軍楽・情報の調査・警務官（1佐以下。60歳）</option>
+              </select>
+              <small id="retireSpecialNote" class="c-field-note"
+                >自衛隊法施行令 別表第九の備考の定年です。予想する将来の階級が対象でないとき（幕僚長などは将以外、医療職などは将補・将）は、階級の定年のままです</small
+              >
+            </div>
             <div data-enlisted>
               <label for="initialGrade">入隊時の2士の号俸</label>
               <div class="c-unit-input">
@@ -476,6 +487,23 @@
             <h4 class="c-allowance-panel__subtitle">所属の主な手当（配置手当）</h4>
             <!-- 所属に応じた配置手当の選択欄（スクリプトが所属ごとに作る） -->
             <div class="c-allowance-panel__auto" id="branchAllowances"></div>
+            <div class="c-simulator__grid">
+              <div>
+                <label for="placementFrom">配置手当の支給開始（入隊から何年後）</label>
+                <div class="c-unit-input">
+                  <input id="placementFrom" type="number" min="0" max="50" step="0.5" placeholder="入隊から" data-optional="1" aria-describedby="placementNote" /><span>年後</span>
+                </div>
+              </div>
+              <div>
+                <label for="placementTo">配置手当の支給終了（入隊から何年後）</label>
+                <div class="c-unit-input">
+                  <input id="placementTo" type="number" min="0.5" max="50" step="0.5" placeholder="定年まで" data-optional="1" aria-describedby="placementNote" /><span>年後</span>
+                </div>
+                <small id="placementNote" class="c-field-note"
+                  >上で選んだ配置手当を受ける期間です。空欄なら入隊から定年まで（教育期間を除く）。異動で配置が変わる場合は、配置手当を選ばずに「ほかの手当を追加する」で期間ごとに入れることもできます</small
+                >
+              </div>
+            </div>
             <!-- 教育を受けている期間は部隊に配置されていないので、配置手当（乗組手当など）を支給しない -->
             <div class="c-allowance-panel__auto">
               <div data-enlisted>
@@ -742,6 +770,32 @@
               >
             </div>
             <div>
+              <label for="incomeAvg">退職の翌年から59歳までの年収の平均（追給の確認）</label>
+              <div class="c-unit-input">
+                <input id="incomeAvg" type="number" min="0" max="5000" step="any" placeholder="使わない" data-optional="1" aria-describedby="incomeAvgNote" /><span>万円</span>
+              </div>
+              <small id="incomeAvgNote" class="c-field-note"
+                >令和10年3月までに退職した人だけ。各年の所得金額（給与収入に直した額）の平均が退職の翌年より低いと、申し出により差額が追給されます（給与法第27条の7）。空欄なら追給を計算しません</small
+              >
+            </div>
+            <div>
+              <label for="prevServiceYears">以前に自衛官だった年数（いったん退職して再び採用された場合）</label>
+              <div class="c-unit-input">
+                <input id="prevServiceYears" type="number" min="0" max="40" step="0.5" value="0" aria-describedby="prevServiceNote" /><span>年</span>
+              </div>
+              <small id="prevServiceNote" class="c-field-note"
+                >若年定年退職者給付金の「自衛官としての在職期間20年以上」に通算します（給与法第27条の2第2項。令和8年4月以後の退職）。退職手当の勤続期間には含めません</small
+              >
+            </div>
+            <div>
+              <label for="publicReemploy">退職の翌日までに常勤の国家・地方公務員になる</label
+              ><select id="publicReemploy" aria-describedby="publicReemployNote">
+                <option value="no" selected>ならない</option>
+                <option value="yes">なる</option>
+              </select>
+              <small id="publicReemployNote" class="c-field-note">なる場合、若年定年退職者給付金は支給されません（給与法第27条の2第1項ただし書。任期付き・非常勤・一時的な任用は除く）</small>
+            </div>
+            <div>
               <label for="afterPension">退職後〜60歳の年金</label
               ><select id="afterPension" aria-describedby="afterPensionNote">
                 <option value="employee" selected>再就職して厚生年金に入る</option>
@@ -757,10 +811,44 @@
               ><select id="afterHealth" aria-describedby="afterHealthNote">
                 <option value="none" selected>再就職先・扶養（0円）</option>
                 <option value="nini">共済の任意継続（最長2年）</option>
-                <option value="kokuho">国民健康保険</option>
+                <option value="kokuho">国民健康保険（保険料の年額を入力）</option>
+                <option value="kokuhoCalc">国民健康保険（市区町村の料率から計算）</option>
               </select>
               <small id="afterHealthNote" class="c-field-note"
-                >再就職先の健康保険や家族の扶養に入るときは、保険料の負担なしとして計算します。任意継続や国民健康保険の保険料は、住んでいる市区町村や共済組合の案内で確かめて、下の欄に入れてください</small
+                >再就職先の健康保険や家族の扶養に入るときは、保険料の負担なしとして計算します。任意継続の保険料は共済組合の案内で確かめて、下の欄に入れてください。国民健康保険は、年額を入れるか、市区町村の料率を入れて前年の所得から計算できます</small
+              >
+            </div>
+            <div data-kokuho hidden>
+              <label for="kokuhoRate">国民健康保険料の所得割（医療・支援金・介護・子ども分の合計）</label>
+              <div class="c-unit-input">
+                <input id="kokuhoRate" type="number" min="0" max="30" step="0.01" value="0" aria-describedby="kokuhoNote" /><span>％</span>
+              </div>
+            </div>
+            <div data-kokuho hidden>
+              <label for="kokuhoPerCapita">均等割（1人あたり・合計）</label>
+              <div class="c-unit-input">
+                <input id="kokuhoPerCapita" type="number" min="0" max="300000" step="1" value="0" aria-describedby="kokuhoNote" /><span>円</span>
+              </div>
+            </div>
+            <div data-kokuho hidden>
+              <label for="kokuhoHousehold">平等割（1世帯あたり・合計）</label>
+              <div class="c-unit-input">
+                <input id="kokuhoHousehold" type="number" min="0" max="300000" step="1" value="0" aria-describedby="kokuhoNote" /><span>円</span>
+              </div>
+            </div>
+            <div data-kokuho hidden>
+              <label for="kokuhoMembers">国民健康保険に入る人数</label>
+              <div class="c-unit-input">
+                <input id="kokuhoMembers" type="number" min="1" max="10" step="1" value="1" aria-describedby="kokuhoNote" /><span>人</span>
+              </div>
+            </div>
+            <div data-kokuho hidden>
+              <label for="kokuhoCap">保険料の上限（年額・合計）</label>
+              <div class="c-unit-input">
+                <input id="kokuhoCap" type="number" min="0" max="2000000" step="1" value="1130000" aria-describedby="kokuhoNote" /><span>円</span>
+              </div>
+              <small id="kokuhoNote" class="c-field-note"
+                >料率は市区町村ごとに違うので、住んでいる市区町村の案内の値を入れてください（介護分は40〜64歳だけ）。所得割は「前年の総所得金額等−43万円」に掛けます。退職した年の翌年は在職中の給与、それ以後は再就職の給与・事業所得と給付金の一時所得を前年の所得とします。退職手当と給付金の1回目（退職所得）は含めません。軽減・減免（非自発的失業の軽減など）は含めません。限度額の初期値は令和8年度の国の基準の合計113万円（基礎67万円・後期高齢者支援金26万円・介護17万円・子ども・子育て支援3万円。40歳未満・65歳以上は介護分がないので96万円）です。均等割・平等割・所得割も、子ども・子育て支援分を含めた合計を入れてください</small
               >
             </div>
             <div>
@@ -778,7 +866,7 @@
             </div>
           </div>
           <p class="c-note" data-note-title="試算の前提（昇任・賞与・定年）">
-            未選択・不明の手当は試算に含まれません。初期条件は試算用です。2士として入隊し、1士・士長を経て3曹へ昇任します（初期値は入隊6か月で1士、1年で士長）。予想階級までの昇任を、入力した年数どおりに順番に行う仮定で計算します。3尉以上を選んだ場合は部内幹部へ昇任するものとし、初期値では3曹昇任から4年後（部内幹部候補生の受験資格である3曹昇任後4年。最後の8か月は幹部候補生学校の教育期間）に3尉へ昇任し、2尉へは3尉昇任から2年（固定）で昇任します。昇任までの期間はすべて選べます。選択肢は昇任の機会（年1回、3曹は年2回、部内幹部候補生の試験は年1回）の間隔で、いちばん短い選択肢は自衛隊法施行規則 別表第七の在職期間です（勤務成績が極めて良好な場合に認められる8割への短縮は含みません。1士から士長までは、採用後約1年で士長になる実際の運用に合わせて6か月からとしています）。昇任までの年数・賞与4.7か月分の初期値は試算用の目安で、実際の昇任時期や選考結果を示すものではありません。定年までに予想階級へ届かない場合は、届いた階級までで計算します。定年年齢は2024年10月以降のもので、2028年度以降に予定されている引き上げは含みません。
+            未選択・不明の手当は試算に含まれません。初期条件は試算用です。2士として入隊し、1士・士長を経て3曹へ昇任します（初期値は入隊6か月で1士、1年で士長）。予想階級までの昇任を、入力した年数どおりに順番に行う仮定で計算します。3尉以上を選んだ場合は部内幹部へ昇任するものとし、初期値では3曹昇任から4年後（部内幹部候補生の受験資格である3曹昇任後4年。最後の8か月は幹部候補生学校の教育期間）に3尉へ昇任し、2尉へは3尉昇任から2年（固定）で昇任します。昇任までの期間はすべて選べます。選択肢は昇任の機会（年1回、3曹は年2回、部内幹部候補生の試験は年1回）の間隔で、いちばん短い選択肢は自衛隊法施行規則 別表第七の在職期間です（勤務成績が極めて良好な場合に認められる8割への短縮は含みません。1士から士長までは、採用後約1年で士長になる実際の運用に合わせて6か月からとしています）。昇任までの年数・賞与4.7か月分の初期値は試算用の目安で、実際の昇任時期や選考結果を示すものではありません。定年までに予想階級へ届かない場合は、届いた階級までで計算します。定年年齢は2024年10月以降のもので（特例は「定年の特例」で選べます）、2028年度以降の引き上げはまだ政令がないため含みません。
           </p>
           <div id="simError" class="c-simulator__error" role="alert"></div>
           <section id="simResult" hidden aria-live="polite" aria-label="試算の結果">
@@ -942,7 +1030,7 @@
                     対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
                   </p>
                   <ul>
-                    <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした。航海手当を陸・空でも選べるようにし（給与法第17条）、指定場所生活調整金を一般曹候補生・任期制だけにした（同法第26条の2）</li>
+                    <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした。航海手当を陸・空でも選べるようにし（給与法第17条）、指定場所生活調整金を一般曹候補生・任期制だけにした（同法第26条の2）。定年の特例、配置手当を受ける期間、給付金の追給・以前の自衛官の期間の通算・公務員になる場合、国民健康保険料の料率からの計算を追加</li>
                     <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
                     <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
                     <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
@@ -986,9 +1074,9 @@
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261124-10"></script>
-    <script src="assets/data/promotion-table.js?v=20261124-10"></script>
-    <script src="assets/js/pay-lookup.js?v=20261124-10"></script>
+    <script src="assets/data/pay-table.js?v=20261124-11"></script>
+    <script src="assets/data/promotion-table.js?v=20261124-11"></script>
+    <script src="assets/js/pay-lookup.js?v=20261124-11"></script>
     <button
       class="c-sim-launch"
       id="simLaunch"
@@ -999,11 +1087,11 @@
       <span class="c-sim-launch__icon" aria-hidden="true">↗</span
       ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261124-10"></script>
-    <script src="assets/js/regional-rate.js?v=20261124-10"></script>
-    <script src="assets/js/allowances.js?v=20261124-10"></script>
-    <script src="assets/js/simulator.js?v=20261124-10"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261124-10"></script>
+    <script src="assets/data/rules.js?v=20261124-11"></script>
+    <script src="assets/js/regional-rate.js?v=20261124-11"></script>
+    <script src="assets/js/allowances.js?v=20261124-11"></script>
+    <script src="assets/js/simulator.js?v=20261124-11"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261124-11"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <header class="c-notes__head">
@@ -1012,11 +1100,11 @@
       </header>
       <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261124-10"></script>
-    <script src="assets/js/effects.js?v=20261124-10"></script>
-    <script src="assets/js/crystals-core.js?v=20261124-10"></script>
-    <script src="assets/js/crystals.js?v=20261124-10"></script>
-    <script src="assets/js/scroll-lock.js?v=20261124-10"></script>
-    <script src="assets/js/print.js?v=20261124-10"></script>
+    <script src="assets/js/notes-page.js?v=20261124-11"></script>
+    <script src="assets/js/effects.js?v=20261124-11"></script>
+    <script src="assets/js/crystals-core.js?v=20261124-11"></script>
+    <script src="assets/js/crystals.js?v=20261124-11"></script>
+    <script src="assets/js/scroll-lock.js?v=20261124-11"></script>
+    <script src="assets/js/print.js?v=20261124-11"></script>
   </body>
 </html>

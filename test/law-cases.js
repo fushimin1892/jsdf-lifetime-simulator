@@ -318,6 +318,135 @@ const check = (cond, msg) => {
   check(yenOf(misc.sotsu[1]) - yenOf(misc.sotsu[0]) === 600000, `一般曹候補生の指定場所生活調整金 3年：差 ${yenOf(misc.sotsu[1]) - yenOf(misc.sotsu[0])}（期待 600,000）`);
   check(misc.kanko[0] === misc.kanko[1], `幹部候補生では指定場所生活調整金を加えない ${misc.kanko.join(" / ")}`);
 
+  // ---- 8. 定年の特例・配置手当の期間・追給・通算・公務員・国民健康保険料 ----
+  const extra = await page.evaluate(async () => {
+    const g = (id) => document.getElementById(id),
+      set = (id, v) => {
+        g(id).value = String(v);
+        g(id).dispatchEvent(new Event("change", { bubbles: true }));
+      },
+      go = () => {
+        g("simLaunch").click();
+        return {
+          sticky: g("stickyRank").textContent,
+          total: Number(g("totalIncome").textContent.replace(/[^0-9]/g, "")),
+          yp: g("youngPension").textContent,
+          err: g("simError").textContent,
+          rows: [...document.querySelectorAll("#retireRows tr")].map((tr) => [...tr.cells].map((c) => c.textContent.trim())),
+        };
+      };
+    const out = {};
+    set("entryType", "sotsu");
+    set("branch", "ground");
+    set("entryYear", 2026);
+    set("entryMonth", 4);
+    set("startAge", 18);
+    set("barracksYears", 0);
+    // 定年の特例：将で幕僚長など → 62歳、1曹で医療職など → 60歳
+    set("targetRank", "将");
+    set("retireSpecial", "chief");
+    out.chief = go().sticky;
+    set("targetRank", "1曹");
+    set("retireSpecial", "expert");
+    out.expert = go().sticky;
+    set("retireSpecial", "none");
+    // 配置手当の期間：海上で乗組手当を選び、全期間／入隊5〜10年後
+    set("branch", "maritime");
+    const sel = g("ba-maritime-crew");
+    const none = go().total;
+    sel.value = "43";
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    const full = go().total;
+    set("placementFrom", 5);
+    set("placementTo", 10);
+    const part = go().total;
+    set("placementTo", 4);
+    out.placementErr = go().err;
+    g("placementFrom").value = "";
+    g("placementTo").value = "";
+    sel.value = "none";
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    set("branch", "ground");
+    out.placement = { none, full, part };
+    // 通算：40歳入隊は1曹に届かず2曹の55歳定年（15年）で対象外。以前の自衛官の期間6年を足すと21年で対象
+    set("startAge", 40);
+    out.short = go().yp;
+    set("prevServiceYears", 6);
+    out.tsusan = go().yp;
+    // 公務員になる → 対象外
+    set("publicReemploy", "yes");
+    const pub = go();
+    out.publicYp = pub.yp;
+    out.publicNote = pub.rows.find((r) => r[0] === "若年定年退職者給付金")?.[2] || "";
+    set("publicReemploy", "no");
+    set("prevServiceYears", 0);
+    set("startAge", 18);
+    // 国民健康保険料：所得割10％・均等割5万円・平等割3万円・1人・上限113万円、2年分、再就職の給与300万円
+    set("reemployIncome", 300);
+    set("afterHealth", "kokuhoCalc");
+    set("kokuhoRate", 10);
+    set("kokuhoPerCapita", 50000);
+    set("kokuhoHousehold", 30000);
+    set("kokuhoMembers", 1);
+    set("kokuhoCap", 1130000);
+    set("afterHealthYears", 2);
+    const k = go();
+    out.kokuho = k.rows.find((r) => r[0] === "退職後の健康保険料") || null;
+    out.kokuhoHidden = g("afterHealthYen").closest(".c-unit-input").parentElement.hidden;
+    set("afterHealth", "none");
+    set("reemployIncome", 0);
+    return out;
+  });
+  check(/62歳で定年/.test(extra.chief), `定年の特例（幕僚長など）：${extra.chief}`);
+  check(/60歳で定年/.test(extra.expert), `定年の特例（医療職など・1曹）：${extra.expert}`);
+  check(extra.placement.full > extra.placement.part && extra.placement.part > extra.placement.none, `配置手当の期間：なし ${extra.placement.none} < 5〜10年 ${extra.placement.part} < 全期間 ${extra.placement.full}`);
+  check(/支給終了/.test(extra.placementErr), `配置手当の期間の入力の誤り：${extra.placementErr}`);
+  check(extra.short === "対象外" && extra.tsusan !== "対象外", `通算：16年 ${extra.short}、以前の6年を通算 ${extra.tsusan}`);
+  check(extra.publicYp === "対象外" && /公務員/.test(extra.publicNote), `公務員になる：${extra.publicYp}（${extra.publicNote}）`);
+  // 国民健康保険料の2年目：前年（退職の翌年）の所得＝給与所得（別表第五）、保険料＝（所得−43万円）×10％＋5万円＋3万円
+  {
+    const m = extra.kokuho?.[2].match(/(\d{4})年度 ([\d,]+)円（前年の所得 ([\d,]+)円）.*?(\d{4})年度 ([\d,]+)円（前年の所得 ([\d,]+)円）/);
+    const y2 = m ? Number(m[4]) : 0,
+      inc2 = expSalaryIncome(3000000, y2 - 1),
+      exp2 = Math.floor((inc2 - 430000) * 0.1) + 80000;
+    check(m && Number(m[6].replace(/,/g, "")) === inc2 && Number(m[5].replace(/,/g, "")) === exp2, `国民健康保険料の2年目：${extra.kokuho?.[2]}（期待 所得 ${inc2}・保険料 ${exp2}）`);
+    check(extra.kokuhoHidden, "料率から計算するときは年額の欄を隠す");
+  }
+  // 追給（第27条の7）：令和9年4月退職、退職の翌年の年収が下限と上限の間、平均が下限以下 → 2回目の満額との差を追給
+  {
+    const s = scenarios[2];
+    const b0 = await run({ ...s, income: 0 }),
+      Pc = b0.P,
+      G = Pc * 12 + Math.floor(Pc + Pc * 0.05) * 2.55 + Math.floor(Pc * 1.05) * 2.125,
+      L = G - Pc * s.lower,
+      U = G - Pc * s.upper,
+      I = Math.round((L + U) / 2 / 10000) * 10000,
+      full2 = b0.pays[1].amount,
+      got2 = Math.floor((full2 * (U - I)) / (U - L));
+    const t = await page.evaluate(
+      async ([s, I, avg]) => {
+        const g = (id) => document.getElementById(id),
+          set = (id, v) => {
+            g(id).value = String(v);
+            g(id).dispatchEvent(new Event("change", { bubbles: true }));
+          };
+        set("targetRank", "1曹");
+        set("startAge", s.startAge);
+        set("entryYear", s.entryYear);
+        set("entryMonth", s.entryMonth);
+        set("reemployIncome", I / 10000);
+        set("incomeAvg", avg / 10000);
+        g("simLaunch").click();
+        const rows = [...document.querySelectorAll("#retireRows tr")].map((tr) => [...tr.cells].map((c) => c.textContent.trim()));
+        g("incomeAvg").value = "";
+        set("reemployIncome", 0);
+        return rows.find((r) => r[0].includes("追給"))?.[1] || null;
+      },
+      [s, I, Math.max(0, Math.floor((L - 100000) / 10000) * 10000)],
+    );
+    check(t && Number(t.replace(/[^0-9]/g, "")) === full2 - got2, `追給：${t}（期待 ${full2 - got2}＝2回目の満額 ${full2}−年収${I}円のときの2回目 ${got2}）`);
+  }
+
   for (const e of errors) check(false, "ページのエラー: " + e);
   await browser.close();
   server.close();

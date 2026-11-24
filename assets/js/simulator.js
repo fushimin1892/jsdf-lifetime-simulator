@@ -654,6 +654,21 @@
           pay("1回目", a1, firstPayYm(last.ym), "retire", "after", { full: f });
           pay("2回目", a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { full: s });
         }
+        // 追給（第27条の7。前期分は附則第14項で「年齢六十年」に読み替え）：退職の翌年の所得が下限を超え、退職の翌年から
+        // 60歳になる年の前年までの年数が2年以上で、その間の所得金額の平均が退職の翌年の所得より低く、給与年額相当額未満なら、
+        // 平均を退職の翌年の所得とみなして計算し直した額との差を追給する（一時に受けた場合も同じ。第3項）
+        if (c.ypAvg != null) {
+          const span = age60PayYear - 1 - ry,
+            avg = c.ypAvg;
+          if (span >= 2 && I.after > L && avg < I.after && avg < G) {
+            const extra = adjust2(f, s, avg, L, U, G).reduce((p, q) => p + q, 0) - (a1 + a2);
+            if (extra > 0) {
+              pay("追給（平均の所得で計算し直した差額）", extra, age60PayYear * 12 + YP.secondMonth - 1, "ichiji", "y59", { tsuikyu: true });
+              assumptions.push("追給の支給時期は申し出の後で省令でも定めがないため、60歳になる年の8月として表示しています。税は一時所得として計算しています（扱いは未確認）");
+            }
+          }
+          Object.assign(detail, { avgIncome: avg, avgYears: span });
+        }
       }
       if (late > 0) {
         const [r1, r2] = yearRate(LATE_RATE, late),
@@ -825,7 +840,13 @@
       return years < Math.min(...keys) ? [1, 1] : rates[Math.min(years, Math.max(...keys))];
     };
     // 若年定年退職者給付金は実際の定年退職だけ（自己都合で42年超を定年退職として計算する場合は対象外）
-    const yp = c.retireReason !== "self" && nAll >= YP.minYears && age < civil ? youngPension(table, c, monthly, age, civil) : null;
+    // 自衛官としての在職期間は、令和8年4月以後の退職なら以前の自衛官の期間も通算する（給与法第27条の2第2項。改正前は引き続き20年）。
+    // 退職の日またはその翌日に常勤の国家・地方公務員になったときは支給しない（同条第1項ただし書）
+    const lawFrom = YP.periods[1].from,
+      tsusan = last.ym >= lawFrom[0] * 12 + lawFrom[1] - 1 ? Math.round((c.prevServiceYears || 0) * 12) : 0,
+      ypYears = Math.floor((monthly.length + tsusan) / 12),
+      ypReason = c.retireReason === "self" ? "self" : ypYears < YP.minYears ? "years" : age >= civil ? "age" : c.publicReemploy ? "public" : null;
+    const yp = ypReason ? null : youngPension(table, c, monthly, age, civil);
     if (yp) {
       payments.push(...yp.payments);
       reemploy = yp.chart;
@@ -887,6 +908,8 @@
       net: allowance + termTotal + pension - tax - termTax,
       reemploy,
       yp: yp?.detail || null,
+      ypReason,
+      ypYears,
     };
   }
   window.salarySimulatorModel = model;
@@ -940,6 +963,15 @@
     if (route === "wo") return [...enlistedPath.slice(0, 4), { ...officers[0], step: "stepOfcWo", key: "3尉wo" }, ...officers.slice(1)];
     return officers;
   }
+  // 定年の特例（自衛隊法施行令 別表第九 備考）：統合幕僚長・陸海空幕僚長・統合作戦司令官（将）は62歳、
+  // 医療職・軍楽・情報の業務・警務官のうち1佐以下は60歳。対象でない階級は階級の定年のまま
+  function specialRetireAge(rank, age) {
+    const sp = $("retireSpecial")?.value,
+      S = R.promotion.retireSpecial;
+    if (sp === "chief" && rank === "将") return S.chief;
+    if (sp === "expert" && !["将", "将補"].includes(rank)) return Math.max(age, S.expert);
+    return age;
+  }
   function updateRetirement() {
     const type = $("entryType").value,
       kanko = type.startsWith("kanko"),
@@ -961,6 +993,10 @@
     $("ninkiPlanWrap").hidden = type !== "ninki";
     // 自己都合退職のときだけ、退職する年齢の欄を出す（任期満了で退職する場合は出さない）
     $("selfRetireAgeWrap").hidden = $("retireReason").value !== "self" || ninkiExit;
+    // 国民健康保険を料率から計算するときだけ、料率の欄を出し、年額の欄を隠す
+    const kokuhoCalc = $("afterHealth").value === "kokuhoCalc";
+    for (const el of document.querySelectorAll("[data-kokuho]")) el.hidden = !kokuhoCalc;
+    $("afterHealthYen").closest(".c-unit-input").parentElement.hidden = kokuhoCalc || $("afterHealth").value === "none";
     $("targetRankWrap").hidden = ninkiExit;
     // 退職の年齢：定年（予想階級）か、任期満了（任期の合計）
     if (ninkiExit) {
@@ -970,7 +1006,7 @@
       $("retireAge").value = String(Number($("startAge").value) + months / 12);
       $("retireAgeLabel").textContent = "退職の年齢（任期満了）";
     } else {
-      $("retireAge").value = $("targetRank").selectedOptions[0].dataset.age;
+      $("retireAge").value = String(specialRetireAge($("targetRank").value, Number($("targetRank").selectedOptions[0].dataset.age)));
       $("retireAgeLabel").textContent = "定年年齢（予想階級に連動）";
     }
   }
@@ -982,7 +1018,7 @@
     $("startAge").value = String(window.RULES.entry.defaultAge[$("entryType").value] ?? 18);
     updateRetirement();
   });
-  for (const id of ["targetRank", "ninkiPlan", "branch", "startAge", "ofcRoute", "retireReason"]) $(id).addEventListener("change", updateRetirement);
+  for (const id of ["targetRank", "ninkiPlan", "branch", "startAge", "ofcRoute", "retireReason", "retireSpecial", "afterHealth"]) $(id).addEventListener("change", updateRetirement);
   $("startAge").addEventListener("input", updateRetirement);
   updateRetirement();
   $("simJump").addEventListener("click", (e) => {
@@ -1321,6 +1357,36 @@
       goal = c.ninki?.exit ? `${$("ninkiPlan").selectedOptions[0].textContent}` : `${$("targetRank").value}で定年`;
     return `${type}・${goal}・${c.startAge}歳で入隊`;
   }
+  // 国民健康保険料（市区町村の料率から計算）：保険料＝（前年の総所得金額等−43万円）×所得割＋均等割×人数＋平等割（上限あり）。
+  // 退職した翌年度は退職した年の在職中の給与の所得、それ以後は再就職の給与所得・事業所得と、給付金の一時所得（2分の1）を前年の所得とする。
+  // 退職手当と給付金の1回目は退職所得（分離課税）なので含めない。軽減・減免は含めない（試算の前提）
+  function kokuhoPremiums(x, c, years) {
+    const v = (id) => Number($(id).value) || 0,
+      rate = v("kokuhoRate") / 100,
+      perCapita = v("kokuhoPerCapita") * Math.max(1, v("kokuhoMembers")),
+      household = v("kokuhoHousehold"),
+      cap = v("kokuhoCap") || Infinity,
+      retireYear = Math.floor(x.monthly.at(-1).ym / 12),
+      lastYearSalary = x.monthly.filter((m) => m.year === retireYear).reduce((s, m) => s + m.taxable, 0),
+      after = c.ypIncome?.after || { salary: 0, biz: 0 },
+      ichiji = new Map();
+    for (const p of x.retire.payments.filter((p) => p.taxKind === "ichiji")) {
+      const y = Math.floor(p.ym / 12);
+      ichiji.set(y, (ichiji.get(y) || 0) + p.amount);
+    }
+    const list = [];
+    for (let k = 0; k < years; k++) {
+      const prevYear = retireYear + k,
+        income =
+          k === 0
+            ? salaryIncome(lastYearSalary, prevYear)
+            : salaryIncome(after.salary, prevYear) + after.biz + Math.floor(Math.max(0, (ichiji.get(prevYear) || 0) - TX.ichijiSpecial) / 2),
+        base = Math.max(0, income - TX.resident.basic[0][1]),
+        premium = Math.min(cap, Math.floor(base * rate) + perCapita + household);
+      list.push({ year: prevYear + 1, income, premium });
+    }
+    return { years: list, total: list.reduce((s, y) => s + y.premium, 0) };
+  }
   function run() {
     if (!table) return false;
     const value = (id) => Number($(id).value),
@@ -1361,6 +1427,10 @@
           return { after, y61: later("incomeY61", "incomeY61Biz"), y59: later("incomeY59", "incomeY59Biz"), civ: later("incomeCiv", "incomeCivBiz") };
         })(),
         ypLump: $("ypLump").value,
+        // 追給（給与法第27条の7）の確認に使う、退職の翌年から59歳までの所得金額の平均（円。空欄なら null）
+        ypAvg: $("incomeAvg").value.trim() === "" ? null : Number($("incomeAvg").value) * 10000,
+        prevServiceYears: value("prevServiceYears"),
+        publicReemploy: $("publicReemploy").value === "yes",
         ypAssume: $("ypAssume").value,
         promotionTable: window.PROMOTION_TABLE,
         // 営舎の外に住み始める月（住まない場合は null）
@@ -1493,6 +1563,9 @@
     if (!message && c.eigaiStart != null && c.eigaiStart < value("barracksYears") * 12)
       message = "「営舎内・艦内で生活する年数」と「営舎の外に住み始める時期」が重なっています。どちらかを変更してください。";
     if (!message && entryMessage) message = entryMessage;
+    // 配置手当の期間：終了は開始より後に
+    if (!message && $("placementFrom").value.trim() && $("placementTo").value.trim() && value("placementTo") <= value("placementFrom"))
+      message = "配置手当の支給終了は、支給開始より後の年数にしてください。";
     // 自己都合退職：入力した年齢で退職する（定年より後にはできない）
     if (!message && c.retireReason === "self" && !c.ninki?.exit) {
       const a = value("selfRetireAge");
@@ -1519,7 +1592,8 @@
           // 士（士長・1士・2士）には定年の定めがないので、曹の最も早い定年（3曹の55歳）を目安の上限にする（サイトの前提。
           // 任期制の満了の年齢の上限と同じ）。これがないと、3曹に届かない高い年齢の入隊が予想階級の定年まで勤める計算になる
           const rankNow = x.monthly.at(-1).rank,
-            age = R.promotion.retireAge[rankNow] ?? (["士長", "1士", "2士"].includes(rankNow) ? R.promotion.retireAge["3曹"] : null);
+            baseAge = R.promotion.retireAge[rankNow],
+            age = baseAge != null ? specialRetireAge(rankNow, baseAge) : ["士長", "1士", "2士"].includes(rankNow) ? R.promotion.retireAge["3曹"] : null;
           if (age == null || age >= c.retireAge) break;
           if (age <= c.startAge)
             throw Error(
@@ -1582,10 +1656,14 @@
         }).reduce((a, b) => a + b, 0),
         // 退職後の健康保険料（入力した年額 × 年数。任意継続は最長2年）
         healthType = $("afterHealth").value,
+        healthYears = Math.min(Number($("afterHealthYears").value), healthType === "nini" ? 2 : Infinity),
+        kokuho = healthType === "kokuhoCalc" ? kokuhoPremiums(x, c, healthYears) : null,
         health =
           healthType === "none"
             ? 0
-            : Math.round(Number($("afterHealthYen").value) * 10000) * Math.min(Number($("afterHealthYears").value), healthType === "nini" ? 2 : Infinity),
+            : kokuho
+              ? kokuho.total
+              : Math.round(Number($("afterHealthYen").value) * 10000) * healthYears,
         afterBurden = x.afterResident + kokumin + health,
         // 退職後に納める住民税・国民年金保険料・健康保険料も、生涯の手取りから差し引く
         deductions = sum("deductions") + afterBurden,
@@ -1629,7 +1707,7 @@
               )
             : "") +
           (health
-            ? row("退職後の健康保険料", "−" + fmt(health), `${healthType === "nini" ? "共済組合の任意継続" : "国民健康保険"}（入力した年額 × 年数）`)
+            ? row("退職後の健康保険料", "−" + fmt(health), kokuho ? `国民健康保険（入力した料率から、前年の所得で計算）：${kokuho.years.map((y) => `${y.year}年度 ${fmt(y.premium)}（前年の所得 ${fmt(y.income)}）`).join("、")}` : `${healthType === "nini" ? "共済組合の任意継続" : "国民健康保険"}（入力した年額 × 年数）`)
             : "") +
           row(
             "65歳からの公的年金の見込み（年額・参考）",
@@ -1667,11 +1745,13 @@
             : row(
                 "若年定年退職者給付金",
                 "対象外",
-                c.retireReason === "self"
+                r.ypReason === "self"
                   ? "定年退職ではないため"
-                  : x.monthly.length < 240
-                    ? "自衛官としての勤務が20年未満のため"
-                    : `定年（${c.retireAge}歳）が自衛官以外の職員の定年（${r.civil}歳）より若くないため`,
+                  : r.ypReason === "years"
+                    ? `自衛官としての在職期間が20年未満のため（${r.ypYears}年。以前の自衛官の期間の通算は令和8年4月以後の退職だけ）`
+                    : r.ypReason === "public"
+                      ? "退職の翌日までに常勤の公務員になるため（給与法第27条の2第1項ただし書）"
+                      : `定年（${c.retireAge}歳）が自衛官以外の職員の定年（${r.civil}歳）より若くないため`,
               )) +
           row(
             "退職手当・給付金の税（所得税・住民税）",
@@ -1701,7 +1781,7 @@
               )
             : "") +
           (health
-            ? row("退職後の健康保険料", "−" + fmt(health), `${healthType === "nini" ? "共済組合の任意継続" : "国民健康保険"}（入力した年額 × 年数）`)
+            ? row("退職後の健康保険料", "−" + fmt(health), kokuho ? `国民健康保険（入力した料率から、前年の所得で計算）：${kokuho.years.map((y) => `${y.year}年度 ${fmt(y.premium)}（前年の所得 ${fmt(y.income)}）`).join("、")}` : `${healthType === "nini" ? "共済組合の任意継続" : "国民健康保険"}（入力した年額 × 年数）`)
             : "") +
           row(
             "65歳からの公的年金の見込み（年額・参考）",

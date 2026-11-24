@@ -352,6 +352,13 @@ window.SOURCES = {
       how: "国税庁 No.1410・No.1411・No.1420 と e-Gov の所得税法施行令で確認。給付金の2回目以降を一時所得とする扱いは東京国税局「所得税消費税誤りやすい事例集（令和6年12月）」による（引用で確認。原本は未確認）",
     },
     {
+      path: "RULES.promotion.retireSpecial",
+      law: "jieitaiRei",
+      where: "自衛隊法施行令 別表第九 備考一・二（定年の特例）",
+      checked: "2026-11-24",
+      how: "e-Gov の 2026-11-02 施行版の本文で確認（幕僚長など62歳、医療職・軍楽・情報の業務・警務官の1佐以下60歳）",
+    },
+    {
       path: "RULES.allowances.calcRates.commute.nontaxCar",
       law: "shotoku",
       where: "所得税法施行令第二十条の二（通勤手当の非課税限度額）",

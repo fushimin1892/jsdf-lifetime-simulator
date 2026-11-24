@@ -1017,8 +1017,9 @@
           name: a.name,
           method: base === "pay" ? "percent" : "percentFirst",
           amount: Number(rate),
-          startMonth: 0,
-          endMonth: 960,
+          // 配置手当を受ける期間（入隊から何年後〜何年後。空欄なら入隊から定年まで）
+          startMonth: $("placementFrom")?.value.trim() ? Math.round(Number($("placementFrom").value) * 12) : 0,
+          endMonth: $("placementTo")?.value.trim() ? Math.round(Number($("placementTo").value) * 12) : 960,
           // 配置手当（教育期間中はほかの手当と同じく支給しない。model() で判定）
           placement: true,
         });
