@@ -196,9 +196,7 @@
     min-width: 0 !important;
     border-collapse: collapse;
     font-size: 7.5pt;
-  }
-  /* 表は紙の幅に収める：列幅を固定し、文字の列は折り返す。数値の列だけ折り返さない */
-  .c-print .c-sim-table {
+    /* 表は紙の幅に収める：列幅を固定し、文字の列は折り返す。数値の列だけ折り返さない */
     table-layout: fixed;
   }
   .c-print .c-sim-table th,

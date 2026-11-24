@@ -72,6 +72,12 @@ html body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
+  /*
+ 文章を選べなくする（コピーしにくくする）。入力欄の中だけは今までどおり選べる
+*/
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 ::selection {
   background: rgba(74, 90, 38, 0.24);
@@ -835,6 +841,12 @@ html body .c-paytable td.is-highlight {
   background: var(--ink) !important;
   color: var(--paper-2) !important;
   font-weight: 600;
+  /*
+ 選んだ号俸：墨の面に真鍮の細い輪
+*/
+  box-shadow:
+    inset 0 0 0 2px #1b1e17,
+    inset 0 0 0 3px rgba(210, 197, 149, 0.55) !important;
 }
 html body .c-paytable tr:has(td.is-highlight) th {
   background: #d6d9c4;
@@ -893,6 +905,10 @@ html body .l-footer {
   border-top: 2px solid var(--ink);
   color: var(--dim);
   overflow: hidden;
+  /*
+ フッターの下端：目盛りの行で終える（下に少し余白）
+*/
+  padding-bottom: 56px !important;
 }
 html body .l-footer__inner {
   margin: 0 var(--edge-x);
@@ -907,6 +923,10 @@ html body .l-footer__inner {
   grid-column: 1 / 3;
   padding-top: 6px;
   color: var(--od);
+  /*
+ フッター：[04] INFO。下端は目盛りの行（4つ）
+*/
+  content: "[04] INFO";
 }
 html body .l-footer__brand p {
   margin: 16px 0 0;
@@ -1098,6 +1118,7 @@ html body .c-hero .c-lookup {
   }
   .c-hero__facts > div {
     grid-template-columns: 1fr 2fr 2fr;
+    padding-right: 12px;
   }
 }
 /* 幅320〜380：ヘッダーの丸いボタンが画面の外に出ないよう詰める */
@@ -1155,12 +1176,21 @@ html body #simulatorDialog {
   box-shadow: 0 50px 120px -30px rgba(28, 30, 24, 0.7);
   /* 枠の外にはみ出して見えるスクロールバーを出さない（スクロール自体はできる） */
   scrollbar-width: none;
+  /*
+ フォーカスした欄が上に固定した帯（c-simulator__sticky）の下に隠れないようにする
+*/
+  scroll-padding-top: 96px;
+  scroll-padding-bottom: 24px;
 }
 html body #simulatorDialog::-webkit-scrollbar {
   display: none;
 }
 html body #simulatorDialog .c-simulator {
   color: var(--ink-2);
+  /*
+ ---------- シミュレーター：手順番号と入力欄。見出しに 01・02… を付け、紙のシートを少し温かい白に ----------
+*/
+  counter-reset: simstep;
 }
 html body #simulatorDialog .c-section-title {
   color: var(--ink);
@@ -1241,11 +1271,6 @@ html body #notesPage {
     transform: scaleY(0);
     opacity: 0;
   }
-}
-
-/* ---------- シミュレーター：手順番号と入力欄。見出しに 01・02… を付け、紙のシートを少し温かい白に ---------- */
-html body #simulatorDialog .c-simulator {
-  counter-reset: simstep;
 }
 html body #simulatorDialog h3.c-simulator__group-title {
   counter-increment: simstep;
@@ -1434,9 +1459,6 @@ html body #simulatorDialog .c-compare__table th {
   }
 }
 @media (max-width: 560px) {
-  .c-hero__facts > div {
-    padding-right: 12px;
-  }
   .c-hero__facts > div + div {
     padding-left: 12px;
   }
@@ -1483,11 +1505,6 @@ html body #simulatorDialog .c-unit-input:has(input:focus-visible) {
 /* 上の濃い緑の帯（結果の要約）の上ではフォーカスの線を明るい色に */
 html body #simulatorDialog .c-simulator__sticky :is(a, button):focus-visible {
   outline-color: var(--gold) !important;
-}
-/* フォーカスした欄が上に固定した帯（c-simulator__sticky）の下に隠れないようにする */
-html body #simulatorDialog {
-  scroll-padding-top: 96px;
-  scroll-padding-bottom: 24px;
 }
 
 /* 入力の誤り：重なった手当の行と、誤りのある欄（allowances.js が is-error・aria-invalid を付ける） */
@@ -1947,12 +1964,6 @@ html body .c-lookup::after {
   border-left: 0;
   border-top: 0;
 }
-/* 選んだ号俸：墨の面に真鍮の細い輪 */
-html body .c-paytable td.is-highlight {
-  box-shadow:
-    inset 0 0 0 2px #1b1e17,
-    inset 0 0 0 3px rgba(210, 197, 149, 0.55) !important;
-}
 /* 流れる帯の菱形は真鍮色に */
 .c-ticker__track span i {
   background: #a8904f;
@@ -2033,9 +2044,14 @@ html body main .c-paytable .c-source .c-colophon {
   color: var(--faint);
   font: 500 0.625rem/1.8 var(--mono);
   letter-spacing: 0.18em;
+  /*
+ 出典の行：ラベルは1列、本文は2〜10列（ラベルと本文の間を詰める）
+*/
+  grid-column: 1 / 2;
 }
 .c-colophon dd {
   margin: 0;
+  grid-column: 2 / 11;
 }
 html body .c-colophon .c-update-log {
   margin: 0;
@@ -2045,11 +2061,6 @@ html body .c-colophon .c-update-log summary {
 }
 html body .c-colophon .c-update-log[open] summary {
   margin-bottom: 10px;
-}
-
-/* フッター：[04] INFO。下端は目盛りの行（4つ） */
-.l-footer__grid::before {
-  content: "[04] INFO";
 }
 .l-footer__bottom {
   display: grid;
@@ -2101,17 +2112,6 @@ html body .l-footer__copy {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 16px;
   }
-}
-/* 出典の行：ラベルは1列、本文は2〜10列（ラベルと本文の間を詰める） */
-.c-colophon dt {
-  grid-column: 1 / 2;
-}
-.c-colophon dd {
-  grid-column: 2 / 11;
-}
-/* フッターの下端：目盛りの行で終える（下に少し余白） */
-html body .l-footer {
-  padding-bottom: 56px !important;
 }
 
 /* 狭い幅（いちばん最後に置く。上の12列の指定より優先させる） */
@@ -2337,13 +2337,6 @@ html body #simulatorDialog .c-preset-lock {
 }
 html body #simulatorDialog .c-preset-lock[hidden] {
   display: none;
-}
-
-/* 文章を選べなくする（コピーしにくくする）。入力欄の中だけは今までどおり選べる */
-html body {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
 }
 html body :is(input, textarea, select, [contenteditable]) {
   -webkit-user-select: text;

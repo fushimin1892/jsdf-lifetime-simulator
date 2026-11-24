@@ -21,9 +21,6 @@ body:has(#simulatorDialog[open]) {
   overflow: hidden;
   overscroll-behavior: none;
 }
-#simulatorDialog {
-  overscroll-behavior: contain;
-}
 
 /* 数値入力と単位を別々のグリッド列にして、スピナーが単位に重ならないようにする */
 .c-unit-input {
@@ -73,10 +70,6 @@ body:has(#simulatorDialog[open]) {
   transition:
     color 0.18s ease,
     text-decoration-color 0.18s ease;
-}
-.c-note-link:hover {
-  color: #3b4420;
-  text-decoration-color: #6c7456;
 }
 #simulatorDialog[open] {
   animation: simulator-dialog-in 0.24s cubic-bezier(0.2, 0.75, 0.25, 1) both;
