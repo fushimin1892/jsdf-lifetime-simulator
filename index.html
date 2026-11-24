@@ -52,56 +52,56 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261124-6" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-6" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261124-6" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261124-6" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261124-7" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-7" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261124-7" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261124-7" />
   </head>
   <body>
-    <i class="scroll-progress" aria-hidden="true"></i>
+    <i class="c-scroll-progress" aria-hidden="true"></i>
     <!-- 背景：地図の方眼・縦の罫・四隅の十字と、浮かぶ桜の立体（assets/js/crystals.js が描く。飾りなので読み上げない） -->
-    <div class="bg-scene" aria-hidden="true"><i class="bg-grid"></i><i class="bg-cols"></i><i class="bg-mark m1"></i><i class="bg-mark m2"></i><i class="bg-mark m3"></i><i class="bg-mark m4"></i><canvas class="crystals"></canvas></div>
-    <header class="site-head" id="pageTop">
-      <div class="top">
-        <a class="brand" href="#pageTop">
-          <span class="brand-mark" aria-hidden="true"
+    <div class="l-bg" aria-hidden="true"><i class="l-bg__grid"></i><i class="l-bg__cols"></i><i class="l-bg__mark l-bg__mark--1"></i><i class="l-bg__mark l-bg__mark--2"></i><i class="l-bg__mark l-bg__mark--3"></i><i class="l-bg__mark l-bg__mark--4"></i><canvas class="l-bg__canvas"></canvas></div>
+    <header class="l-header" id="pageTop">
+      <div class="l-header__inner">
+        <a class="c-brand" href="#pageTop">
+          <span class="c-brand__mark" aria-hidden="true"
             ><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" /><path d="M16 7.5l8 8.5-8 8.5-8-8.5z" /></svg></span
-          ><span class="brand-name">自衛官 給料表ナビ</span>
+          ><span class="c-brand__name">自衛官 給料表ナビ</span>
         </a>
-        <nav class="site-nav" aria-label="ページ内ナビゲーション">
+        <nav class="l-header__nav" aria-label="ページ内ナビゲーション">
           <a href="#lookup">俸給を調べる</a>
           <a href="#paytable">俸給表</a>
           <a href="#site-info">このサイトについて</a>
         </nav>
-        <button type="button" class="head-cta" data-open-sim>生涯年収を試算<span aria-hidden="true">→</span></button>
+        <button type="button" class="l-header__cta" data-open-sim>生涯年収を試算<span aria-hidden="true">→</span></button>
       </div>
     </header>
-    <section class="hero" aria-label="俸給を調べる">
-      <div class="hero-in">
-        <p class="hero-meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span><span>INDEX 01 — 04</span></p>
-        <div class="hero-copy">
-          <p class="hero-chip"><span class="chip-dot" aria-hidden="true"></span>2026年11月公布の改正俸給表に対応</p>
-          <h1><span class="ln">階級と号俸から、</span><br /><em class="ln">俸給がすぐわかる。</em></h1>
-          <p class="hero-lead">
+    <section class="c-hero" aria-label="俸給を調べる">
+      <div class="c-hero__inner">
+        <p class="c-hero__meta" aria-hidden="true"><span>JSDF PAY INDEX</span><span>GROUND · MARITIME · AIR</span><span>REV. 2026-11</span><span>INDEX 01 — 04</span></p>
+        <div class="c-hero__copy">
+          <p class="c-hero__chip"><span class="c-hero__chip-dot" aria-hidden="true"></span>2026年11月公布の改正俸給表に対応</p>
+          <h1><span class="c-hero__line">階級と号俸から、</span><br /><em class="c-hero__line">俸給がすぐわかる。</em></h1>
+          <p class="c-hero__lead">
             2026年11月公布の改正法（令和8年法律第89号。2026年4月にさかのぼって適用）に基づく自衛官俸給表です。昇任・賞与・手当・退職手当まで含めた生涯年収も試算できます。
           </p>
-          <div class="hero-actions">
-            <button type="button" class="btn btn-primary" data-open-sim>生涯年収を試算する<span aria-hidden="true">→</span></button>
-            <a class="btn btn-ghost" href="#paytable">俸給表を見る</a>
+          <div class="c-hero__actions">
+            <button type="button" class="c-btn c-btn--primary" data-open-sim>生涯年収を試算する<span aria-hidden="true">→</span></button>
+            <a class="c-btn c-btn--ghost" href="#paytable">俸給表を見る</a>
           </div>
-          <dl class="hero-facts">
+          <dl class="c-hero__facts">
             <div><dt>最高の号俸まで掲載</dt><dd>145<small>号俸</small></dd></div>
             <div><dt>将から2士までの俸給の欄</dt><dd>19<small>区分</small></dd></div>
             <div><dt>全額を法令の本文と照合</dt><dd>1,388<small>マス</small></dd></div>
           </dl>
         </div>
         <!-- 最初の画面で、そのまま俸給を調べられるようにする -->
-        <section class="lookup" id="lookup" aria-labelledby="lookupTitle">
-          <header class="lookup-head">
+        <section class="c-lookup" id="lookup" aria-labelledby="lookupTitle">
+          <header class="c-lookup__head">
             <h2 id="lookupTitle">俸給を調べる</h2>
             <span>俸給月額</span>
           </header>
-          <div class="fields">
+          <div class="c-lookup__fields">
             <div>
               <label for="rank">階級</label
               ><select id="rank"></select>
@@ -111,52 +111,52 @@
               ><select id="grade"></select>
             </div>
           </div>
-          <div class="result" aria-live="polite">
-            <div id="detail" class="note"></div>
+          <div class="c-lookup__result" aria-live="polite">
+            <div id="detail" class="c-note"></div>
             <strong id="amount">—</strong>
           </div>
           <!-- 同じ階級のまま標準（年4号俸）で昇給した場合の、1〜3年後の俸給 -->
-          <div class="outlook">
-            <div class="outlook-head"><span>昇給の見通し</span><small>毎年4号俸ずつ上がる場合</small></div>
+          <div class="c-outlook">
+            <div class="c-outlook__head"><span>昇給の見通し</span><small>毎年4号俸ずつ上がる場合</small></div>
             <ol id="outlook"></ol>
           </div>
-          <div class="note">
+          <div class="c-note">
             ※ 俸給月額は基本給にあたる金額です。手当・賞与・税金などは含みません。再任用職員以外の表を掲載しています。
           </div>
         </section>
       </div>
     </section>
     <!-- 流れる帯（飾り。動きを減らす設定では止まる） -->
-    <div class="ticker" aria-hidden="true"><div class="ticker-track"><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span></div></div>
-    <main class="layout">
+    <div class="c-ticker" aria-hidden="true"><div class="c-ticker__track"><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span><span>JGSDF<i></i>JMSDF<i></i>JASDF<i></i>PAY TABLE REV. 2026-11<i></i>LIFETIME INCOME SIMULATOR<i></i></span></div></div>
+    <main class="l-main">
       <dialog id="simulatorDialog" aria-labelledby="simulatorTitle">
-        <section class="card simulator" id="simulator">
+        <section class="c-card c-simulator" id="simulator">
           <!-- スクロールしても常に見える結果の要約 -->
-          <header class="sim-sticky">
-            <div class="sim-sticky-text" aria-live="polite">
+          <header class="c-simulator__sticky">
+            <div class="c-simulator__sticky-text" aria-live="polite">
               <small>在職中の給与の総額</small><strong id="stickyTotal">—</strong
               ><span id="stickyRank"></span>
             </div>
-            <a href="#simResult" class="sim-jump" id="simJump">結果へ ↓</a>
-            <button class="sim-close" type="button" aria-label="シミュレーターを閉じる">×</button>
+            <a href="#simResult" class="c-simulator__jump" id="simJump">結果へ ↓</a>
+            <button class="c-simulator__close" type="button" aria-label="シミュレーターを閉じる">×</button>
           </header>
-          <div class="cap">CAREER SIMULATOR</div>
-          <h2 class="section-title" id="simulatorTitle">生涯年収シミュレーター</h2>
-          <p class="sub">
+          <div class="c-caption">CAREER SIMULATOR</div>
+          <h2 class="c-section-title" id="simulatorTitle">生涯年収シミュレーター</h2>
+          <p class="c-section-lead">
             昇給・昇任の時期を変えて、入隊から退職までの給与を試算します。条件を変えると自動で計算し直します。
           </p>
-          <div class="sim-presets" role="group" aria-labelledby="presetLabel">
-            <span id="presetLabel" class="sim-presets-label">よくある経歴のひな形</span>
-            <button type="button" class="sim-preset" data-preset="sotsu">一般曹候補生（標準）</button>
-            <button type="button" class="sim-preset" data-preset="koka">高等工科学校（最短）</button>
-            <button type="button" class="sim-preset" data-preset="bunai">部内幹部（1尉まで）</button>
-            <button type="button" class="sim-preset" data-preset="kanko">防大・大卒の幹部</button>
+          <div class="c-preset" role="group" aria-labelledby="presetLabel">
+            <span id="presetLabel" class="c-preset__label">よくある経歴のひな形</span>
+            <button type="button" class="c-preset__button" data-preset="sotsu">一般曹候補生（標準）</button>
+            <button type="button" class="c-preset__button" data-preset="koka">高等工科学校（最短）</button>
+            <button type="button" class="c-preset__button" data-preset="bunai">部内幹部（1尉まで）</button>
+            <button type="button" class="c-preset__button" data-preset="kanko">防大・大卒の幹部</button>
           </div>
-          <small class="fixed-note sim-presets-note"
+          <small class="c-field-note c-preset__note"
             >ひな形は入力の例です。入隊区分・予想階級・入隊時の年齢・昇任までの期間だけを変え、手当などほかの入力はそのままです。昇任までの期間は初期値（高等工科学校（最短）は、任官から1年で3曹に昇任し、3曹から先は初期値。防大・大卒の幹部は、2尉から1尉を一斉昇任の3年で固定）で、実際の昇任時期を示すものではありません。</small
           >
-          <h3 class="sim-group">所属</h3>
-          <div class="sim-grid">
+          <h3 class="c-simulator__group-title">所属</h3>
+          <div class="c-simulator__grid">
             <div>
               <label for="branch">所属</label
               ><select id="branch" aria-describedby="branchNote">
@@ -164,11 +164,11 @@
                 <option value="maritime">海上自衛隊</option>
                 <option value="air">航空自衛隊</option>
               </select>
-              <small id="branchNote" class="fixed-note">所属によって、下の「手当の条件」で選べる手当が変わります</small>
+              <small id="branchNote" class="c-field-note">所属によって、下の「手当の条件」で選べる手当が変わります</small>
             </div>
           </div>
-          <h3 class="sim-group">基本の条件</h3>
-          <div class="sim-grid">
+          <h3 class="c-simulator__group-title">基本の条件</h3>
+          <div class="c-simulator__grid">
             <div>
               <label for="entryType">入隊区分</label
               ><select id="entryType" aria-describedby="entryTypeNote">
@@ -179,7 +179,7 @@
                 <option value="kankoD">幹部候補生（院卒者試験）</option>
                 <option value="koka">高等工科学校の卒業生（陸士長で任官）</option>
               </select>
-              <small id="entryTypeNote" class="fixed-note">一般曹候補生・任期制は2士で入隊します。幹部候補生（一般幹部候補生）は幹部候補生学校を出て3尉（院卒は2尉）に任官します。区分を変えると入隊時の年齢の目安も変わります。高等工科学校の卒業生は、卒業の日（4月1日）に陸士長1号俸で任官した時から計算し（入隊時の年齢は任官時の年齢）、1年後に3曹へ昇任します。在校3年間の生徒手当・期末手当は含めません。退職手当の勤続期間には、生徒の期間（3年）の2分の1を加えます（防衛省給与法第28条の2第4項）</small>
+              <small id="entryTypeNote" class="c-field-note">一般曹候補生・任期制は2士で入隊します。幹部候補生（一般幹部候補生）は幹部候補生学校を出て3尉（院卒は2尉）に任官します。区分を変えると入隊時の年齢の目安も変わります。高等工科学校の卒業生は、卒業の日（4月1日）に陸士長1号俸で任官した時から計算し（入隊時の年齢は任官時の年齢）、1年後に3曹へ昇任します。在校3年間の生徒手当・期末手当は含めません。退職手当の勤続期間には、生徒の期間（3年）の2分の1を加えます（防衛省給与法第28条の2第4項）</small>
             </div>
             <div id="ninkiPlanWrap" hidden>
               <label for="ninkiPlan">任期の扱い</label
@@ -190,13 +190,13 @@
                 <option value="4">4任期で満了退職</option>
                 <option value="sgt">3曹に昇任して定年まで勤める</option>
               </select>
-              <small id="ninkiPlanNote" class="fixed-note"
+              <small id="ninkiPlanNote" class="c-field-note"
                 >1任期目は陸上2年・海上と航空3年、2任期目からは2年です（自衛隊法第36条）。任期ごとに任期満了金（退職手当）が出ます</small
               >
             </div>
             <div>
               <label for="startAge">入隊時の年齢</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="startAge" type="number" min="16" max="60" value="18" /><span>歳</span>
               </div>
             </div>
@@ -216,11 +216,11 @@
                 <option value="11">11月</option>
                 <option value="12">12月</option>
               </select>
-              <small id="entryMonthNote" class="fixed-note">昇給（1月）と賞与（6月・12月）の時期に使います</small>
+              <small id="entryMonthNote" class="c-field-note">昇給（1月）と賞与（6月・12月）の時期に使います</small>
             </div>
             <div>
               <label for="entryYear">入隊した年</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input
                   id="entryYear"
                   type="number"
@@ -230,7 +230,7 @@
                   aria-describedby="entryYearNote"
                 /><span>年</span>
               </div>
-              <small id="entryYearNote" class="fixed-note"
+              <small id="entryYearNote" class="c-field-note"
                 >税・共済掛金の改正の時期と、若年定年退職者給付金で使う自衛官以外の職員の定年を決めるのに使います。初期値は今年です。過去の年（2025年以前）も、税・共済掛金・地域手当はおおむね今の制度で計算します（年ごとの細かい改正は入れていません）</small
               >
             </div>
@@ -256,7 +256,7 @@
                   <option value="将" data-age="60" data-officer="3">将（60歳）</option>
                 </optgroup>
               </select>
-              <small id="targetRankNote" class="fixed-note"
+              <small id="targetRankNote" class="c-field-note"
                 >3尉以上を選ぶと部内幹部への昇任として計算します。定年は2024年10月以降の年齢です（<a
                   href="https://www.cas.go.jp/jp/seisaku/jieikan/gijisidai/dai1/sankou.pdf"
                   target="_blank"
@@ -267,13 +267,13 @@
             </div>
             <div>
               <label for="retireAge" id="retireAgeLabel">定年年齢（予想階級に連動）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="retireAge" type="number" value="56" readonly tabindex="-1" /><span>歳</span>
               </div>
             </div>
             <div data-enlisted>
               <label for="initialGrade">入隊時の2士の号俸</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="initialGrade" type="number" min="1" max="17" value="1" /><span
                   >号俸</span
                 >
@@ -281,7 +281,7 @@
             </div>
             <div>
               <label for="raise">毎年の昇給</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input
                   id="raise"
                   type="number"
@@ -291,68 +291,68 @@
                   aria-describedby="raiseNote"
                 /><span>号俸</span>
               </div>
-              <small id="raiseNote" class="fixed-note"
+              <small id="raiseNote" class="c-field-note"
                 >標準（勤務成績が良好）は4号俸、特に良好は6、極めて良好は8以上。入隊後最初の昇給は月割り。55歳以降と1佐（1）（2）欄以上は昇給が抑えられます（標準では昇給なし）。</small
               >
             </div>
           </div>
-          <h3 class="sim-group">昇任の時期</h3>
-          <p class="sim-group-note">
+          <h3 class="c-simulator__group-title">昇任の時期</h3>
+          <p class="c-simulator__group-note">
             予想する将来の階級までに必要な昇任だけを表示しています。昇任は年1回（3曹は年2回、部内幹部候補生の試験は年1回）なので、その間隔で選べます。いちばん短い選択肢は、法令で決まった最短の期間です。
           </p>
-          <div class="sim-grid">
+          <div class="c-simulator__grid">
             <!-- 昇任までの期間。スクリプトが選択欄に置き換える（最小値は自衛隊法施行規則 別表第七の在職期間） -->
             <div data-enlisted>
               <label for="stepPfc">2士から1士まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepPfc" type="number" value="6" readonly tabindex="-1" /><span>か月</span>
               </div>
-              <small class="fixed-note">6か月で固定</small>
+              <small class="c-field-note">6か月で固定</small>
             </div>
             <div data-enlisted>
               <label for="stepLcpl">1士から士長まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepLcpl" type="number" value="6" readonly tabindex="-1" /><span>か月</span>
               </div>
-              <small class="fixed-note">6か月で固定（入隊から約1年で士長）</small>
+              <small class="c-field-note">6か月で固定（入隊から約1年で士長）</small>
             </div>
             <div data-enlisted>
               <label for="stepSgt">士長から3曹昇任まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepSgt" type="number" min="1.75" max="20" step="0.25" value="3.75" /><span
                   >年</span
                 >
               </div>
-              <small class="fixed-note">昇任は年2回のため半年ごと。一般曹候補生は最短で入隊後2年9か月（士長昇任から1年9か月）</small>
+              <small class="c-field-note">昇任は年2回のため半年ごと。一般曹候補生は最短で入隊後2年9か月（士長昇任から1年9か月）</small>
             </div>
             <!-- 昇任までの年数（予想階級に必要なものだけ表示。初期値は試算用の仮定） -->
             <div data-step="2曹" hidden>
               <label for="stepSgt2">3曹から2曹まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepSgt2" type="number" min="1.6" max="30" step="0.1" value="8" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は3曹で2年</small>
+              <small class="c-field-note">法令の在職期間は3曹で2年</small>
             </div>
             <div data-step="1曹" hidden>
               <label for="stepSgt1">2曹から1曹まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepSgt1" type="number" min="1.6" max="30" step="0.1" value="10" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は2曹で2年</small>
+              <small class="c-field-note">法令の在職期間は2曹で2年</small>
             </div>
             <div data-step="曹長" hidden>
               <label for="stepSgm">1曹から曹長まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepSgm" type="number" min="1.6" max="30" step="0.1" value="8" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は1曹で2年</small>
+              <small class="c-field-note">法令の在職期間は1曹で2年</small>
             </div>
             <div data-step="准尉" hidden>
               <label for="stepWo">曹長から准尉まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepWo" type="number" min="1.6" max="30" step="0.1" value="6" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は曹長で2年</small>
+              <small class="c-field-note">法令の在職期間は曹長で2年</small>
             </div>
             <div data-step="3尉route" hidden>
               <label for="ofcRoute">3尉への昇任のしかた</label
@@ -361,73 +361,73 @@
                 <option value="sgm">曹長から</option>
                 <option value="wo">准尉から</option>
               </select>
-              <small id="ofcRouteNote" class="fixed-note"
+              <small id="ofcRouteNote" class="c-field-note"
                 >曹長・准尉からは、2曹・1曹・曹長（・准尉）を経て3尉に昇任するものとして計算します。選考の条件は年度ごとの採用・選考の案内で確かめてください</small
               >
             </div>
             <div data-step="3尉sgm" hidden>
               <label for="stepOfcSgm">曹長から3尉まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepOfcSgm" type="number" min="2" max="30" step="1" value="4" /><span>年</span>
               </div>
-              <small class="fixed-note">最短は曹長の在職期間2年（自衛隊法施行規則 別表第七）</small>
+              <small class="c-field-note">最短は曹長の在職期間2年（自衛隊法施行規則 別表第七）</small>
             </div>
             <div data-step="3尉wo" hidden>
               <label for="stepOfcWo">准尉から3尉まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepOfcWo" type="number" min="1" max="30" step="1" value="3" /><span>年</span>
               </div>
-              <small class="fixed-note">准尉の在職期間は別表第七に定めがないため、1年から選べます</small>
+              <small class="c-field-note">准尉の在職期間は別表第七に定めがないため、1年から選べます</small>
             </div>
             <div data-step="3尉" hidden>
               <label for="stepOfc">3曹から3尉まで（部内幹部）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepOfc" type="number" min="1" max="30" step="1" value="4" /><span
                   >年</span
                 >
               </div>
-              <small class="fixed-note"
+              <small class="c-field-note"
                 >受験資格は3曹昇任後4年（専門士・準学士は2年、学士は1年）。3尉昇任前の幹部候補生学校8か月は、この期間に含む教育期間として扱います</small
               >
             </div>
             <div data-step="2尉" hidden>
               <label for="second">3尉から2尉まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="second" type="number" value="2" readonly tabindex="-1" /><span>年</span>
               </div>
-              <small class="fixed-note">2年で固定</small>
+              <small class="c-field-note">2年で固定</small>
             </div>
             <div data-step="1尉" hidden>
               <label for="first">2尉から1尉まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="first" type="number" min="2.4" max="30" step="0.1" value="4.5" /><span
                   >年</span
                 >
               </div>
-              <small class="fixed-note">法令の在職期間は3年</small>
+              <small class="c-field-note">法令の在職期間は3年</small>
               <!-- 防大・大卒の幹部のひな形を使ったときだけ出す（欄を3年で固定する） -->
-              <small id="firstLock" class="preset-lock" hidden>防大・大卒の幹部のひな形：一斉昇任のため3年で固定しています。ほかのひな形を選ぶか、入隊区分を変えると選べるようになります。</small>
+              <small id="firstLock" class="c-preset-lock" hidden>防大・大卒の幹部のひな形：一斉昇任のため3年で固定しています。ほかのひな形を選ぶか、入隊区分を変えると選べるようになります。</small>
             </div>
             <div data-step="3佐" hidden>
               <label for="stepMaj">1尉から3佐まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepMaj" type="number" min="4" max="30" step="0.1" value="7" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は1尉で5年</small>
+              <small class="c-field-note">法令の在職期間は1尉で5年</small>
             </div>
             <div data-step="2佐" hidden>
               <label for="stepLtc">3佐から2佐まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepLtc" type="number" min="2.4" max="30" step="0.1" value="6" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は3佐で3年</small>
+              <small class="c-field-note">法令の在職期間は3佐で3年</small>
             </div>
             <div data-step="1佐" hidden>
               <label for="stepCol">2佐から1佐まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepCol" type="number" min="3.2" max="30" step="0.1" value="6" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は2佐で4年</small>
+              <small class="c-field-note">法令の在職期間は2佐で4年</small>
             </div>
             <div data-step="1佐" hidden>
               <label for="colClass">1佐の俸給表の欄</label
@@ -436,22 +436,22 @@
                 <option value="4">1佐（2）</option>
                 <option value="3">1佐（1）</option>
               </select>
-              <small id="colClassNote" class="fixed-note">配置される職によって適用される欄が異なります</small>
+              <small id="colClassNote" class="c-field-note">配置される職によって適用される欄が異なります</small>
             </div>
             <div data-step="将補" hidden>
               <label for="stepMg">1佐から将補まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepMg" type="number" min="4.8" max="30" step="0.1" value="6" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は1佐で6年</small>
-              <small class="fixed-note">俸給は将補（2）の欄で計算します</small>
+              <small class="c-field-note">法令の在職期間は1佐で6年</small>
+              <small class="c-field-note">俸給は将補（2）の欄で計算します</small>
             </div>
             <div data-step="将" hidden>
               <label for="stepGen">将補から将まで</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="stepGen" type="number" min="2.4" max="30" step="0.1" value="3" /><span>年</span>
               </div>
-              <small class="fixed-note">法令の在職期間は将補で3年</small>
+              <small class="c-field-note">法令の在職期間は将補で3年</small>
             </div>
             <div data-step="将" hidden>
               <label for="generalGrade">将の官職（号俸）</label
@@ -465,46 +465,46 @@
                 <option value="7">陸・海・空幕僚長、統合作戦司令官（7号俸）</option>
                 <option value="8">統合幕僚長（8号俸）</option>
               </select>
-              <small id="generalGradeNote" class="fixed-note"
+              <small id="generalGradeNote" class="c-field-note"
                 >将の俸給は官職ごとに号俸が決まり、昇給はありません（施行令第6条の20）</small
               >
             </div>
           </div>
-          <section class="allowance-panel" aria-labelledby="allowanceTitle">
-            <h3 class="sim-group" id="allowanceTitle">手当の条件</h3>
-            <p class="sub">該当する勤務・生活条件を選ぶと、対応する手当を自動で計算します。</p>
-            <h4 class="branch-title">所属の主な手当（配置手当）</h4>
+          <section class="c-allowance-panel" aria-labelledby="allowanceTitle">
+            <h3 class="c-simulator__group-title" id="allowanceTitle">手当の条件</h3>
+            <p class="c-section-lead">該当する勤務・生活条件を選ぶと、対応する手当を自動で計算します。</p>
+            <h4 class="c-allowance-panel__subtitle">所属の主な手当（配置手当）</h4>
             <!-- 所属に応じた配置手当の選択欄（スクリプトが所属ごとに作る） -->
-            <div class="auto-allowances" id="branchAllowances"></div>
+            <div class="c-allowance-panel__auto" id="branchAllowances"></div>
             <!-- 教育を受けている期間は部隊に配置されていないので、配置手当（乗組手当など）を支給しない -->
-            <div class="auto-allowances">
+            <div class="c-allowance-panel__auto">
               <div data-enlisted>
                 <label for="eduRecruit">入隊後の教育期間（教育隊）</label>
-                <div class="unit">
+                <div class="c-unit-input">
                   <input id="eduRecruit" type="number" value="5" readonly tabindex="-1" /><span>か月</span>
                 </div>
-                <small class="fixed-note">5か月で固定</small>
+                <small class="c-field-note">5か月で固定</small>
               </div>
               <div data-enlisted>
                 <label for="eduSgt">3曹昇任前の教育（海曹予定者課程など）</label>
-                <div class="unit">
+                <div class="c-unit-input">
                   <input id="eduSgt" type="number" value="3" readonly tabindex="-1" /><span>か月</span>
                 </div>
-                <small class="fixed-note">3か月で固定</small>
+                <small class="c-field-note">3か月で固定</small>
               </div>
               <div data-step="3尉" hidden>
                 <label for="eduOcs">幹部候補生学校（部内幹部）</label>
-                <div class="unit">
+                <div class="c-unit-input">
                   <input id="eduOcs" type="number" value="8" readonly tabindex="-1" /><span>か月</span>
                 </div>
-                <small class="fixed-note">8か月で固定</small>
+                <small class="c-field-note">8か月で固定</small>
               </div>
             </div>
-            <small class="fixed-note" data-note-title="配置手当と教育期間"
+            <small class="c-field-note" data-note-title="配置手当と教育期間"
               >教育期間（入隊後の教育隊、3曹昇任直前の海曹予定者課程など、3尉昇任直前の幹部候補生学校）は基本給（俸給）だけとし、配置手当・営外手当・手入力の手当・俸給の特別調整額は付けません（賞与は支給し、その計算の基礎は俸給と階級による加算だけにします。指定場所生活調整金は対象のまま）。選んだ手当は、教育期間を除いて定年まで続く仮定です。実際の対象や期間は配置によって異なります。割合は施行令第12条と防衛省の訓令（乗員の範囲等に関する訓令、特殊作戦隊員手当・特別警備隊員・落下傘隊員の各訓令、防衛省職員給与施行細則）によります。3佐以上は「階級の最低号俸」に、防衛大臣が定める割合（3佐94.2％、2佐91.6％、1佐（3）86.4％、1佐（2）85.9％、1佐（1）84.9％、将補（2）・将84.5％）を掛けて計算します。</small
             >
-            <h4 class="branch-title">生活の条件</h4>
-            <div class="auto-allowances">
+            <h4 class="c-allowance-panel__subtitle">生活の条件</h4>
+            <div class="c-allowance-panel__auto">
               <div>
                 <label for="barracksYears">入隊から営舎内・艦内で生活する年数</label
                 ><select id="barracksYears">
@@ -515,7 +515,7 @@
                   <option value="4">4年</option>
                   <option value="5">5年</option>
                   <option value="6">6年以上</option></select
-                ><small class="fixed-note"
+                ><small class="c-field-note"
                   >指定場所生活調整金の対象となる場合、満1年ごとに20万円・最大6年間の仮定で計算します。</small
                 >
               </div>
@@ -533,12 +533,12 @@
                   <option value="8">入隊から8年後</option>
                   <option value="10">入隊から10年後</option>
                 </select>
-                <small id="eigaiNote" class="fixed-note"
+                <small id="eigaiNote" class="c-field-note"
                   >曹長以下の間、月額8,200円を支給し、賞与の計算の基礎にも加えます（准尉・幹部になると支給されません）。</small
                 >
               </div>
             </div>
-            <div class="auto-sources">
+            <div class="c-allowance-panel__sources">
               自動計算の根拠：<a
                 href="https://laws.e-gov.go.jp/law/327CO0000000368"
                 target="_blank"
@@ -556,21 +556,21 @@
                 >営外手当（給与法第18条） ↗</a
               >
             </div>
-            <details class="manual-allowances">
+            <details class="c-allowance-panel__manual">
               <summary>ほかの手当を追加する（手入力）</summary>
-              <div class="allowance-selector">
+              <div class="c-allowance-panel__selector">
                 <div>
                   <label for="allowanceKind">追加する手当</label
                   ><select id="allowanceKind"></select>
                 </div>
-                <button type="button" id="addAllowance" class="allowance-add">＋ 手当を追加</button>
+                <button type="button" id="addAllowance" class="c-action-btn">＋ 手当を追加</button>
               </div>
               <div id="allowanceList"></div>
             </details>
-            <p class="note" data-note-title="手当の入力と計算方法">
+            <p class="c-note" data-note-title="手当の入力と計算方法">
               手当名ごとに基本の計算方法を固定しています。月額の手当は月額、日額・勤務1回ごとの手当は単価×支給日数・回数で試算し、地域手当・広域異動手当は勤務地・異動距離から割合を適用します。支給額や対象となる日数・回数は、任務区分・勤務実績・官署の指定などで変わるため、手入力欄がある手当は実際の区分に合った単価・月額・日数等を入力してください。地域手当と広域異動手当の調整、再異動時の期間重複は計算に反映します。法令で額が決まっている手当は「区分（法令の額）」を選ぶと額が入り、本府省業務調整手当・航海手当は昇任に合わせて階級の額で計算します。支給期間は「支給開始（年・月）」と「支給期間（年・か月）」で入力します。途中で止まる・また始まる手当は、期間を分けて何件でも追加できます。同じ手当の期間が重なっているとエラーで知らせます（地域手当・広域異動手当と、区分が違うものは重なってもかまいません）。通勤手当は非課税として税金の計算から除きます。
             </p>
-            <p class="allowance-source">
+            <p class="c-allowance-panel__links">
               <a
                 href="https://www.mod.go.jp/j/policy/agenda/meeting/jinji/pdf/giji_shoguu_02_01.pdf"
                 target="_blank"
@@ -584,11 +584,11 @@
               >
             </p>
           </section>
-          <h3 class="sim-group">賞与</h3>
-          <div class="sim-grid">
+          <h3 class="c-simulator__group-title">賞与</h3>
+          <div class="c-simulator__grid">
             <div>
               <label for="bonus">年間賞与（俸給月額の何か月分）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input
                   id="bonus"
                   type="number"
@@ -599,7 +599,7 @@
                   aria-describedby="bonusHint"
                 /><span>か月</span>
               </div>
-              <small id="bonusHint" class="fixed-note">金額ではなく月数を入力（例：4.7）。標準の成績の場合の割合で計算するため、一般の自衛官は実際には年4.62か月分、将・将補（1）欄は年3.43か月分になります</small>
+              <small id="bonusHint" class="c-field-note">金額ではなく月数を入力（例：4.7）。標準の成績の場合の割合で計算するため、一般の自衛官は実際には年4.62か月分、将・将補（1）欄は年3.43か月分になります</small>
             </div>
             <div>
               <label for="manager">管理職（俸給の特別調整額の種別）</label
@@ -611,16 +611,16 @@
                 <option value="3">三種（1佐・2佐）</option>
                 <option value="4">四種（1佐（3）・2佐・3佐）</option>
               </select>
-              <small id="managerNote" class="fixed-note"
+              <small id="managerNote" class="c-field-note"
                 >選んだ種別に額が定められている階級（施行令 別表第四）になったときから、特別調整額（月額5,700〜59,100円）を加えます。賞与は一種21％・二種11％・三種（加算あり）5％を俸給に加算し、将・将補（1）欄は種別にかかわらず25％です（施行令第12条の6）。</small
               >
             </div>
           </div>
-          <h3 class="sim-group">退職・税金・社会保険</h3>
-          <p class="sim-group-note">
+          <h3 class="c-simulator__group-title">退職・税金・社会保険</h3>
+          <p class="c-simulator__group-note">
             退職手当・若年定年退職者給付金と、所得税・住民税・共済掛金を差し引いた手取りを試算します。家族の条件は在職中ずっと同じとみなします。
           </p>
-          <div class="sim-grid">
+          <div class="c-simulator__grid">
             <div>
               <label for="retireReason">退職の理由</label
               ><select id="retireReason">
@@ -634,23 +634,23 @@
                 <option value="no" selected>なし</option>
                 <option value="yes">あり（所得62万円以下）</option>
               </select>
-              <small id="spouseNote" class="fixed-note">「あり」は、配偶者の所得が62万円以下のときです。扶養手当は「ほかの手当を追加する」で、子・父母等の人数から計算できます</small>
+              <small id="spouseNote" class="c-field-note">「あり」は、配偶者の所得が62万円以下のときです。扶養手当は「ほかの手当を追加する」で、子・父母等の人数から計算できます</small>
             </div>
             <div>
               <label for="dependents">扶養親族（16歳以上・一般）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="dependents" type="number" min="0" max="10" value="0" /><span>人</span>
               </div>
             </div>
             <div>
               <label for="specificDependents">特定扶養親族（19〜22歳）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="specificDependents" type="number" min="0" max="10" value="0" /><span>人</span>
               </div>
             </div>
             <div>
               <label for="reemployIncome">退職の翌年の年収見込み（再就職）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input
                   id="reemployIncome"
                   type="number"
@@ -661,7 +661,7 @@
                   aria-describedby="reemployNote"
                 /><span>万円</span>
               </div>
-              <small id="reemployNote" class="fixed-note"
+              <small id="reemployNote" class="c-field-note"
                 >若年定年退職者給付金（60歳まで分）の所得による調整に使います。0なら調整なし</small
               >
             </div>
@@ -672,7 +672,7 @@
                 <option value="kokumin">国民年金を自分で納める</option>
                 <option value="exempt">国民年金の免除（特例）</option>
               </select>
-              <small class="fixed-note" id="afterPensionNote"
+              <small class="c-field-note" id="afterPensionNote"
                 >再就職して厚生年金に入るときの保険料は給与から引かれます。自分で納めるのは自営業・無職などの場合です。免除は、退職を理由に本人の前年所得を除いて審査する特例です。配偶者・世帯主の所得も審査され、家族に一定の収入があると免除にならないことがあります。免除した期間は老齢基礎年金に半分だけ反映され、10年以内なら追納で満額に戻せます（国民年金法第27条・第90条・第94条）。申請は年金事務所か市区町村の国民年金窓口へ（退職辞令の写しなどで退職を証明）</small
               >
             </div>
@@ -683,32 +683,32 @@
                 <option value="nini">共済の任意継続（最長2年）</option>
                 <option value="kokuho">国民健康保険</option>
               </select>
-              <small id="afterHealthNote" class="fixed-note"
+              <small id="afterHealthNote" class="c-field-note"
                 >再就職先の健康保険や家族の扶養に入るときは、保険料の負担なしとして計算します。任意継続や国民健康保険の保険料は、住んでいる市区町村や共済組合の案内で確かめて、下の欄に入れてください</small
               >
             </div>
             <div>
               <label for="afterHealthYen">退職後の健康保険料（1年あたり）</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="afterHealthYen" type="number" min="0" max="200" step="0.1" value="0" /><span>万円</span>
               </div>
             </div>
             <div>
               <label for="afterHealthYears">退職後の健康保険料を払う年数</label>
-              <div class="unit">
+              <div class="c-unit-input">
                 <input id="afterHealthYears" type="number" min="0" max="30" step="1" value="2" /><span>年</span>
               </div>
-              <small class="fixed-note">任意継続は最長2年です</small>
+              <small class="c-field-note">任意継続は最長2年です</small>
             </div>
           </div>
-          <p class="note" data-note-title="試算の前提（昇任・賞与・定年）">
+          <p class="c-note" data-note-title="試算の前提（昇任・賞与・定年）">
             未選択・不明の手当は試算に含まれません。初期条件は試算用です。2士として入隊し、1士・士長を経て3曹へ昇任します（初期値は入隊6か月で1士、1年で士長）。予想階級までの昇任を、入力した年数どおりに順番に行う仮定で計算します。3尉以上を選んだ場合は部内幹部へ昇任するものとし、初期値では3曹昇任から4年後（部内幹部候補生の受験資格である3曹昇任後4年。最後の8か月は幹部候補生学校の教育期間）に3尉へ昇任し、2尉へは3尉昇任から2年（固定）で昇任します。昇任までの期間はすべて選べます。選択肢は昇任の機会（年1回、3曹は年2回、部内幹部候補生の試験は年1回）の間隔で、いちばん短い選択肢は自衛隊法施行規則 別表第七の在職期間です（勤務成績が極めて良好な場合に認められる8割への短縮は含みません。1士から士長までは、採用後約1年で士長になる実際の運用に合わせて6か月からとしています）。昇任までの年数・賞与4.7か月分の初期値は試算用の目安で、実際の昇任時期や選考結果を示すものではありません。定年までに予想階級へ届かない場合は、届いた階級までで計算します。定年年齢は2024年10月以降のもので、2028年度以降に予定されている引き上げは含みません。
           </p>
-          <div id="simError" class="sim-error" role="alert"></div>
+          <div id="simError" class="c-simulator__error" role="alert"></div>
           <section id="simResult" hidden aria-live="polite" aria-label="試算の結果">
             <!-- 在職中の給与・退職手当・若年定年退職者給付金を分けて出す（いずれも額面） -->
-            <div class="sim-total">
-              <div class="sim-split">
+            <div class="c-result-total">
+              <div class="c-result-total__split">
                 <div>
                   <span>在職中の給与の総額（俸給・賞与・手当）</span><strong id="totalIncome"></strong>
                 </div>
@@ -717,29 +717,29 @@
               </div>
               <small id="totalDetail"></small>
             </div>
-            <div class="sim-metrics">
+            <div class="c-metrics">
               <div><small>勤務期間</small><strong id="serviceYears"></strong></div>
               <div><small>給与計算上の最終階級・号俸</small><strong id="lastRank"></strong></div>
               <div><small>最終年の年収</small><strong id="lastYear"></strong></div>
               <div><small>税・共済掛金の合計</small><strong id="totalDeductions"></strong></div>
-              <div class="sim-net"><small>3つの合計（額面）</small><strong id="grossAll"></strong></div>
-              <div class="sim-net"><small>生涯の手取り（退職手当等を含む）</small><strong id="lifetimeNet"></strong></div>
+              <div class="c-metrics__item--net"><small>3つの合計（額面）</small><strong id="grossAll"></strong></div>
+              <div class="c-metrics__item--net"><small>生涯の手取り（退職手当等を含む）</small><strong id="lifetimeNet"></strong></div>
             </div>
-            <p class="note" id="deductionDetail"></p>
+            <p class="c-note" id="deductionDetail"></p>
             <!-- 2つの条件を比べる：保存した結果（A）と今の結果（B） -->
-            <section class="sim-compare" id="simCompare" aria-labelledby="compareTitle">
-              <header class="sim-compare-head">
+            <section class="c-compare" id="simCompare" aria-labelledby="compareTitle">
+              <header class="c-compare__head">
                 <h3 id="compareTitle">条件を比べる</h3>
-                <div class="sim-compare-actions">
-                  <button type="button" id="compareSave" class="allowance-add">今の結果をAとして保存</button>
-                  <button type="button" id="compareClear" class="sim-compare-clear" hidden>比べるのをやめる</button>
+                <div class="c-compare__actions">
+                  <button type="button" id="compareSave" class="c-action-btn">今の結果をAとして保存</button>
+                  <button type="button" id="compareClear" class="c-compare__clear" hidden>比べるのをやめる</button>
                 </div>
               </header>
-              <p class="sim-compare-help" id="compareHelp">
+              <p class="c-compare__help" id="compareHelp">
                 今の結果をAとして保存してから条件を変えると、Aと今の結果（B）を並べて比べられます。例：「任期制で2任期」と「一般曹候補生で定年まで」
               </p>
-              <div class="sim-scroll" id="compareWrap" tabindex="0" role="region" aria-label="条件の比較の表" hidden>
-                <table class="sim-table sim-compare-table">
+              <div class="c-table-scroll" id="compareWrap" tabindex="0" role="region" aria-label="条件の比較の表" hidden>
+                <table class="c-sim-table c-compare__table">
                   <thead>
                     <tr>
                       <th scope="col">項目</th>
@@ -752,20 +752,20 @@
                 </table>
               </div>
             </section>
-            <header class="sim-section-head">
+            <header class="c-section-head">
               <h3>年収の推移</h3>
-              <span class="sim-legend"
-                ><i class="sw-salary"></i>俸給 <i class="sw-extra"></i>賞与・手当 <i class="sw-net"></i>手取り</span
+              <span class="c-legend"
+                ><i class="c-legend__swatch--salary"></i>俸給 <i class="c-legend__swatch--extra"></i>賞与・手当 <i class="c-legend__swatch--net"></i>手取り</span
               >
             </header>
-            <div class="sim-chart" id="simChart"></div>
-            <details class="sim-fold">
-              <summary class="sim-section-head">
+            <div class="c-chart" id="simChart"></div>
+            <details class="c-fold">
+              <summary class="c-section-head">
                 <h3>年齢ごとの内訳</h3>
-                <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」。<span class="screen-only">押すと開きます</span></span>
+                <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」。<span class="u-screen-only">押すと開きます</span></span>
               </summary>
-              <div class="sim-scroll" tabindex="0" role="region" aria-label="年齢ごとの内訳の表">
-                <table class="sim-table">
+              <div class="c-table-scroll" tabindex="0" role="region" aria-label="年齢ごとの内訳の表">
+                <table class="c-sim-table">
                   <thead>
                     <tr>
                       <th>年齢</th>
@@ -782,73 +782,73 @@
                 </table>
               </div>
             </details>
-            <details class="sim-fold" open>
-              <summary class="sim-section-head">
+            <details class="c-fold" open>
+              <summary class="c-section-head">
                 <h3>退職時・退職後の給付</h3>
                 <span>退職手当・若年定年退職者給付金・退職後の負担と年金の見込み</span>
               </summary>
-              <div class="sim-scroll" tabindex="0" role="region" aria-label="退職時・退職後の給付の表">
-                <table class="sim-table">
+              <div class="c-table-scroll" tabindex="0" role="region" aria-label="退職時・退職後の給付の表">
+                <table class="c-sim-table">
                   <tbody id="retireRows"></tbody>
                 </table>
               </div>
             </details>
             <!-- 再就職の年収によって、若年定年退職者給付金（60歳までの分）がどれだけ減るか -->
             <section id="reemploySection" hidden aria-labelledby="reemployTitle">
-              <header class="sim-section-head">
+              <header class="c-section-head">
                 <h3 id="reemployTitle">再就職の年収と若年定年退職者給付金</h3>
-                <span>60歳までの分（1回目・2回目）。<span class="screen-only">グラフに触れると、その年収での受け取り額が出ます</span></span>
+                <span>60歳までの分（1回目・2回目）。<span class="u-screen-only">グラフに触れると、その年収での受け取り額が出ます</span></span>
               </header>
-              <p class="reemploy-summary" id="reemploySummary"></p>
-              <div class="sim-chart" id="reemployChart"></div>
-              <small class="fixed-note" data-note-title="再就職の年収と若年定年退職者給付金のグラフ"
+              <p class="c-reemploy-summary" id="reemploySummary"></p>
+              <div class="c-chart" id="reemployChart"></div>
+              <small class="c-field-note" data-note-title="再就職の年収と若年定年退職者給付金のグラフ"
                 >◯は「退職の翌年の年収見込み」に入力した年収です。年収が下限額を超えると2回目が減り、上限額以上で2回目は0、さらに1回目の一部を返納します（給与法第27条の4）。年収は再就職先の給与の額（額面）で、事業所得がある場合はそれも加えます。年の途中から勤めた場合は、ボーナスを除いた給与を12か月分に直した額にボーナスを足して入れてください（施行令第24条の2）。境目の計算に使う「給与年額相当額」は、退職時の俸給・扶養手当・営外手当が翌年も同じとして、期末手当2.525か月・勤勉手当2.125か月分（施行令第24条）を足した額です。60歳以後の分（3回目・4回目）は、このグラフに含みません。</small
               >
             </section>
-            <p class="note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
+            <p class="c-note" data-note-title="退職手当・若年定年退職者給付金・税・共済掛金の計算方法">
               退職手当は国家公務員退職手当法（第3条〜第6条の4、附則第6項の83.7％）、若年定年退職者給付金は給与法第27条の2〜・附則第12項・第13項と施行令第22条・附則第15項の率で計算します（俸給月額は3佐の最高号俸が上限）。60歳以後の分（後期）は所得による調整を含みません。税は令和8年度税制改正後の所得税（2026・2027年分は基礎控除104万円〜・給与所得控除の最低74万円、2028年分以後は本則）、復興特別所得税（2027年以後は防衛特別所得税1％と合わせて同じ2.1％）、住民税（所得割10％・均等割5,000円）で、2028年以後の物価に連動した見直しは含みません。所得税・住民税は暦年（1〜12月）の給与で計算し（入隊前の収入は0とみなします）、所得税はその年のうちに、住民税は翌年6月から翌々年5月までの12回で差し引きます（年税額の100円未満の端数は6月分）。1〜4月に退職した場合は5月までの残りを退職時に一括で、それ以外は退職した年などの分を退職後に納めるものとして、生涯の手取りから差し引きます。共済掛金は防衛省共済組合の令和8年4月の率（短期28.50‰・福祉0.54‰・40〜64歳の介護7.63‰・子ども・子育て支援金1.15‰、厚生年金91.50‰・退職等年金7.5‰。将は短期34.50‰・福祉1.02‰）で、標準報酬は国家公務員共済組合法第40条の等級表（短期50等級、厚生年金・退職等年金は88,000円〜上限）で決めます。入隊時の報酬で決め、毎年4〜6月の平均で9月から改定し（定時決定）、昇給・昇任などで3か月の平均が2等級以上変わったときは4か月目から改定します（随時改定）。若年定年退職者給付金の2回目以降は、退職手当と勤続期間が重なるため、重なる年数分の退職所得控除を引き（前の退職手当等が控除額に満たないときは重なる期間を縮めて計算）、下限の80万円を控除して課税します（所得税法第30条第6項、施行令第70条）。生命保険料控除などのほかの控除、医療費の自己負担、現物給与、任期制の退職手当は含みません。
               <a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" target="_blank" rel="noopener">国税庁：基礎控除の引上げ等 ↗</a>　<a href="https://www.boueikyosai.or.jp/site/folder1/168.html" target="_blank" rel="noopener">防衛省共済組合：掛金等 ↗</a>　<a href="https://laws.e-gov.go.jp/law/328AC1000000182" target="_blank" rel="noopener">国家公務員退職手当法 ↗</a>　<a href="https://laws.e-gov.go.jp/law/327CO0000000368" target="_blank" rel="noopener">給与法施行令（若年定年退職者給付金の率・特別調整額） ↗</a>
             </p>
-            <div class="sim-share">
-              <button type="button" id="shareLink" class="allowance-add">共有用のURLをコピー</button>
-              <button type="button" id="printSim" class="allowance-add">印刷・PDFで保存</button>
-              <button type="button" id="csvSim" class="allowance-add">年ごとの表をCSVで保存</button>
+            <div class="c-share">
+              <button type="button" id="shareLink" class="c-action-btn">共有用のURLをコピー</button>
+              <button type="button" id="printSim" class="c-action-btn">印刷・PDFで保存</button>
+              <button type="button" id="csvSim" class="c-action-btn">年ごとの表をCSVで保存</button>
               <input
                 id="shareUrl"
-                class="sim-share-url"
+                class="c-share__url"
                 type="text"
                 readonly
                 hidden
                 aria-label="共有用のURL"
               />
-              <small id="shareStatus" class="fixed-note" aria-live="polite"
+              <small id="shareStatus" class="c-field-note" aria-live="polite"
                 >シミュレーターを閉じると、入力した条件は初期値に戻ります。</small
               >
             </div>
           </section>
-          <footer class="source">
+          <footer class="c-source">
             試算は2026年の俸給表（令和8年法律第89号）を将来も固定し、毎年1月1日に入力した号俸数だけ昇給する仮定です。入隊後最初の昇給は、入隊から12月末までの月数で月割りします（施行令第6条の14第2項。10〜12月に入隊した場合は、入力した号俸数にかかわらず標準の4号俸を月割り）。55歳以降（全階級）と1佐（1）（2）欄以上は昇給抑制の対象で、勤務成績「極めて良好」（8号俸以上）なら2号俸、「特に良好」（6号俸）なら1号俸、それ以外は昇給しません。その階級の最高号俸に達した後は、昇任するまで昇給しません。昇任後の号俸は施行令別表第一ロの対応表で決め、2階級以上の昇任は1階級ずつ順に当てはめます。将の俸給は官職ごとに定められた号俸で、昇給はありません（施行令第6条の20）。賞与は6月・12月に、期末手当と勤勉手当に分けて計算します。1回あたりの割合は、令和9年度（2027年4月）からは6月・12月とも、一般の自衛官が期末手当1.275か月・勤勉手当1.035か月、1佐以上で管理職が一種・二種の場合（特定管理職員）が1.075か月・1.235か月、将・将補（1）欄（指定職と同じ扱い）が0.6875か月・1.0275か月です（一般職給与法第19条の4、人事院規則9-40第13条、防衛省給与法第18条の2。令和8年法律第79号・人事院規則9-40-66）。令和8年度までは6月と12月で違い、一般の自衛官は6月が1.2625か月・1.0225か月、12月が1.2875か月・1.0475か月です（年の合計は同じ）。過去の年も今の制度で計算します。法律の「年4.7か月」は勤勉手当の総額の上限を含む月数で、標準の成績の人は一般の自衛官で年4.62か月になります。年間月数の入力を4.7から変えると、各割合を同じ比率で増減します。計算の基礎となる額は、俸給に階級による加算（施行令別表第八：2曹〜2尉5％、3佐・1尉9％、2佐・1佐（3）14％、1佐（1）（2）・将補（2）18％、将・将補（1）20％。管理職の加算は含みません）と、扶養手当（期末手当のみ）・地域手当・広域異動手当・営外手当を加えた額です。入隊から6か月未満の賞与は、期末手当を在職期間割合（3か月未満30％、3か月以上60％、5か月以上80％）、勤勉手当を期間率（人事院規則9-40別表第二：半月刻みで5〜95％）で減額します。勤勉手当の成績率は標準（人事院規則9-40第13条第1項第1号ハ・第3号ロの区分）として計算します。入隊は月の初日とみなし、入隊した月から俸給・手当を満額で計算します。退職後の賞与は含みません。年ごとの推移は入隊月から1年ごとに区切っています。追加した手当は指定期間と入力した金額・割合に基づき、年額は月割り、日額は月平均日数で計算します。「在職中の給与の総額」は税・共済掛金を引く前の額で、退職手当・若年定年退職者給付金は含みません（どちらも、税・共済掛金・手取りとあわせて結果の欄で別に計算します）。俸給表や手当の額の将来の改定は含みません。AIによる予測ではなく入力条件に基づく計算です。
           </footer>
         </section>
       </dialog>
-      <section class="card paytable" id="paytable">
-        <header class="titleline">
+      <section class="c-card c-paytable" id="paytable">
+        <header class="c-paytable__head">
           <div>
-            <div class="cap">PAY TABLE</div>
-            <p class="sec-meta" aria-hidden="true"><span>RANKS — 19</span><span>STEPS — 145</span><span>UNIT — JPY / MONTH</span></p>
-            <h2 class="section-title">自衛官 俸給表</h2>
-            <p class="sub">2026年11月公布法令の表をもとに作成</p>
+            <div class="c-caption">PAY TABLE</div>
+            <p class="c-section-meta" aria-hidden="true"><span>RANKS — 19</span><span>STEPS — 145</span><span>UNIT — JPY / MONTH</span></p>
+            <h2 class="c-section-title">自衛官 俸給表</h2>
+            <p class="c-section-lead">2026年11月公布法令の表をもとに作成</p>
           </div>
-          <span class="hint">↔ 横にスクロールできます</span>
+          <span class="c-paytable__hint">↔ 横にスクロールできます</span>
         </header>
-        <div class="scroll" role="region" aria-label="自衛官俸給表" tabindex="0">
+        <div class="c-paytable__scroll" role="region" aria-label="自衛官俸給表" tabindex="0">
           <table>
             <thead id="thead"></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
-        <footer class="source">
-          <dl class="source-body colophon">
+        <footer class="c-source">
+          <dl class="c-source__body c-colophon">
             <div>
               <dt>SOURCE</dt><dd>出典：<a
                   href="https://laws.e-gov.go.jp/law/327AC0000000266"
@@ -860,7 +860,7 @@
               <dt>LAW</dt><dd>2026年11月20日に公布された改正（防衛省の職員の給与等に関する法律の一部を改正する法律、令和8年法律第89号。2026年4月にさかのぼって適用）の俸給表を掲載しています。</dd>
             </div>
             <div>
-              <dt>LOG</dt><dd><details class="update-log">
+              <dt>LOG</dt><dd><details class="c-update-log">
                   <summary>対応している法令と更新履歴</summary>
                   <p>
                     対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
@@ -882,63 +882,63 @@
         </footer>
       </section>
     </main>
-    <footer class="foot" id="site-info">
-      <div class="footer-inner">
-        <div class="footer-grid">
-          <div class="footer-brand">
-            <a class="brand" href="#pageTop">
-              <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" /><path d="M16 7.5l8 8.5-8 8.5-8-8.5z" /></svg></span>
-              <span class="brand-name">自衛官 給料表ナビ</span>
+    <footer class="l-footer" id="site-info">
+      <div class="l-footer__inner">
+        <div class="l-footer__grid">
+          <div class="l-footer__brand">
+            <a class="c-brand" href="#pageTop">
+              <span class="c-brand__mark" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" /><path d="M16 7.5l8 8.5-8 8.5-8-8.5z" /></svg></span>
+              <span class="c-brand__name">自衛官 給料表ナビ</span>
             </a>
             <p>俸給と給与の仕組みを、確認しやすく。</p>
           </div>
-          <nav class="footer-nav" aria-label="根拠">
-            <p class="footer-h">根拠</p>
+          <nav class="l-footer__nav" aria-label="根拠">
+            <p class="l-footer__heading">根拠</p>
             <a href="https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/21920251224095.htm" target="_blank" rel="noopener">改正法 別表第二（衆議院）</a>
             <a href="https://laws.e-gov.go.jp/" target="_blank" rel="noopener">e-Gov 法令検索</a>
           </nav>
         </div>
-        <p class="footer-note">個人向けの情報提供サイトです。防衛省・自衛隊の公式サイトではありません。正式な金額・適用条件は法令等をご確認ください。</p>
-        <div class="footer-bottom">
-          <small class="footer-copy">© 2026 自衛官 給料表ナビ</small>
+        <p class="l-footer__note">個人向けの情報提供サイトです。防衛省・自衛隊の公式サイトではありません。正式な金額・適用条件は法令等をご確認ください。</p>
+        <div class="l-footer__bottom">
+          <small class="l-footer__copy">© 2026 自衛官 給料表ナビ</small>
           <span aria-hidden="true">NOT AN OFFICIAL SITE</span>
           <span aria-hidden="true">BUILT FROM e-GOV LAW TEXT</span>
-          <a class="to-top" href="#pageTop">ページ上部へ <span aria-hidden="true">↑</span></a>
+          <a class="l-footer__to-top" href="#pageTop">ページ上部へ <span aria-hidden="true">↑</span></a>
         </div>
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261124-6"></script>
-    <script src="assets/data/promotion-table.js?v=20261124-6"></script>
-    <script src="assets/js/pay-lookup.js?v=20261124-6"></script>
+    <script src="assets/data/pay-table.js?v=20261124-7"></script>
+    <script src="assets/data/promotion-table.js?v=20261124-7"></script>
+    <script src="assets/js/pay-lookup.js?v=20261124-7"></script>
     <button
-      class="sim-launch"
+      class="c-sim-launch"
       id="simLaunch"
       type="button"
       aria-label="生涯年収シミュレーターを開く"
       aria-haspopup="dialog"
     >
-      <span class="sim-launch-icon" aria-hidden="true">↗</span
-      ><span class="sim-launch-text">生涯年収を試算</span>
+      <span class="c-sim-launch__icon" aria-hidden="true">↗</span
+      ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261124-6"></script>
-    <script src="assets/js/regional-rate.js?v=20261124-6"></script>
-    <script src="assets/js/allowances.js?v=20261124-6"></script>
-    <script src="assets/js/simulator.js?v=20261124-6"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261124-6"></script>
+    <script src="assets/data/rules.js?v=20261124-7"></script>
+    <script src="assets/js/regional-rate.js?v=20261124-7"></script>
+    <script src="assets/js/allowances.js?v=20261124-7"></script>
+    <script src="assets/js/simulator.js?v=20261124-7"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261124-7"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
-      <header class="notes-head">
+      <header class="c-notes__head">
         <h2 id="notesTitle">説明・計算の前提</h2>
-        <button type="button" class="notes-back">← 戻る</button>
+        <button type="button" class="c-notes__back">← 戻る</button>
       </header>
-      <div class="notes-body" id="notesBody"></div>
+      <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261124-6"></script>
-    <script src="assets/js/effects.js?v=20261124-6"></script>
-    <script src="assets/js/crystals-core.js?v=20261124-6"></script>
-    <script src="assets/js/crystals.js?v=20261124-6"></script>
-    <script src="assets/js/scroll-lock.js?v=20261124-6"></script>
-    <script src="assets/js/print.js?v=20261124-6"></script>
+    <script src="assets/js/notes-page.js?v=20261124-7"></script>
+    <script src="assets/js/effects.js?v=20261124-7"></script>
+    <script src="assets/js/crystals-core.js?v=20261124-7"></script>
+    <script src="assets/js/crystals.js?v=20261124-7"></script>
+    <script src="assets/js/scroll-lock.js?v=20261124-7"></script>
+    <script src="assets/js/print.js?v=20261124-7"></script>
   </body>
 </html>

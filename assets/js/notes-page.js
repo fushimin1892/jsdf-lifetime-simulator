@@ -6,7 +6,7 @@
     body = document.getElementById("notesBody"),
     // この文字数を超える説明は説明ページへ移し、元の場所にはリンクだけを置く
     LIMIT = 30,
-    selector = "#simulator .fixed-note, #simulator .sim-group-note, #simulator p.note",
+    selector = "#simulator .c-field-note, #simulator .c-simulator__group-note, #simulator p.c-note",
     notes = new Map();
   let count = 0;
   // 説明の見出し：指定があればそれ、なければ項目のラベル、次に直前の見出し
@@ -14,8 +14,8 @@
     if (el.dataset.noteTitle) return el.dataset.noteTitle;
     const label = el.closest("div")?.querySelector(":scope > label");
     if (label) {
-      const item = el.closest(".allowance-item");
-      const allowanceName = item?.querySelector(".allowance-title")?.textContent.trim();
+      const item = el.closest(".c-allowance-item");
+      const allowanceName = item?.querySelector(".c-allowance-item__title")?.textContent.trim();
       return allowanceName ? `${allowanceName}：${label.textContent.trim()}` : label.textContent.trim();
     }
     for (let p = el.previousElementSibling; p; p = p.previousElementSibling) if (/^H[2-4]$/.test(p.tagName)) return p.textContent.trim();
@@ -36,13 +36,13 @@
     section.append(h, p);
     notes.set(id, section);
     const link = document.createElement("a");
-    link.className = "note-link";
+    link.className = "c-note-link";
     link.href = `#${id}`;
     link.textContent = "詳しい説明";
     link.dataset.note = id;
     // 元の文は見えない形で残す：読み上げ（aria-describedby）と印刷はこちらを使う
     const full = document.createElement("span");
-    full.className = "visually-hidden note-full";
+    full.className = "u-visually-hidden c-note-full";
     full.innerHTML = p.innerHTML;
     // 見えない文の中のリンクには Tab で移らない（同じリンクは説明ページにある）
     full.querySelectorAll("a, button, input, select, textarea").forEach((x) => (x.tabIndex = -1));
@@ -65,7 +65,7 @@
   });
   // リンクを押したら説明ページを開き、該当する説明まで移動する（URLの#は変えない。共有URLの#sim=と競合するため）
   document.addEventListener("click", (e) => {
-    const link = e.target.closest?.(".note-link");
+    const link = e.target.closest?.(".c-note-link");
     if (!link) return;
     e.preventDefault();
     const target = notes.get(link.dataset.note);
@@ -75,7 +75,7 @@
     if (!page.open) page.showModal();
     target.scrollIntoView({ block: "start" });
   });
-  page.querySelector(".notes-back").addEventListener("click", () => page.close());
+  page.querySelector(".c-notes__back").addEventListener("click", () => page.close());
   page.addEventListener("close", () => body.replaceChildren());
   // 枠の外を押しても閉じる
   page.addEventListener("click", (e) => {

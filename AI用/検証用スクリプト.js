@@ -18,7 +18,7 @@ for (const b of ["ground", "maritime", "air"]) {
   out.placements[b] = [...document.querySelectorAll(`#branchAllowances [data-branch=${b}] select`)].map((s) => s.id + ":" + [...s.options].map((o) => o.value + "=" + o.textContent).join("|")).join(" / ");
 }
 const read = () => ["totalIncome", "retireAllowance", "youngPension", "totalDeductions", "grossAll", "lifetimeNet", "lastRank", "simError"].map((id) => g(id).textContent).join(" ; ") + " ; " + g("reemploySummary").textContent + " ; rows=" + [...document.querySelectorAll("#simRows tr")].map((t) => t.cells[7]?.textContent).join("/") + " ; retire=" + [...document.querySelectorAll("#retireRows tr")].map((t) => t.cells[1]?.textContent).join("/");
-const addAllowance = async (kind, fn) => { g("allowanceKind").value = kind; g("addAllowance").click(); await wait(100); const item = [...document.querySelectorAll(".allowance-item")].at(-1); await fn(item); await wait(100); };
+const addAllowance = async (kind, fn) => { g("allowanceKind").value = kind; g("addAllowance").click(); await wait(100); const item = [...document.querySelectorAll(".c-allowance-item")].at(-1); await fn(item); await wait(100); };
 const setIn = (item, sel, v, ev = "change") => { const el = item.querySelector(sel); el.value = v; el.dispatchEvent(new Event(ev, { bubbles: true })); };
 for (const b of ["ground", "maritime", "air"]) {
   await set("branch", b);
@@ -30,10 +30,10 @@ for (const b of ["ground", "maritime", "air"]) {
   for (const s of document.querySelectorAll(`#branchAllowances [data-branch=${b}] select`)) { s.selectedIndex = 0; s.dispatchEvent(new Event("change", { bubbles: true })); }
 }
 await set("branch", "ground"); await set("targetRank", "1曹"); await set("manager", "none");
-await addAllowance("扶養手当", (it) => setIn(it, ".a-amount", "13000", "input"));
-await addAllowance("地域手当", (it) => { setIn(it, ".a-prefecture", "東京都"); });
-await addAllowance("広域異動手当", (it) => { setIn(it, ".a-distance", "10"); setIn(it, ".a-start", "2", "input"); });
-await addAllowance("野外訓練・演習従事手当", (it) => setIn(it, ".a-days", "3", "input"));
+await addAllowance("扶養手当", (it) => setIn(it, ".c-allowance-item__amount", "13000", "input"));
+await addAllowance("地域手当", (it) => { setIn(it, ".c-allowance-item__prefecture", "東京都"); });
+await addAllowance("広域異動手当", (it) => { setIn(it, ".c-allowance-item__distance", "10"); setIn(it, ".c-allowance-item__start", "2", "input"); });
+await addAllowance("野外訓練・演習従事手当", (it) => setIn(it, ".c-allowance-item__days", "3", "input"));
 await set("spouse", "yes"); await set("dependents", "2"); await set("specificDependents", "1"); await set("reemployIncome", "450"); await wait(500);
 out.cases.push("manual: " + read());
 await set("reemployIncome", "650"); await wait(); out.cases.push("reemp650: " + read());
@@ -45,8 +45,8 @@ await set("startAge", "38"); await wait(); out.cases.push("age38: " + read());
 await set("startAge", "50"); await wait(); out.cases.push("age50: " + read());
 await set("startAge", "18"); await set("entryMonth", "11"); await set("raise", "8"); await wait(); out.cases.push("nov-raise8: " + read());
 // ---- 2026-11-02 追加：入隊月・手当の「条件から計算」・異動保障・入隊区分・退職後の負担 ----
-const calcIn = (item, k, v) => setIn(item, `.a-calc [data-k=${k}]`, v, "input");
-const dropItem = (name) => { const it = [...document.querySelectorAll(".allowance-item")].find((x) => x.querySelector(".a-name").value === name); it?.remove(); };
+const calcIn = (item, k, v) => setIn(item, `.c-allowance-item__calc [data-k=${k}]`, v, "input");
+const dropItem = (name) => { const it = [...document.querySelectorAll(".c-allowance-item")].find((x) => x.querySelector(".c-allowance-item__name").value === name); it?.remove(); };
 
 await set("raise", "4"); await set("entryMonth", "1"); await wait(); out.cases.push("jan: " + read());
 await set("entryMonth", "7"); await wait(); out.cases.push("jul: " + read());
@@ -58,14 +58,14 @@ dropItem("扶養手当"); await wait();
 await addAllowance("扶養手当", (it) => { calcIn(it, "child", "1"); calcIn(it, "parent", "1"); });
 await wait(); out.cases.push("fuyou-parent-1sa1: " + read());
 // 通勤手当：電車と車（2km未満）・電車と車（10km）
-await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "1500"); setIn(it, ".a-calc [data-k=car]", "short"); });
+await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "1500"); setIn(it, ".c-allowance-item__calc [data-k=car]", "short"); });
 await wait(); out.cases.push("commute-short: " + read());
 dropItem("通勤手当"); await wait();
-await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "8000"); setIn(it, ".a-calc [data-k=car]", "10"); });
+await addAllowance("通勤手当", (it) => { calcIn(it, "pass", "8000"); setIn(it, ".c-allowance-item__calc [data-k=car]", "10"); });
 await wait(); out.cases.push("commute-both: " + read());
 // 前に追加した地域手当（東京都）を12年後でやめる：その後3年間の異動保障
-{ const it = [...document.querySelectorAll(".allowance-item")].find((x) => x.querySelector(".a-name").value === "地域手当");
-  setIn(it, ".a-end", "12"); }
+{ const it = [...document.querySelectorAll(".c-allowance-item")].find((x) => x.querySelector(".c-allowance-item__name").value === "地域手当");
+  setIn(it, ".c-allowance-item__end", "12"); }
 await wait(); out.cases.push("regional-guarantee: " + read());
 // 入隊区分
 await set("targetRank", "2佐");
@@ -80,15 +80,15 @@ out.cases.push("after-burden: " + read());
 // 退職後〜60歳の国民年金を免除（保険料0、老齢基礎年金は免除月を2分の1で数える）
 await set("afterPension", "exempt"); await wait(); out.cases.push("after-exempt: " + read());
 // ---- 2026-11-16 追加：階級で額が決まる手当（本府省業務調整手当・航海手当。施行令 別表第四の二・別表第七） ----
-for (const it of [...document.querySelectorAll(".allowance-item")]) it.remove();
+for (const it of [...document.querySelectorAll(".c-allowance-item")]) it.remove();
 await set("branch", "maritime"); await set("targetRank", "2佐"); await wait();
 await addAllowance("本府省業務調整手当", () => {});
 await wait(); out.cases.push("honsho-rank: " + read());
-await addAllowance("航海手当", (it) => { setIn(it, ".a-rate", "rank:z2"); setIn(it, ".a-days", "8", "input"); });
+await addAllowance("航海手当", (it) => { setIn(it, ".c-allowance-item__rate", "rank:z2"); setIn(it, ".c-allowance-item__days", "8", "input"); });
 await wait(); out.cases.push("kokai-z2: " + read());
 // ---- 2026-11-16 追加：支給開始（年・月）と支給期間、同じ手当の期間の重なり ----
 // 在宅勤務等手当を 2030年4月から2年、2035年10月から1年6か月 の2回（重ならない）→ 両方とも計算に入る
-const period = (it, y, m, ly, lm) => { setIn(it, ".a-start-y", y, "input"); setIn(it, ".a-start-m", m); setIn(it, ".a-len-y", ly, "input"); setIn(it, ".a-len-m", lm); };
+const period = (it, y, m, ly, lm) => { setIn(it, ".c-allowance-item__start-y", y, "input"); setIn(it, ".c-allowance-item__start-m", m); setIn(it, ".c-allowance-item__len-y", ly, "input"); setIn(it, ".c-allowance-item__len-m", lm); };
 await addAllowance("在宅勤務等手当", (it) => period(it, "2030", "4", "2", "0"));
 await addAllowance("在宅勤務等手当", (it) => period(it, "2035", "10", "1", "6"));
 await wait(); out.cases.push("zaitaku-split: " + read());
@@ -96,7 +96,7 @@ await wait(); out.cases.push("zaitaku-split: " + read());
 await addAllowance("在宅勤務等手当", (it) => period(it, "2031", "1", "1", "0"));
 await wait(); out.cases.push("zaitaku-overlap: " + read());
 // ---- 2026-11-17 追加：若年給付金の経過措置（令和8年4月〜令和9年3月の退職）と、自己都合で勤続42年超 ----
-for (const it of [...document.querySelectorAll(".allowance-item")]) it.remove();
+for (const it of [...document.querySelectorAll(".c-allowance-item")]) it.remove();
 await set("branch", "ground"); await set("entryType", "sotsu"); await set("targetRank", "1曹"); await set("startAge", "18");
 await set("startAge", "30"); await set("entryYear", "2000"); await set("entryMonth", "5"); await set("reemployIncome", "0"); await wait();
 out.cases.push("yp-transition: " + read());

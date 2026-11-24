@@ -11,7 +11,7 @@ function overflowFn(root) {
   const out = [];
   const r0 = root ? document.querySelector(root) : document.body;
   for (const el of r0.querySelectorAll("*")) {
-    if (el.closest(".bg-scene,.footer-word,svg,.visually-hidden,[aria-hidden=true]")) continue;
+    if (el.closest(".l-bg,.footer-word,svg,.u-visually-hidden,[aria-hidden=true]")) continue;
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.visibility === "hidden") continue;
     const r = el.getBoundingClientRect();
@@ -38,7 +38,7 @@ function textSpillFn(root) {
   const lim = Math.min(document.documentElement.clientWidth, r0.getBoundingClientRect().left + r0.clientWidth);
   const hits = [];
   for (const el of r0.querySelectorAll("*")) {
-    if (el.closest(".visually-hidden,svg,[aria-hidden=true],select")) continue;
+    if (el.closest(".u-visually-hidden,svg,[aria-hidden=true],select")) continue;
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.overflowX !== "visible" || !el.getClientRects().length) continue;
     if (el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0 && el.getBoundingClientRect().left + el.scrollWidth > lim + 1) hits.push(el);
@@ -105,7 +105,7 @@ function contrastFn(root) {
     const el = n.parentElement;
     if (seen.has(el)) continue;
     seen.add(el);
-    if (el.closest("svg,[aria-hidden=true],option,script,style,.print-area,[hidden],.visually-hidden")) continue;
+    if (el.closest("svg,[aria-hidden=true],option,script,style,.c-print,[hidden],.u-visually-hidden")) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility === "hidden" || !el.getClientRects().length) continue;
     let op = 1;
@@ -140,16 +140,16 @@ function focusInfo() {
   let under = false,
     off = false;
   if (inDialog) {
-    const st = dlg.querySelector(".sim-sticky");
-    if (st && !el.closest(".sim-sticky") && r.top < st.getBoundingClientRect().bottom - 1) under = true;
+    const st = dlg.querySelector(".c-simulator__sticky");
+    if (st && !el.closest(".c-simulator__sticky") && r.top < st.getBoundingClientRect().bottom - 1) under = true;
     const d = dlg.getBoundingClientRect();
     off = r.bottom > Math.min(d.bottom, innerHeight) + 1 || r.top < Math.max(d.top, 0) - 1;
   } else {
-    const head = document.querySelector(".site-head");
-    if (head && getComputedStyle(head).position.match(/sticky|fixed/) && !el.closest(".site-head") && r.top < head.getBoundingClientRect().bottom - 1) under = true;
+    const head = document.querySelector(".l-header");
+    if (head && getComputedStyle(head).position.match(/sticky|fixed/) && !el.closest(".l-header") && r.top < head.getBoundingClientRect().bottom - 1) under = true;
     off = r.bottom > innerHeight + 1 || r.top < -1;
   }
-  const box = el.closest(".unit") || el;
+  const box = el.closest(".c-unit-input") || el;
   const o = getComputedStyle(box),
     oe = getComputedStyle(el);
   const ring = (cs) => (cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0) || cs.boxShadow !== "none";
@@ -158,7 +158,7 @@ function focusInfo() {
 
 // シミュレーターを開き、手当を足して、結果・比較・再就職のグラフまで表示した状態にする
 async function openFilled(page, kinds = "some") {
-  await page.click(".hero-actions .btn-primary");
+  await page.click(".c-hero__actions .c-btn--primary");
   await page.waitForFunction(() => document.getElementById("simulatorDialog").open && !document.getElementById("simResult").hidden);
   await page.evaluate((kinds) => {
     const g = (id) => document.getElementById(id);
@@ -167,7 +167,7 @@ async function openFilled(page, kinds = "some") {
       g(id).dispatchEvent(new Event("change", { bubbles: true }));
     };
     set("reemployIncome", "450"); // 再就職のグラフを出す
-    const det = document.querySelector(".manual-allowances");
+    const det = document.querySelector(".c-allowance-panel__manual");
     if (det) det.open = true;
     // 管理職員特別勤務手当は「管理職」を選ばないとエラーになる（正しい案内）ので、ここでは足さない
     const list = [...g("allowanceKind").options].map((o) => o.value).filter((k) => k !== "管理職員特別勤務手当");
@@ -227,14 +227,14 @@ module.exports = async function screen(env, { quick, log }) {
       await h.page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
       await h.page.emulateMedia({ media: "print" });
       const r = await h.page.evaluate(() => {
-        const a = document.querySelector(".print-area");
+        const a = document.querySelector(".c-print");
         if (!a) return null;
         const ar = a.getBoundingClientRect();
         const tables = [...a.querySelectorAll("table")].map((t) => ({ id: t.querySelector("tbody")?.id || t.className || "table", w: Math.round(t.getBoundingClientRect().width), sw: t.scrollWidth, right: t.getBoundingClientRect().right }));
         const over = [...a.querySelectorAll("*")].filter((e) => !e.closest("svg") && e.getBoundingClientRect().width && e.getBoundingClientRect().right > ar.right + 1).map((e) => `${e.tagName.toLowerCase()}.${e.className}「${e.textContent.trim().slice(0, 15)}」`);
         return { W: ar.width, right: ar.right, docW: document.documentElement.scrollWidth, vw: innerWidth, tables, over: over.slice(0, 5), overN: over.length, rows: a.querySelectorAll("tbody tr").length };
       });
-      if (!r) rep.add("print", `印刷（幅 ${w}px）：印刷用の欄（.print-area）がない`);
+      if (!r) rep.add("print", `印刷（幅 ${w}px）：印刷用の欄（.c-print）がない`);
       else {
         rep.expect(r.rows > 0 && r.tables.length > 0, "print", `印刷（幅 ${w}px）：印刷用の欄に表がない`);
         for (const t of r.tables) rep.expect(t.sw <= Math.ceil(t.w) + 1 && t.right <= r.right + 1, "print", `印刷（幅 ${w}px）：表 ${t.id} が紙の幅に収まらない（表の幅 ${t.sw}px、欄の幅 ${Math.round(r.W)}px）`);
@@ -265,11 +265,11 @@ module.exports = async function screen(env, { quick, log }) {
         if (f.under || f.off || !f.visible) bad.push({ ...f, where: "トップ" });
       }
       // シミュレーター（手当を1つ足して、手当の欄も通る）
-      await h.page.focus(".hero-actions .btn-primary");
+      await h.page.focus(".c-hero__actions .c-btn--primary");
       await h.page.keyboard.press("Enter");
       await h.page.waitForFunction(() => document.getElementById("simulatorDialog").open);
       await h.page.evaluate(() => {
-        const det = document.querySelector(".manual-allowances");
+        const det = document.querySelector(".c-allowance-panel__manual");
         if (det) det.open = true;
         document.getElementById("allowanceKind").value = "住居手当";
         document.getElementById("addAllowance").click();

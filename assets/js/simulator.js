@@ -668,7 +668,7 @@
       select.append(o);
     }
     // 入力欄（単位付きの枠ごと）を選択欄に置き換える
-    input.closest(".unit").replaceWith(select);
+    input.closest(".c-unit-input").replaceWith(select);
   }
   // 予想階級までにたどる昇任（3曹より後）。3尉以上なら部内幹部の経路になる
   // 3尉への昇任のしかた（ofcRoute）：3曹から（部内幹部候補生）、曹長から、准尉から。曹長・准尉からは曹の階級を順に経る
@@ -743,19 +743,19 @@
   const man = (v) => `${Math.round(v / 10000).toLocaleString("ja-JP")}万`;
   // グラフの上に重ねる吹き出し。カーソル・指の位置に合わせて動かす
   function chartTip(box, html, x, y) {
-    let tip = box.querySelector(".chart-tip");
+    let tip = box.querySelector(".c-chart__tip");
     if (!tip) {
       tip = document.createElement("div");
-      tip.className = "chart-tip";
+      tip.className = "c-chart__tip";
       box.append(tip);
     }
-    if (html == null) return tip.classList.remove("show");
+    if (html == null) return tip.classList.remove("is-show");
     tip.innerHTML = html;
     const bw = box.clientWidth,
       tw = tip.offsetWidth;
     tip.style.left = `${Math.min(Math.max(x - tw / 2, 4), bw - tw - 4)}px`;
     tip.style.top = `${Math.max(4, y - tip.offsetHeight - 12)}px`;
-    tip.classList.add("show");
+    tip.classList.add("is-show");
   }
   function drawChart(years) {
     // 表示幅に合わせて描く（スマホで文字が小さくなりすぎないように）
@@ -792,7 +792,7 @@
         yS = y(d.salary);
       // 上の角だけ丸めた積み上げ棒
       svg +=
-        `<g class="bar" data-i="${i}"><clipPath id="cb${i}"><rect x="${x}" y="${yT}" width="${barW}" height="${y(0) - yT + r}" rx="${r}"/></clipPath>` +
+        `<g class="c-chart__bar" data-i="${i}"><clipPath id="cb${i}"><rect x="${x}" y="${yT}" width="${barW}" height="${y(0) - yT + r}" rx="${r}"/></clipPath>` +
         `<g clip-path="url(#cb${i})"><rect x="${x}" y="${yS}" width="${barW}" height="${y(0) - yS}" fill="url(#gSal)"/>` +
         `<rect x="${x}" y="${yT}" width="${barW}" height="${yS - yT}" fill="url(#gExt)"/></g></g>`;
       // 年齢の目盛り（最初の年は、次の目盛りと重ならないときだけ出す）
@@ -811,34 +811,34 @@
     svg +=
       `<g pointer-events="none"><circle cx="${cx(peakI)}" cy="${y(peak.total) - 7}" r="3" fill="#aaa175"/>` +
       `<text x="${Math.min(Math.max(cx(peakI), left + 34), W - right - 34)}" y="${y(peak.total) - 13}" text-anchor="middle" font-size="11" font-weight="700" fill="#777048">最高 ${man(peak.total)}円</text></g>` +
-      `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${y(0)}" stroke="#424d24" stroke-opacity=".25" stroke-dasharray="3 3" visibility="hidden"/>`;
+      `<line class="c-chart__hover-line" x1="0" x2="0" y1="${top}" y2="${y(0)}" stroke="#424d24" stroke-opacity=".25" stroke-dasharray="3 3" visibility="hidden"/>`;
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="年収の推移。${years[0].age}歳の${man(years[0].total)}円から、最高は${peak.age}歳の${man(peak.total)}円">${svg}</svg>`;
     // カーソル・指を乗せた年の内訳を吹き出しで出す
     const el = box.querySelector("svg"),
-      line = el.querySelector(".hover-line"),
-      bars = el.querySelectorAll(".bar");
+      line = el.querySelector(".c-chart__hover-line"),
+      bars = el.querySelectorAll(".c-chart__bar");
     const show = (e) => {
       const rect = el.getBoundingClientRect(),
         px = ((e.clientX - rect.left) / rect.width) * W,
         i = Math.min(years.length - 1, Math.max(0, Math.floor((px - left) / bw)));
       if (px < left) return hide();
       const d = years[i];
-      bars.forEach((b, j) => b.classList.toggle("dim", j !== i));
+      bars.forEach((b, j) => b.classList.toggle("is-dim", j !== i));
       line.setAttribute("x1", cx(i));
       line.setAttribute("x2", cx(i));
       line.setAttribute("visibility", "visible");
       chartTip(
         box,
         `<b>${d.age}〜${d.age + 1}歳</b><span>${d.ranks}</span>` +
-          `<span><i class="sw-extra"></i>推定年収 <em>${fmt(d.total)}</em></span>` +
-          `<span><i class="sw-salary"></i>俸給 ${fmt(d.salary)}／賞与・手当 ${fmt(d.extra)}</span>` +
-          `<span><i class="sw-net"></i>手取り <em>${fmt(d.net)}</em></span>`,
+          `<span><i class="c-legend__swatch--extra"></i>推定年収 <em>${fmt(d.total)}</em></span>` +
+          `<span><i class="c-legend__swatch--salary"></i>俸給 ${fmt(d.salary)}／賞与・手当 ${fmt(d.extra)}</span>` +
+          `<span><i class="c-legend__swatch--net"></i>手取り <em>${fmt(d.net)}</em></span>`,
         (cx(i) / W) * rect.width + (el.getBoundingClientRect().left - box.getBoundingClientRect().left),
         (y(d.total) / H) * rect.height + (rect.top - box.getBoundingClientRect().top),
       );
     };
     const hide = () => {
-      bars.forEach((b) => b.classList.remove("dim"));
+      bars.forEach((b) => b.classList.remove("is-dim"));
       line.setAttribute("visibility", "hidden");
       chartTip(box, null);
     };
@@ -900,12 +900,12 @@
     const ix = Math.min(income, xMax);
     svg +=
       `<circle cx="${X(ix)}" cy="${Y(got(income))}" r="6" fill="#fff" stroke="#424d24" stroke-width="3"/>` +
-      `<line class="hover-line" x1="0" x2="0" y1="${top}" y2="${Y(0)}" stroke="#424d24" stroke-opacity=".3" visibility="hidden"/>` +
-      `<circle class="hover-dot" r="4" fill="#424d24" visibility="hidden"/>`;
+      `<line class="c-chart__hover-line" x1="0" x2="0" y1="${top}" y2="${Y(0)}" stroke="#424d24" stroke-opacity=".3" visibility="hidden"/>` +
+      `<circle class="c-chart__hover-dot" r="4" fill="#424d24" visibility="hidden"/>`;
     box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="退職の翌年の年収と若年定年退職者給付金の受け取り額。年収${man(L)}円以下なら満額の${man(full)}円">${svg}</svg>`;
     const el = box.querySelector("svg"),
-      line = el.querySelector(".hover-line"),
-      dot = el.querySelector(".hover-dot");
+      line = el.querySelector(".c-chart__hover-line"),
+      dot = el.querySelector(".c-chart__hover-dot");
     const show = (e) => {
       const rect = el.getBoundingClientRect(),
         px = ((e.clientX - rect.left) / rect.width) * W;
@@ -941,7 +941,7 @@
   } catch (e) {}
   const savedFields = () =>
     document.querySelectorAll(
-      "#simulator .sim-grid input:not([readonly]), #simulator .sim-grid select, #branch, #branchAllowances select, #barracksYears, #eigaiStart",
+      "#simulator .c-simulator__grid input:not([readonly]), #simulator .c-simulator__grid select, #branch, #branchAllowances select, #barracksYears, #eigaiStart",
     );
   function state() {
     const f = {};
@@ -1041,7 +1041,7 @@
       money
         .map(
           ([name, k]) =>
-            `<tr${k === "lifetime" ? ' class="sim-compare-key"' : ""}><th scope="row">${name}</th><td>${fmt(A[k])}</td><td>${fmt(B[k])}</td><td>${diff(k)}</td></tr>`,
+            `<tr${k === "lifetime" ? ' class="c-compare__key"' : ""}><th scope="row">${name}</th><td>${fmt(A[k])}</td><td>${fmt(B[k])}</td><td>${diff(k)}</td></tr>`,
         )
         .join("");
   }
@@ -1186,7 +1186,7 @@
       }
     }
     $("simError").textContent = "";
-    const inputs = [...document.querySelectorAll(".sim-grid input")].filter((el) => !el.closest("[hidden]"));
+    const inputs = [...document.querySelectorAll(".c-simulator__grid input")].filter((el) => !el.closest("[hidden]"));
     const messages = {
       startAge: "入隊時の年齢は16〜60歳の整数で入力してください。",
       initialGrade: "入隊時の2士の号俸は1〜17号俸の整数で入力してください。",
@@ -1508,7 +1508,7 @@
       // 防大・大卒の幹部：2尉→1尉は一斉昇任のため3年（法令の在職期間3年と同じ）
       kanko: { entryType: "kanko", targetRank: "2佐", startAge: 22, steps: "def", set: { first: "3" }, lock: ["first"] },
     };
-  for (const button of document.querySelectorAll(".sim-preset"))
+  for (const button of document.querySelectorAll(".c-preset__button"))
     button.addEventListener("click", () => {
       const p = PRESETS[button.dataset.preset];
       if (!p) return;

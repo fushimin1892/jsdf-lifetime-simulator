@@ -1,13 +1,13 @@
 /* simulator-fix.css：シミュレーターまわりの細かい調整（base.css の後、design.css の前に読む） */
 
 /* シミュレーター内の部品はホバーで浮かせない */
-#simulatorDialog .sim-grid > div:hover,
-#simulatorDialog .sim-metrics div:hover,
-#simulatorDialog .sim-total:hover,
-#simulatorDialog .result:hover,
-#simulatorDialog .allowance-item:hover,
-#simulatorDialog .simulator.card:hover,
-.sim-launch:hover {
+#simulatorDialog .c-simulator__grid > div:hover,
+#simulatorDialog .c-metrics div:hover,
+#simulatorDialog .c-result-total:hover,
+#simulatorDialog .c-lookup__result:hover,
+#simulatorDialog .c-allowance-item:hover,
+#simulatorDialog .c-simulator.c-card:hover,
+.c-sim-launch:hover {
   transform: none !important;
 }
 
@@ -26,7 +26,7 @@ body:has(#simulatorDialog[open]) {
 }
 
 /* 数値入力と単位を別々のグリッド列にして、スピナーが単位に重ならないようにする */
-.unit {
+.c-unit-input {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
@@ -37,14 +37,14 @@ body:has(#simulatorDialog[open]) {
     box-shadow 0.2s ease,
     background-color 0.2s ease;
 }
-.unit input {
+.c-unit-input input {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
   padding: 13px 12px 13px 15px;
   background: transparent;
 }
-.unit span {
+.c-unit-input span {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,20 +54,20 @@ body:has(#simulatorDialog[open]) {
   background: linear-gradient(180deg, #fbfbfa, #f8f9f6);
   font-weight: 650;
 }
-.unit:focus-within {
+.c-unit-input:focus-within {
   outline: 0;
   border-color: #828b68;
   box-shadow:
     0 0 0 4px rgba(106, 118, 73, 0.13),
     0 5px 14px rgba(59, 68, 32, 0.07);
 }
-.unit input:focus {
+.c-unit-input input:focus {
   box-shadow: none !important;
 }
-.sim-grid > div {
+.c-simulator__grid > div {
   min-width: 0;
 }
-.note-link {
+.c-note-link {
   display: inline;
   margin-top: 4px;
   color: #6c7456;
@@ -81,7 +81,7 @@ body:has(#simulatorDialog[open]) {
     color 0.18s ease,
     text-decoration-color 0.18s ease;
 }
-.note-link:hover {
+.c-note-link:hover {
   color: #3b4420;
   text-decoration-color: #6c7456;
 }

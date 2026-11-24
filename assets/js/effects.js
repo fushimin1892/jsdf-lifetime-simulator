@@ -13,24 +13,24 @@
       if (!inField(e.target)) e.preventDefault();
     });
   // 少しスクロールしたら、ナビの帯を細くする
-  const onScroll = () => document.body.classList.toggle("scrolled", scrollY > 40);
+  const onScroll = () => document.body.classList.toggle("is-scrolled", scrollY > 40);
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
   // 画面に入ったらふわっと出す
   if ("IntersectionObserver" in window && !calm) {
-    document.documentElement.classList.add("reveal-ready");
+    document.documentElement.classList.add("is-reveal-ready");
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries)
           if (e.isIntersecting) {
-            e.target.classList.add("in");
+            e.target.classList.add("is-in");
             io.unobserve(e.target);
           }
       },
       { rootMargin: "0px 0px -8% 0px" },
     );
-    document.querySelectorAll("main.layout > section.card:not(.lookup), .reveal").forEach((el) => {
-      el.classList.add("reveal");
+    document.querySelectorAll("main.l-main > section.c-card:not(.c-lookup), .is-reveal").forEach((el) => {
+      el.classList.add("is-reveal");
       io.observe(el);
     });
   }
@@ -74,11 +74,11 @@
   const chart = document.getElementById("simChart");
   if (chart) {
     new MutationObserver(() => {
-      if (chart.classList.contains("fx-grow")) chart.querySelectorAll("g").forEach((g, i) => (g.style.animationDelay = `${i * 12}ms`));
+      if (chart.classList.contains("is-grow")) chart.querySelectorAll("g").forEach((g, i) => (g.style.animationDelay = `${i * 12}ms`));
     }).observe(chart, { childList: true });
     document.getElementById("simLaunch")?.addEventListener("click", () => {
-      chart.classList.add("fx-grow");
-      setTimeout(() => chart.classList.remove("fx-grow"), 1600);
+      chart.classList.add("is-grow");
+      setTimeout(() => chart.classList.remove("is-grow"), 1600);
     });
   }
 })();

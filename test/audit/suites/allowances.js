@@ -13,13 +13,13 @@ window.H = {
   open() { if (!H.g("simulatorDialog").open) H.g("simLaunch").click(); },
   // 計算し直す（requestAnimationFrame がすぐ呼ばれるので同期で終わる）
   recalc() { H.g("simLaunch").click(); },
-  add(kind) { H.g("allowanceKind").value = kind; if (H.g("allowanceKind").value !== kind) return null; H.g("addAllowance").click(); return [...document.querySelectorAll(".allowance-item")].at(-1); },
+  add(kind) { H.g("allowanceKind").value = kind; if (H.g("allowanceKind").value !== kind) return null; H.g("addAllowance").click(); return [...document.querySelectorAll(".c-allowance-item")].at(-1); },
   setIn(item, sel, v, ev = "change") { const el = item.querySelector(sel); el.value = v; el.dispatchEvent(new Event(ev, { bubbles: true })); return el.value; },
-  calcIn(item, k, v) { const el = item.querySelector(".a-calc [data-k=" + k + "]"); el.value = v; el.dispatchEvent(new Event(el.tagName === "SELECT" ? "change" : "input", { bubbles: true })); },
+  calcIn(item, k, v) { const el = item.querySelector(".c-allowance-item__calc [data-k=" + k + "]"); el.value = v; el.dispatchEvent(new Event(el.tagName === "SELECT" ? "change" : "input", { bubbles: true })); },
   // 年・月で打つ支給期間（地域手当・広域異動手当以外）
-  period(it, y, m, ly, lm) { H.setIn(it, ".a-start-y", y, "input"); H.setIn(it, ".a-start-m", m); H.setIn(it, ".a-len-y", ly, "input"); H.setIn(it, ".a-len-m", lm); },
-  hasPeriod: (it) => !it.querySelector(".a-period-wrap").hidden,
-  clear() { for (const it of [...document.querySelectorAll(".allowance-item")]) it.remove(); },
+  period(it, y, m, ly, lm) { H.setIn(it, ".c-allowance-item__start-y", y, "input"); H.setIn(it, ".c-allowance-item__start-m", m); H.setIn(it, ".c-allowance-item__len-y", ly, "input"); H.setIn(it, ".c-allowance-item__len-m", lm); },
+  hasPeriod: (it) => !it.querySelector(".c-allowance-item__period-wrap").hidden,
+  clear() { for (const it of [...document.querySelectorAll(".c-allowance-item")]) it.remove(); },
   err: () => H.g("simError").textContent.trim(),
   rows: () => [...document.querySelectorAll("#simRows tr")].map((t) => [...t.cells].map((c) => c.textContent.trim())),
   allowCol: () => [...document.querySelectorAll("#simRows tr")].map((t) => Number(t.cells[4].textContent.replace(/[^0-9-]/g, ""))),
@@ -78,26 +78,26 @@ module.exports = async function allowances(env, { quick, log }) {
               out.items.push({ branch, kind, fail: "追加できない" });
               continue;
             }
-            const rateEl = it.querySelector(".a-rate");
+            const rateEl = it.querySelector(".c-allowance-item__rate");
             const opts = rateEl ? [...rateEl.options].map((o) => o.value) : [null];
             for (const v of opts) {
               H.clear();
               it = H.add(kind);
               if (kind === "管理職員特別勤務手当") H.set("manager", "4"); // 管理職の手当（士長の間は特別調整額0なので他の額は変わらない）
               else H.set("manager", "none");
-              if (v != null) H.setIn(it, ".a-rate", v);
-              const method = it.querySelector(".a-method").value;
-              if (method === "daily") H.setIn(it, ".a-days", "10", "input");
+              if (v != null) H.setIn(it, ".c-allowance-item__rate", v);
+              const method = it.querySelector(".c-allowance-item__method").value;
+              if (method === "daily") H.setIn(it, ".c-allowance-item__days", "10", "input");
               if (kind === "地域手当") {
-                H.setIn(it, ".a-region", "custom");
-                H.setIn(it, ".a-region-custom", "10", "input");
+                H.setIn(it, ".c-allowance-item__region", "custom");
+                H.setIn(it, ".c-allowance-item__region-custom", "10", "input");
               }
-              if (kind === "広域異動手当") H.setIn(it, ".a-distance", it.querySelector(".a-distance").options[it.querySelector(".a-distance").options.length - 1].value);
-              if (kind === "その他（自由入力）") H.setIn(it, ".a-amount", "12345", "input");
+              if (kind === "広域異動手当") H.setIn(it, ".c-allowance-item__distance", it.querySelector(".c-allowance-item__distance").options[it.querySelector(".c-allowance-item__distance").options.length - 1].value);
+              if (kind === "その他（自由入力）") H.setIn(it, ".c-allowance-item__amount", "12345", "input");
               if (H.hasPeriod(it)) H.period(it, "2028", "4", "1", "0");
               else {
-                H.setIn(it, ".a-start", "2", "input");
-                H.setIn(it, ".a-end", "3");
+                H.setIn(it, ".c-allowance-item__start", "2", "input");
+                H.setIn(it, ".c-allowance-item__end", "3");
               }
               H.recalc();
               const rd = H.tryRead();
@@ -185,8 +185,8 @@ module.exports = async function allowances(env, { quick, log }) {
         const it = H.add(kind);
         if (!it) continue;
         if (kind === "住居手当") H.calcIn(it, "rent", "50000");
-        if (amount) H.setIn(it, ".a-amount", amount, "input");
-        if (it.querySelector(".a-method").value === "daily") H.setIn(it, ".a-days", "5", "input");
+        if (amount) H.setIn(it, ".c-allowance-item__amount", amount, "input");
+        if (it.querySelector(".c-allowance-item__method").value === "daily") H.setIn(it, ".c-allowance-item__days", "5", "input");
         H.period(it, "2026", "4", "1", "0");
         H.recalc();
         const a = (H.tryRead().ok || []).filter((x) => !x.placement && x.name !== "指定場所生活調整金")[0];
@@ -209,8 +209,8 @@ module.exports = async function allowances(env, { quick, log }) {
       const out = [];
       const mk = (kind, y, m, ly, lm, rate) => {
         const it = H.add(kind);
-        if (rate != null) H.setIn(it, ".a-rate", rate);
-        if (it.querySelector(".a-method").value === "daily") H.setIn(it, ".a-days", "1", "input");
+        if (rate != null) H.setIn(it, ".c-allowance-item__rate", rate);
+        if (it.querySelector(".c-allowance-item__method").value === "daily") H.setIn(it, ".c-allowance-item__days", "1", "input");
         if (H.hasPeriod(it)) H.period(it, y, m, ly, lm);
         return it;
       };
@@ -227,9 +227,9 @@ module.exports = async function allowances(env, { quick, log }) {
       sec("端が接する（重ならない）", () => { mk("在宅勤務等手当", "2030", "4", "2", "0"); mk("在宅勤務等手当", "2032", "4", "1", "0"); }, false);
       sec("1か月だけ重なる", () => { mk("在宅勤務等手当", "2030", "4", "2", "0"); mk("在宅勤務等手当", "2032", "3", "1", "0"); }, true, "2032年3月〜2032年3月");
       sec("区分が違う（重なってよい）", () => { mk("異常圧力内作業等手当", "2030", "4", "2", "0", "1"); mk("異常圧力内作業等手当", "2030", "4", "2", "0", "2"); }, false);
-      sec("区分あり と 区分なし", () => { mk("異常圧力内作業等手当", "2030", "4", "2", "0", "1"); const it = mk("異常圧力内作業等手当", "2030", "4", "2", "0", ""); H.setIn(it, ".a-amount", "210", "input"); }, true);
-      sec("区分なし同士", () => { const a = mk("防衛出動手当", "2030", "4", "2", "0"); H.setIn(a, ".a-amount", "1000", "input"); const b = mk("防衛出動手当", "2031", "4", "2", "0"); H.setIn(b, ".a-amount", "1000", "input"); }, true);
-      sec("地域手当・広域異動手当は重なりを見ない", () => { for (let i = 0; i < 2; i++) { const it = H.add("地域手当"); H.setIn(it, ".a-prefecture", "東京都"); } for (let i = 0; i < 2; i++) { const it = H.add("広域異動手当"); H.setIn(it, ".a-distance", it.querySelector(".a-distance").options[1].value); } }, false);
+      sec("区分あり と 区分なし", () => { mk("異常圧力内作業等手当", "2030", "4", "2", "0", "1"); const it = mk("異常圧力内作業等手当", "2030", "4", "2", "0", ""); H.setIn(it, ".c-allowance-item__amount", "210", "input"); }, true);
+      sec("区分なし同士", () => { const a = mk("防衛出動手当", "2030", "4", "2", "0"); H.setIn(a, ".c-allowance-item__amount", "1000", "input"); const b = mk("防衛出動手当", "2031", "4", "2", "0"); H.setIn(b, ".c-allowance-item__amount", "1000", "input"); }, true);
+      sec("地域手当・広域異動手当は重なりを見ない", () => { for (let i = 0; i < 2; i++) { const it = H.add("地域手当"); H.setIn(it, ".c-allowance-item__prefecture", "東京都"); } for (let i = 0; i < 2; i++) { const it = H.add("広域異動手当"); H.setIn(it, ".c-allowance-item__distance", it.querySelector(".c-allowance-item__distance").options[1].value); } }, false);
       sec("3件のうち1件目と3件目", () => { mk("在宅勤務等手当", "2030", "4", "1", "0"); mk("在宅勤務等手当", "2040", "4", "1", "0"); mk("在宅勤務等手当", "2030", "10", "1", "0"); }, true, "1件目と3件目");
       sec("間に別の手当", () => { mk("住居手当", "2030", "4", "1", "0"); mk("在宅勤務等手当", "2030", "4", "1", "0"); mk("住居手当", "2030", "4", "1", "0"); }, true, "住居手当");
       // 削除するとエラーが消える
@@ -237,10 +237,10 @@ module.exports = async function allowances(env, { quick, log }) {
       mk("在宅勤務等手当", "2030", "4", "1", "0");
       const second = mk("在宅勤務等手当", "2030", "4", "1", "0");
       log("削除の前", true);
-      second.querySelector(".allowance-remove").click();
+      second.querySelector(".c-allowance-item__remove").click();
       log("重なる行を削除したあと", false);
-      sec("その他の手当で名前が違う", () => { const a = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(a, ".a-name", "A手当", "input"); const b = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(b, ".a-name", "B手当", "input"); }, false);
-      sec("その他の手当で同じ名前（後ろに空白）", () => { const a = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(a, ".a-name", "A手当", "input"); const b = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(b, ".a-name", "A手当 ", "input"); }, true);
+      sec("その他の手当で名前が違う", () => { const a = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(a, ".c-allowance-item__name", "A手当", "input"); const b = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(b, ".c-allowance-item__name", "B手当", "input"); }, false);
+      sec("その他の手当で同じ名前（後ろに空白）", () => { const a = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(a, ".c-allowance-item__name", "A手当", "input"); const b = mk("その他（自由入力）", "2030", "4", "1", "0"); H.setIn(b, ".c-allowance-item__name", "A手当 ", "input"); }, true);
       sec("別の種類の手当", () => { mk("住居手当", "2030", "4", "1", "0"); mk("在宅勤務等手当", "2030", "4", "1", "0"); }, false);
       H.clear();
       H.recalc();
@@ -270,25 +270,25 @@ module.exports = async function allowances(env, { quick, log }) {
       H.set("reemployIncome", "400");
       H.set("afterPension", "kokumin");
       let it;
-      it = H.add("扶養手当"); H.calcIn(it, "p1", "16"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p2", "4"); it.querySelector(".a-calc-add").click(); H.calcIn(it, "p3", "26"); H.period(it, "2030", "7", "20", "5");
+      it = H.add("扶養手当"); H.calcIn(it, "p1", "16"); it.querySelector(".c-allowance-item__calc-add").click(); H.calcIn(it, "p2", "4"); it.querySelector(".c-allowance-item__calc-add").click(); H.calcIn(it, "p3", "26"); H.period(it, "2030", "7", "20", "5");
       it = H.add("住居手当"); H.calcIn(it, "rent", "55000"); H.period(it, "2027", "1", "3", "0");
       it = H.add("通勤手当"); H.calcIn(it, "pass", "4321"); H.period(it, "2027", "1", "3", "0");
-      it = H.add("単身赴任手当"); H.calcIn(it, "km", it.querySelector(".a-calc [data-k=km]").options[3].value); H.period(it, "2040", "4", "2", "6");
+      it = H.add("単身赴任手当"); H.calcIn(it, "km", it.querySelector(".c-allowance-item__calc [data-k=km]").options[3].value); H.period(it, "2040", "4", "2", "6");
       it = H.add("寒冷地手当"); H.calcIn(it, "grade", "3"); H.calcIn(it, "household", "1"); H.calcIn(it, "barracks", "yes"); H.period(it, "2035", "11", "1", "0");
-      it = H.add("地域手当"); H.setIn(it, ".a-prefecture", "東京都"); H.setIn(it, ".a-region", it.querySelector(".a-region").options[1].value); H.setIn(it, ".a-start", "1", "input"); H.setIn(it, ".a-end", "12");
-      it = H.add("地域手当"); H.setIn(it, ".a-region", "custom"); H.setIn(it, ".a-region-custom", "7.5", "input"); H.setIn(it, ".a-start", "12", "input"); H.setIn(it, ".a-end", "15");
-      it = H.add("広域異動手当"); H.setIn(it, ".a-distance", it.querySelector(".a-distance").options[1].value); H.setIn(it, ".a-start", "12", "input"); H.setIn(it, ".a-end", "15");
-      it = H.add("航海手当"); H.setIn(it, ".a-rate", "rank:z3"); H.setIn(it, ".a-days", "7.5", "input"); H.period(it, "2028", "2", "5", "3");
-      it = H.add("航海手当"); H.setIn(it, ".a-rate", "0"); H.setIn(it, ".a-days", "2", "input"); H.period(it, "2028", "2", "5", "3");
+      it = H.add("地域手当"); H.setIn(it, ".c-allowance-item__prefecture", "東京都"); H.setIn(it, ".c-allowance-item__region", it.querySelector(".c-allowance-item__region").options[1].value); H.setIn(it, ".c-allowance-item__start", "1", "input"); H.setIn(it, ".c-allowance-item__end", "12");
+      it = H.add("地域手当"); H.setIn(it, ".c-allowance-item__region", "custom"); H.setIn(it, ".c-allowance-item__region-custom", "7.5", "input"); H.setIn(it, ".c-allowance-item__start", "12", "input"); H.setIn(it, ".c-allowance-item__end", "15");
+      it = H.add("広域異動手当"); H.setIn(it, ".c-allowance-item__distance", it.querySelector(".c-allowance-item__distance").options[1].value); H.setIn(it, ".c-allowance-item__start", "12", "input"); H.setIn(it, ".c-allowance-item__end", "15");
+      it = H.add("航海手当"); H.setIn(it, ".c-allowance-item__rate", "rank:z3"); H.setIn(it, ".c-allowance-item__days", "7.5", "input"); H.period(it, "2028", "2", "5", "3");
+      it = H.add("航海手当"); H.setIn(it, ".c-allowance-item__rate", "0"); H.setIn(it, ".c-allowance-item__days", "2", "input"); H.period(it, "2028", "2", "5", "3");
       it = H.add("本府省業務調整手当"); H.period(it, "2045", "4", "3", "0");
-      it = H.add("異常圧力内作業等手当"); H.setIn(it, ".a-rate", "1"); H.setIn(it, ".a-days", "12", "input"); H.period(it, "2029", "6", "0", "11");
-      it = H.add("その他（自由入力）"); H.setIn(it, ".a-name", "わたしの手当", "input"); H.setIn(it, ".a-method", "annual"); H.setIn(it, ".a-amount", "120000.5", "input"); H.period(it, "2050", "12", "1", "1");
-      it = H.add("その他（自由入力）"); H.setIn(it, ".a-method", "percent"); H.setIn(it, ".a-amount", "2.5", "input"); H.period(it, "2031", "3", "0", "1");
-      it = H.add("在宅勤務等手当"); H.setIn(it, ".a-name", "在宅の手当", "input");
+      it = H.add("異常圧力内作業等手当"); H.setIn(it, ".c-allowance-item__rate", "1"); H.setIn(it, ".c-allowance-item__days", "12", "input"); H.period(it, "2029", "6", "0", "11");
+      it = H.add("その他（自由入力）"); H.setIn(it, ".c-allowance-item__name", "わたしの手当", "input"); H.setIn(it, ".c-allowance-item__method", "annual"); H.setIn(it, ".c-allowance-item__amount", "120000.5", "input"); H.period(it, "2050", "12", "1", "1");
+      it = H.add("その他（自由入力）"); H.setIn(it, ".c-allowance-item__method", "percent"); H.setIn(it, ".c-allowance-item__amount", "2.5", "input"); H.period(it, "2031", "3", "0", "1");
+      it = H.add("在宅勤務等手当"); H.setIn(it, ".c-allowance-item__name", "在宅の手当", "input");
       H.recalc();
       await H.wait(300);
-      const form = [...document.querySelectorAll("#simulator .sim-grid input, #simulator .sim-grid select")].filter((e) => e.id && !e.closest(".allowance-item")).map((e) => e.id + "=" + e.value).join("&");
-      const before = { dump: JSON.stringify(window.allowanceSimulator.dump()), rows: JSON.stringify(H.rows()), totals: H.totals(), err: H.err(), n: document.querySelectorAll(".allowance-item").length, form };
+      const form = [...document.querySelectorAll("#simulator .c-simulator__grid input, #simulator .c-simulator__grid select")].filter((e) => e.id && !e.closest(".c-allowance-item")).map((e) => e.id + "=" + e.value).join("&");
+      const before = { dump: JSON.stringify(window.allowanceSimulator.dump()), rows: JSON.stringify(H.rows()), totals: H.totals(), err: H.err(), n: document.querySelectorAll(".c-allowance-item").length, form };
       H.g("shareLink").click();
       await H.wait(300);
       before.url = H.g("shareUrl").value;
@@ -302,8 +302,8 @@ module.exports = async function allowances(env, { quick, log }) {
       const after = await p2.page.evaluate(async () => {
         H.recalc();
         await H.wait(300);
-        const form = [...document.querySelectorAll("#simulator .sim-grid input, #simulator .sim-grid select")].filter((e) => e.id && !e.closest(".allowance-item")).map((e) => e.id + "=" + e.value).join("&");
-        return { dump: JSON.stringify(window.allowanceSimulator.dump()), rows: JSON.stringify(H.rows()), totals: H.totals(), err: H.err(), n: document.querySelectorAll(".allowance-item").length, form };
+        const form = [...document.querySelectorAll("#simulator .c-simulator__grid input, #simulator .c-simulator__grid select")].filter((e) => e.id && !e.closest(".c-allowance-item")).map((e) => e.id + "=" + e.value).join("&");
+        return { dump: JSON.stringify(window.allowanceSimulator.dump()), rows: JSON.stringify(H.rows()), totals: H.totals(), err: H.err(), n: document.querySelectorAll(".c-allowance-item").length, form };
       });
       for (const k of ["n", "dump", "form", "totals", "rows", "err"]) {
         let detail = "";
@@ -330,7 +330,7 @@ module.exports = async function allowances(env, { quick, log }) {
     for (const st of quick ? broken.slice(0, 3) : broken) {
       rep.cases++;
       const p3 = await openAllow(env, env.base + "#sim=" + encodeURIComponent(JSON.stringify(st)));
-      const st2 = await p3.page.evaluate(() => ({ open: H.g("simulatorDialog").open, err: H.err(), xss: !!document.querySelector(".allowance-item img") }));
+      const st2 = await p3.page.evaluate(() => ({ open: H.g("simulatorDialog").open, err: H.err(), xss: !!document.querySelector(".c-allowance-item img") }));
       rep.expect(st2.open, "shareBroken", `壊れた共有URL ${JSON.stringify(st).slice(0, 80)}：シミュレーターが開かない`);
       rep.expect(!st2.xss, "shareBroken", `共有URLの手当名の HTML がそのまま要素になった`);
       rep.expect(!/計算できませんでした|詳細：|Cannot read|undefined|NaN/.test(st2.err), "shareBroken", `壊れた共有URL ${JSON.stringify(st).slice(0, 80)}：内部エラーの文「${st2.err}」`);
@@ -353,9 +353,9 @@ module.exports = async function allowances(env, { quick, log }) {
         out.push({ label, expectErr, err: H.err(), hidden: H.g("simResult").hidden });
       };
       for (const [m, amt, ok] of [["monthly", "0", true], ["monthly", "100", true], ["monthly", "1234.56", true], ["monthly", "10000000", true], ["monthly", "", false], ["monthly", "-1", false], ["monthly", "10000001", false], ["annual", "-5", false], ["percent", "100", true], ["percent", "100.5", false], ["percent", "-1", false]])
-        tryAllow(`手当の金額 ${m} ${JSON.stringify(amt)}`, !ok, (it) => { H.setIn(it, ".a-method", m); H.setIn(it, ".a-amount", amt, "input"); });
+        tryAllow(`手当の金額 ${m} ${JSON.stringify(amt)}`, !ok, (it) => { H.setIn(it, ".c-allowance-item__method", m); H.setIn(it, ".c-allowance-item__amount", amt, "input"); });
       for (const [d, ok] of [["0", true], ["31", true], ["0.5", true], ["", false], ["-1", false], ["32", false], ["1000", false]])
-        tryAllow(`手当の日数 ${JSON.stringify(d)}`, !ok, (it) => { H.setIn(it, ".a-method", "daily"); H.setIn(it, ".a-amount", "100", "input"); H.setIn(it, ".a-days", d, "input"); });
+        tryAllow(`手当の日数 ${JSON.stringify(d)}`, !ok, (it) => { H.setIn(it, ".c-allowance-item__method", "daily"); H.setIn(it, ".c-allowance-item__amount", "100", "input"); H.setIn(it, ".c-allowance-item__days", d, "input"); });
       for (const [y, m, ly, lm, ok] of [["2026", "4", "1", "0", true], ["2027", "3", "0", "2", true], ["2026", "4", "80", "0", true], ["2026", "3", "1", "0", false], ["", "4", "1", "0", false], ["202", "4", "1", "0", false], ["20260", "4", "1", "0", false], ["2026.5", "4", "1", "0", false], ["1950", "4", "1", "0", false], ["2026", "4", "0", "0", false], ["2026", "4", "81", "0", false], ["2028", "4", "1.5", "0", false], ["2028", "4", "-1", "6", false], ["2028", "4", "", "6", false]])
         tryAllow(`手当の支給期間 ${[y, m, ly, lm].join("/")}`, !ok, (it) => H.period(it, y, m, ly, lm));
       for (const [k, v, ok] of [["rent", "-5", false], ["rent", "1000001", false], ["rent", "1.5", false], ["rent", "61000", true]]) {

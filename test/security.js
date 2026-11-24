@@ -152,11 +152,11 @@ function serve() {
         g("allowanceKind").value = "その他（自由入力）";
         g("addAllowance").click();
         await w(150);
-        const it = [...document.querySelectorAll(".allowance-item")].at(-1);
-        const name = it.querySelector(".a-name");
+        const it = [...document.querySelectorAll(".c-allowance-item")].at(-1);
+        const name = it.querySelector(".c-allowance-item__name");
         name.value = p;
         name.dispatchEvent(new Event("input", { bubbles: true }));
-        const amt = it.querySelector(".a-amount");
+        const amt = it.querySelector(".c-allowance-item__amount");
         amt.value = "1000";
         amt.dispatchEvent(new Event("input", { bubbles: true }));
       }
@@ -197,8 +197,8 @@ function serve() {
         printBtn?.click();
         window.print = origPrint;
         const injected2 = document.querySelectorAll('img[src="x"], [data-pwn], svg[onload], script:not([src]):not([type="application/ld+json"])').length;
-        const built = !!document.querySelector(".print-area");
-        return { injected, injected2, pwned: window.__pwned || before, built, err: document.getElementById("simError")?.textContent || "", items: document.querySelectorAll(".allowance-item").length };
+        const built = !!document.querySelector(".c-print");
+        return { injected, injected2, pwned: window.__pwned || before, built, err: document.getElementById("simError")?.textContent || "", items: document.querySelectorAll(".c-allowance-item").length };
       });
       if (r.injected || r.injected2) problems.push(`入力した HTML が要素として差し込まれた（画面 ${r.injected}・印刷 ${r.injected2}）`);
       if (r.pwned) problems.push("入力したスクリプトが動いた");

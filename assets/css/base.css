@@ -22,12 +22,12 @@ body {
     sans-serif;
 }
 /* ページ上部のヘッダーと、印刷の紙面の見出し（print.js が作る）。ほかの header には付けない */
-.site-head,
-.pa-head {
+.l-header,
+.c-print__head {
   background: #fff;
   border-bottom: 1px solid #e4e6e0;
 }
-.top {
+.l-header__inner {
   max-width: 1160px;
   margin: auto;
   padding: 20px 24px;
@@ -35,21 +35,21 @@ body {
   align-items: center;
   justify-content: space-between;
 }
-.brand {
+.c-brand {
   font-weight: 800;
   letter-spacing: 0.08em;
   font-size: 1.125rem;
 }
-.brand span {
+.c-brand span {
   color: #6f7856;
 }
-.hero {
+.c-hero {
   background: #424d24;
   color: white;
   position: relative;
   overflow: hidden;
 }
-.hero:after {
+.c-hero:after {
   content: "";
   position: absolute;
   right: -80px;
@@ -62,56 +62,56 @@ body {
     0 0 0 70px #ffffff08,
     0 0 0 140px #ffffff08;
 }
-.hero-in {
+.c-hero__inner {
   max-width: 1160px;
   margin: auto;
   padding: 55px 24px 76px;
   position: relative;
   z-index: 1;
 }
-.hero h1 {
+.c-hero h1 {
   font-size: clamp(1.8125rem, 5vw, 2.6875rem);
   letter-spacing: 0.06em;
   line-height: 1.4;
   margin: 14px 0;
 }
-.hero p {
+.c-hero p {
   color: #dee2d5;
   font-size: 0.875rem;
   line-height: 1.8;
   margin: 0;
 }
-.layout {
+.l-main {
   max-width: 1160px;
   margin: -39px auto 0;
   padding: 0 24px 70px;
   position: relative;
   z-index: 2;
 }
-.card {
+.c-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 7px 30px #173c2c12;
   padding: 28px;
   margin-bottom: 22px;
 }
-.cap {
+.c-caption {
   color: #7c7550;
   font-size: 0.6875rem;
   letter-spacing: 0.15em;
   font-weight: 800;
 }
-.section-title {
+.c-section-title {
   font-size: 1.25rem;
   margin: 8px 0 7px;
 }
-.sub {
+.c-section-lead {
   font-size: 0.8125rem;
   color: #727669;
   line-height: 1.8;
   margin: 0;
 }
-.fields {
+.c-lookup__fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -132,7 +132,7 @@ select {
   background: #fff;
   font-size: 0.9375rem;
 }
-.result {
+.c-lookup__result {
   margin-top: 20px;
   background: #f2f3ec;
   border: 1px solid #e3e6d9;
@@ -143,37 +143,37 @@ select {
   align-items: center;
   gap: 12px;
 }
-.result small {
+.c-lookup__result small {
   color: #6a705c;
 }
-.result strong {
+.c-lookup__result strong {
   font-size: 1.9375rem;
   letter-spacing: 0.02em;
 }
-.result strong span {
+.c-lookup__result strong span {
   font-size: 0.9375rem;
 }
-.result .empty {
+.c-lookup__result .c-lookup__empty {
   font-size: 1.0625rem;
 }
-.note {
+.c-note {
   font-size: 0.75rem;
   color: #6c6e63;
   line-height: 1.8;
   margin-top: 14px;
 }
-.titleline {
+.c-paytable__head {
   display: flex;
   justify-content: space-between;
   align-items: end;
   gap: 12px;
 }
-.hint {
+.c-paytable__hint {
   color: #74766b;
   font-size: 0.75rem;
   white-space: nowrap;
 }
-.scroll {
+.c-paytable__scroll {
   overflow: auto;
   max-height: 620px;
   margin-top: 20px;
@@ -218,12 +218,12 @@ td:first-child {
 tbody tr:nth-child(even) td:not(:first-child) {
   background: #fbfcf9;
 }
-td.highlight {
+td.is-highlight {
   background: #eaeee0 !important;
   color: #4a5529;
   font-weight: 800;
 }
-.foot {
+.l-footer {
   max-width: 1160px;
   margin: auto;
   padding: 0 24px 35px;
@@ -234,7 +234,7 @@ td.highlight {
 a {
   color: #56642f;
 }
-.source {
+.c-source {
   border-top: 1px solid #eceee9;
   padding-top: 17px;
   margin-top: 20px;
@@ -243,64 +243,64 @@ a {
   color: #747967;
 }
 @media (max-width: 600px) {
-  .top {
+  .l-header__inner {
     padding: 16px;
   }
-  .brand {
+  .c-brand {
     font-size: 0.9375rem;
   }
-  .hero-in {
+  .c-hero__inner {
     padding: 42px 20px 70px;
   }
-  .layout {
+  .l-main {
     padding: 0 14px 40px;
   }
-  .card {
+  .c-card {
     padding: 21px 17px;
   }
-  .fields {
+  .c-lookup__fields {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  .result {
+  .c-lookup__result {
     align-items: flex-start;
     flex-direction: column;
   }
-  .result strong {
+  .c-lookup__result strong {
     font-size: 1.6875rem;
   }
-  .titleline {
+  .c-paytable__head {
     display: block;
   }
-  .hint {
+  .c-paytable__hint {
     display: block;
     margin-top: 10px;
   }
-  .scroll {
+  .c-paytable__scroll {
     max-height: 500px;
   }
 }
-.sim-grid {
+.c-simulator__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 23px;
 }
-.sim-grid [hidden] {
+.c-simulator__grid [hidden] {
   display: none;
 }
-.unit input[readonly] {
+.c-unit-input input[readonly] {
   background: #f4f4f1;
   color: #6b6e61;
   cursor: default;
 }
-.fixed-note {
+.c-field-note {
   display: block;
   color: #6b6e61;
   font-size: 0.6875rem;
   margin-top: 5px;
 }
-.unit {
+.c-unit-input {
   display: flex;
   align-items: center;
   border: 1px solid #d5d8cd;
@@ -308,7 +308,7 @@ a {
   background: white;
   overflow: hidden;
 }
-.unit input {
+.c-unit-input input {
   min-width: 0;
   width: 100%;
   border: 0;
@@ -317,86 +317,86 @@ a {
   color: #333823;
   outline: none;
 }
-.unit:focus-within {
+.c-unit-input:focus-within {
   outline: 2px solid #7d8a5a;
 }
-.unit span {
+.c-unit-input span {
   padding-right: 13px;
   font-size: 0.8125rem;
   color: #6b6e61;
   white-space: nowrap;
 }
-.sim-error {
+.c-simulator__error {
   color: #a23d33;
   font-size: 0.8125rem;
   margin-top: 10px;
 }
-.sim-total {
+.c-result-total {
   margin-top: 20px;
   background: #424d24;
   color: white;
   border-radius: 8px;
   padding: 23px;
 }
-.sim-split {
+.c-result-total__split {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr;
   gap: 16px;
 }
-.sim-split > div + div {
+.c-result-total__split > div + div {
   border-left: 1px solid rgba(255, 255, 255, 0.18);
   padding-left: 16px;
 }
-.sim-split div:not(:first-child) strong {
+.c-result-total__split div:not(:first-child) strong {
   font-size: clamp(1.25rem, 2.6vw, 1.625rem);
 }
 @media (max-width: 600px) {
-  .sim-split {
+  .c-result-total__split {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  .sim-split > div + div {
+  .c-result-total__split > div + div {
     border-left: 0;
     padding-left: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.18);
     padding-top: 10px;
   }
 }
-.sim-total span,
-.sim-total small {
+.c-result-total span,
+.c-result-total small {
   display: block;
   font-size: 0.75rem;
   color: #d8ddcb;
 }
-.sim-total strong {
+.c-result-total strong {
   display: block;
   font-size: clamp(1.625rem, 4vw, 2.25rem);
   margin: 8px 0;
 }
-.sim-metrics {
+.c-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-top: 12px;
 }
-.sim-metrics div {
+.c-metrics div {
   padding: 16px;
   background: #f4f6f1;
   border-radius: 7px;
 }
-.sim-metrics small,
-.sim-metrics strong {
+.c-metrics small,
+.c-metrics strong {
   display: block;
 }
-.sim-metrics small {
+.c-metrics small {
   font-size: 0.6875rem;
   color: #7f8373;
 }
-.sim-metrics strong {
+.c-metrics strong {
   margin-top: 6px;
   font-size: 1.0625rem;
 }
-.sim-metrics .sim-net {
+.c-metrics .c-metrics__item--net {
   grid-column: 1 / -1;
   background: #eaece3;
 }
@@ -408,47 +408,47 @@ a {
   text-align: right;
   white-space: nowrap;
 }
-.sim-section-head {
+.c-section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 26px;
 }
-.sim-section-head h3 {
+.c-section-head h3 {
   font-size: 1rem;
 }
-.sim-section-head span {
+.c-section-head span {
   color: #696d60; /* 4.5:1 以上（白・紙色の上） */
   font-size: 0.75rem;
 }
-.sim-scroll {
+.c-table-scroll {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 7px;
   max-height: 420px;
 }
-.sim-table {
+.c-sim-table {
   min-width: 620px;
 }
-.sim-table th:first-child,
-.sim-table td:first-child {
+.c-sim-table th:first-child,
+.c-sim-table td:first-child {
   position: static;
 }
-.sim-table thead th {
+.c-sim-table thead th {
   z-index: 1;
 }
-.sim-table td:nth-child(2) {
+.c-sim-table td:nth-child(2) {
   text-align: left;
 }
 @media (max-width: 600px) {
-  .sim-grid {
+  .c-simulator__grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
-  .sim-metrics {
+  .c-metrics {
     grid-template-columns: 1fr 1fr;
   }
 }
-.sim-launch {
+.c-sim-launch {
   position: fixed;
   z-index: 20;
   right: 24px;
@@ -471,16 +471,16 @@ a {
   font-size: 0.6875rem;
   line-height: 1.25;
 }
-.sim-launch:hover {
+.c-sim-launch:hover {
   background: #576530;
   transform: translateY(-2px);
 }
-.sim-launch:focus-visible,
-.sim-close:focus-visible {
+.c-sim-launch:focus-visible,
+.c-simulator__close:focus-visible {
   outline: 3px solid #aaa175;
   outline-offset: 3px;
 }
-.sim-launch-icon {
+.c-sim-launch__icon {
   font-size: 1.3125rem;
   line-height: 1;
 }
@@ -499,7 +499,7 @@ a {
   background: #102720a8;
 }
 /* 長い説明は「説明ページ」にまとめ、各項目の直下には青いリンクだけを置く */
-.note-link {
+.c-note-link {
   display: inline-block;
   margin-top: 4px;
   font-size: 0.75rem;
@@ -507,7 +507,7 @@ a {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.note-link:hover {
+.c-note-link:hover {
   color: #0d3f80;
 }
 #notesPage {
@@ -525,7 +525,7 @@ a {
 #notesPage::backdrop {
   background: #102720c4;
 }
-.notes-head {
+.c-notes__head {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -537,11 +537,11 @@ a {
   background: #424d24;
   color: #fff;
 }
-.notes-head h2 {
+.c-notes__head h2 {
   margin: 0;
   font-size: 1.0625rem;
 }
-.notes-back {
+.c-notes__back {
   border: 0;
   border-radius: 999px;
   padding: 8px 14px;
@@ -552,20 +552,20 @@ a {
   font-weight: 700;
   cursor: pointer;
 }
-.notes-body {
+.c-notes__body {
   padding: 8px 20px 28px;
 }
-.notes-body section {
+.c-notes__body section {
   padding: 16px 0;
   border-bottom: 1px solid #e6e8e3;
   scroll-margin-top: 70px;
 }
-.notes-body h3 {
+.c-notes__body h3 {
   margin: 0 0 6px;
   font-size: 0.9375rem;
   color: #424d24;
 }
-.notes-body p {
+.c-notes__body p {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.8;
@@ -575,18 +575,18 @@ a {
     width: calc(100vw - 20px);
     max-height: calc(100dvh - 32px);
   }
-  .notes-head,
-  .notes-body {
+  .c-notes__head,
+  .c-notes__body {
     padding-left: 14px;
     padding-right: 14px;
   }
 }
-.simulator.card {
+.c-simulator.c-card {
   box-shadow: none;
   margin: 0;
   position: relative;
 }
-.sim-close {
+.c-simulator__close {
   position: absolute;
   right: 20px;
   top: 17px;
@@ -600,11 +600,11 @@ a {
   line-height: 1;
   cursor: pointer;
 }
-.simulator .section-title {
+.c-simulator .c-section-title {
   padding-right: 40px;
 }
 @media (max-width: 600px) {
-  .sim-launch {
+  .c-sim-launch {
     right: 16px;
     bottom: 16px;
     width: 68px;
@@ -613,31 +613,31 @@ a {
   #simulatorDialog {
     max-height: calc(100dvh - 32px);
   }
-  .sim-close {
+  .c-simulator__close {
     right: 13px;
     top: 13px;
   }
 }
-.allowance-panel {
+.c-allowance-panel {
   margin-top: 24px;
   border: 1px solid #e2e4da;
   background: #fafbf8;
   border-radius: 9px;
   padding: 20px;
 }
-.allowance-panel h3 {
+.c-allowance-panel h3 {
   margin: 8px 0;
   font-size: 1.125rem;
 }
-.allowance-selector {
+.c-allowance-panel__selector {
   display: grid;
   grid-template-columns: 1fr 1.4fr auto;
   gap: 12px;
   align-items: end;
   margin-top: 18px;
 }
-.allowance-add,
-.allowance-remove {
+.c-action-btn,
+.c-allowance-item__remove {
   border: 1px solid #c9cebd;
   background: white;
   color: #475327;
@@ -646,81 +646,81 @@ a {
   font-weight: 700;
   cursor: pointer;
 }
-.allowance-item {
+.c-allowance-item {
   background: #fff;
   border: 1px solid #e1e3db;
   border-radius: 8px;
   padding: 16px;
   margin-top: 13px;
 }
-.allowance-item-head {
+.c-allowance-item__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.allowance-item-head strong {
+.c-allowance-item__head strong {
   min-width: 0;
   font-size: 0.875rem;
   overflow-wrap: anywhere;
 }
 /* 手当名が長くても削除ボタンを潰さない */
-.allowance-item-head .allowance-remove {
+.c-allowance-item__head .c-allowance-item__remove {
   flex: none;
   white-space: nowrap;
 }
-.allowance-remove {
+.c-allowance-item__remove {
   padding: 5px 9px;
   font-size: 0.75rem;
 }
-.allowance-fields {
+.c-allowance-item__fields {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 12px;
 }
-.allowance-fields label {
+.c-allowance-item__fields label {
   font-size: 0.6875rem;
 }
 /* 法令の額の区分は文言が長いので、1行ぶんの幅を使う */
-.allowance-fields .a-rate-wrap {
+.c-allowance-item__fields .c-allowance-item__rate-wrap {
   grid-column: 1 / -1;
 }
 /* 支給開始（年・月）と支給期間（年・か月）：1行ぶんの幅に2つ並べる */
-.allowance-fields .a-period-wrap {
+.c-allowance-item__fields .c-allowance-item__period-wrap {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
-.allowance-fields .a-period-wrap[hidden] {
+.c-allowance-item__fields .c-allowance-item__period-wrap[hidden] {
   display: none;
 }
-.a-period-row {
+.c-allowance-item__period-row {
   display: grid;
   /* 年の欄は4けた＋「年」が必ず見える幅を確保し、狭いときは月の欄を下の行に回す */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.75rem), 1fr));
   gap: 6px;
 }
 /* 支給開始が退職より後の手当の知らせ（計算は止めない） */
-.allowance-fields .a-after-note {
+.c-allowance-item__fields .c-allowance-item__after-note {
   grid-column: 1 / -1;
   font-size: 0.75rem;
   font-weight: 700;
 }
-.a-period-out {
+.c-allowance-item__period-out {
   grid-column: 1 / -1;
   margin: 0;
   font-size: 0.75rem;
   opacity: 0.8;
 }
 @media (max-width: 600px) {
-  .allowance-fields .a-period-wrap {
+  .c-allowance-item__fields .c-allowance-item__period-wrap {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.allowance-fields input,
-.allowance-fields select {
+.c-allowance-item__fields input,
+.c-allowance-item__fields select {
   width: 100%;
   min-width: 0;
   border: 1px solid #d5d8cd;
@@ -730,95 +730,95 @@ a {
   background: #fff;
   color: #333823;
 }
-.allowance-source {
+.c-allowance-panel__links {
   font-size: 0.75rem;
   line-height: 1.8;
 }
 /* 条件から月額を出す欄：手当の入力欄の上に、淡い緑の枠でまとめる */
-.a-calc-wrap {
+.c-allowance-item__calc-wrap {
   grid-column: 1 / -1;
   padding: 14px;
   border: 1px solid #dfe3d4;
   border-radius: 10px;
   background: #f7f8f4;
 }
-.a-calc-top {
+.c-allowance-item__calc-top {
   max-width: 240px;
 }
-.a-calc {
+.c-allowance-item__calc {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 10px;
 }
-.a-calc[hidden],
-.a-calc-out[hidden] {
+.c-allowance-item__calc[hidden],
+.c-allowance-item__calc-out[hidden] {
   display: none;
 }
-.a-calc-out {
+.c-allowance-item__calc-out {
   margin: 12px 0 6px;
   color: #485428;
   font-size: 0.875rem;
   font-weight: 700;
 }
-.allowance-fields .a-amount:read-only {
+.c-allowance-item__fields .c-allowance-item__amount:read-only {
   background: #f3f3f1;
   color: #676b5e;
 }
 @media (max-width: 600px) {
-  .a-calc {
+  .c-allowance-item__calc {
     grid-template-columns: 1fr;
   }
 }
 @media (max-width: 600px) {
-  .allowance-selector {
+  .c-allowance-panel__selector {
     grid-template-columns: 1fr;
   }
-  .allowance-fields {
+  .c-allowance-item__fields {
     grid-template-columns: 1fr 1fr;
   }
-  .allowance-add {
+  .c-action-btn {
     width: 100%;
   }
 }
-.auto-allowances {
+.c-allowance-panel__auto {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin-top: 16px;
 }
-.auto-allowances [hidden] {
+.c-allowance-panel__auto [hidden] {
   display: none;
 }
-.auto-sources {
+.c-allowance-panel__sources {
   margin-top: 12px;
   font-size: 0.75rem;
   line-height: 1.7;
   color: #65685a;
 }
-.branch-title {
+.c-allowance-panel__subtitle {
   font-size: 0.8125rem;
   color: #424d24;
   margin: 18px 0 0;
 }
-.manual-allowances {
+.c-allowance-panel__manual {
   margin-top: 18px;
   border-top: 1px solid #e4e6dc;
   padding-top: 13px;
 }
-.manual-allowances summary {
+.c-allowance-panel__manual summary {
   font-size: 0.8125rem;
   color: #4c592a;
   font-weight: 700;
   cursor: pointer;
 }
 @media (max-width: 600px) {
-  .auto-allowances {
+  .c-allowance-panel__auto {
     grid-template-columns: 1fr;
   }
 }
 /* シミュレーター：常に見える結果の要約 */
-.sim-sticky {
+.c-simulator__sticky {
   position: sticky;
   top: 0;
   z-index: 5;
@@ -830,7 +830,7 @@ a {
   background: #424d24;
   color: #fff;
 }
-.sim-sticky-text {
+.c-simulator__sticky-text {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -838,18 +838,18 @@ a {
   flex-wrap: wrap;
   gap: 4px 10px;
 }
-.sim-sticky-text small {
+.c-simulator__sticky-text small {
   font-size: 0.6875rem;
   color: #d8ddcb;
 }
-.sim-sticky-text strong {
+.c-simulator__sticky-text strong {
   font-size: 1.125rem;
 }
-.sim-sticky-text span {
+.c-simulator__sticky-text span {
   font-size: 0.75rem;
   color: #d8ddcb;
 }
-.sim-jump {
+.c-simulator__jump {
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
@@ -859,87 +859,87 @@ a {
   padding: 6px 12px;
   text-decoration: none;
 }
-.sim-sticky .sim-close {
+.c-simulator__sticky .c-simulator__close {
   position: static;
   flex: none;
 }
 /* 入力欄のまとまり */
-.sim-group {
+.c-simulator__group-title {
   font-size: 0.875rem;
   color: #424d24;
   margin: 26px 0 0;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
-.sim-group-note {
+.c-simulator__group-note {
   font-size: 0.75rem;
   color: #6b6e61;
   margin: 8px 0 0;
 }
-.sim-group + .sim-grid,
-.sim-group-note + .sim-grid {
+.c-simulator__group-title + .c-simulator__grid,
+.c-simulator__group-note + .c-simulator__grid {
   margin-top: 14px;
 }
-.sim-section-head {
+.c-section-head {
   flex-wrap: wrap;
   gap: 4px 12px;
 }
-.sim-section-head h3 {
+.c-section-head h3 {
   white-space: nowrap;
 }
 /* 年収の推移グラフ */
-.sim-chart {
+.c-chart {
   margin-top: 12px;
   border: 1px solid var(--line);
   border-radius: 7px;
   padding: 10px 8px 4px;
 }
-.sim-chart svg {
+.c-chart svg {
   display: block;
   width: 100%;
   height: auto;
 }
-.sim-legend {
+.c-legend {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.sim-legend i {
+.c-legend i {
   display: inline-block;
   width: 10px;
   height: 10px;
   border-radius: 2px;
   margin-left: 6px;
 }
-.sw-salary {
+.c-legend__swatch--salary {
   background: #424d24;
 }
-.sw-extra {
+.c-legend__swatch--extra {
   background: linear-gradient(#dfd8b9, #aaa175);
 }
-.sw-salary {
+.c-legend__swatch--salary {
   background: linear-gradient(#637437, #343c1c);
 }
-.sw-net {
+.c-legend__swatch--net {
   height: 3px !important;
   border-radius: 2px;
   background: #72853f;
 }
 /* グラフ：触れた年以外を薄くし、吹き出しで内訳を出す */
-.sim-chart {
+.c-chart {
   position: relative;
   background: linear-gradient(#fcfdfb, #fff);
 }
-.sim-chart svg {
+.c-chart svg {
   touch-action: pan-y;
 }
-.sim-chart .bar {
+.c-chart .c-chart__bar {
   transition: opacity 0.2s;
 }
-.sim-chart .bar.dim {
+.c-chart .c-chart__bar.is-dim {
   opacity: 0.35;
 }
-.chart-tip {
+.c-chart__tip {
   position: absolute;
   z-index: 2;
   display: grid;
@@ -959,20 +959,20 @@ a {
     opacity 0.15s,
     transform 0.15s;
 }
-.chart-tip.show {
+.c-chart__tip.is-show {
   opacity: 1;
   transform: none;
 }
-.chart-tip b {
+.c-chart__tip b {
   color: #fff;
   font-size: 0.8125rem;
 }
-.chart-tip em {
+.c-chart__tip em {
   font-style: normal;
   font-weight: 700;
   color: #dfd8b9;
 }
-.chart-tip i {
+.c-chart__tip i {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -980,7 +980,7 @@ a {
   margin-right: 5px;
   vertical-align: 1px;
 }
-.reemploy-summary {
+.c-reemploy-summary {
   margin: 10px 0 0;
   padding: 10px 14px;
   border-left: 3px solid #aaa175;
@@ -989,25 +989,25 @@ a {
   font-size: 0.875rem;
   line-height: 1.7;
 }
-.reemploy-summary b {
+.c-reemploy-summary b {
   color: #424d24;
 }
-.sim-table {
+.c-sim-table {
   min-width: 720px;
 }
 /* 共有・リセット */
-.sim-share {
+.c-share {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
   margin-top: 18px;
 }
-.sim-share .fixed-note {
+.c-share .c-field-note {
   flex-basis: 100%;
   margin-top: 0;
 }
-.sim-share-url {
+.c-share__url {
   flex-basis: 100%;
   border: 1px solid #d5d8cd;
   border-radius: 6px;
@@ -1016,11 +1016,11 @@ a {
   color: #333823;
 }
 @media (max-width: 600px) {
-  .sim-sticky {
+  .c-simulator__sticky {
     margin: -21px -17px 18px;
     padding: 8px 10px 8px 17px;
   }
-  .sim-sticky-text strong {
+  .c-simulator__sticky-text strong {
     font-size: 1rem;
   }
 }
@@ -1031,26 +1031,26 @@ button,
 summary {
   touch-action: manipulation;
 }
-.scroll {
+.c-paytable__scroll {
   scroll-behavior: smooth;
 }
 /* 右下のシミュレーターボタンでフッターの文字が隠れないようにする */
-.foot {
+.l-footer {
   padding-bottom: 120px;
 }
 @media (max-width: 600px) {
   /* iPhoneでは16px未満の入力欄をタップすると画面が拡大されるため16pxにする */
   select,
-  .unit input,
-  .allowance-fields input,
-  .allowance-fields select {
+  .c-unit-input input,
+  .c-allowance-item__fields input,
+  .c-allowance-item__fields select {
     font-size: 1rem;
   }
-  .foot {
+  .l-footer {
     padding-bottom: 104px;
   }
 }
-main.layout > section.card:hover {
+main.l-main > section.c-card:hover {
   transform: none;
   border-color: rgba(113, 120, 92, 0.17);
   box-shadow:
@@ -1058,10 +1058,10 @@ main.layout > section.card:hover {
     0 2px 5px rgba(45, 53, 26, 0.04);
 }
 @media (prefers-reduced-motion: reduce) {
-  .scroll {
+  .c-paytable__scroll {
     scroll-behavior: auto;
   }
-  .sim-launch:hover {
+  .c-sim-launch:hover {
     transform: none;
   }
 }

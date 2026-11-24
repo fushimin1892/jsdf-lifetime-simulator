@@ -7,7 +7,7 @@ document.querySelectorAll("[data-open-sim]").forEach((b) => b.addEventListener("
   launch.addEventListener("click", () => {
     if (!dialog.open) dialog.showModal();
   });
-  dialog.querySelector(".sim-close").addEventListener("click", () => dialog.close());
+  dialog.querySelector(".c-simulator__close").addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (e) => {
     if (e.target === dialog) {
       const r = dialog.getBoundingClientRect();

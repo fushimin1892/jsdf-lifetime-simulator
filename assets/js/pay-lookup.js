@@ -28,7 +28,7 @@
     amount = document.querySelector("#amount"),
     detail = document.querySelector("#detail");
   const data = window.PAY_TABLE || [],
-    scroller = document.querySelector(".scroll"),
+    scroller = document.querySelector(".c-paytable__scroll"),
     yen = new Intl.NumberFormat("ja-JP");
   let highlighted = null;
   // 選んだ階級に金額がある号俸だけを選択肢にする
@@ -43,10 +43,10 @@
   // 将は昇給なし（施行令第6条の20）。将補・1佐（1）（2）欄は昇給抑制の対象で、標準の成績では昇給せず、
   // 極めて良好でも年2号俸なので、その場合を示す
   const outlook = document.querySelector("#outlook"),
-    outlookNote = document.querySelector(".outlook-head small");
+    outlookNote = document.querySelector(".c-outlook__head small");
   let ahead = [];
   function showOutlook(r, g, v) {
-    ahead.forEach((td) => td.classList.remove("ahead"));
+    ahead.forEach((td) => td.classList.remove("is-ahead"));
     ahead = [];
     if (v == null) {
       outlook.innerHTML = "";
@@ -57,13 +57,13 @@
     outlookNote.textContent = limited ? "勤務成績が極めて良好（年2号俸）の場合" : "毎年4号俸ずつ上がる場合";
     if (r === 0) {
       outlookNote.textContent = "";
-      outlook.innerHTML = '<li><span class="outlook-max">将の俸給は官職ごとに号俸が決まり、昇給はありません。</span></li>';
+      outlook.innerHTML = '<li><span class="c-outlook__max">将の俸給は官職ごとに号俸が決まり、昇給はありません。</span></li>';
       return;
     }
     let top = g;
     while (data[top + 1]?.[r] != null) top++;
     if (g === top) {
-      outlook.innerHTML = '<li><span class="outlook-max">この階級の最高号俸です。同じ階級のままでは、これ以上昇給しません。</span></li>';
+      outlook.innerHTML = '<li><span class="c-outlook__max">この階級の最高号俸です。同じ階級のままでは、これ以上昇給しません。</span></li>';
       return;
     }
     const items = [];
@@ -74,25 +74,25 @@
       );
       const td = document.querySelector(`#tbody tr:nth-child(${n + 1}) td:nth-child(${r + 2})`);
       if (td) {
-        td.classList.add("ahead");
+        td.classList.add("is-ahead");
         ahead.push(td);
       }
       if (n === top) break;
     }
-    if (limited) items.push('<li><span class="outlook-max">将補・1佐（1）（2）欄は昇給が抑制され、標準の成績では昇給しません。</span></li>');
+    if (limited) items.push('<li><span class="c-outlook__max">将補・1佐（1）（2）欄は昇給が抑制され、標準の成績では昇給しません。</span></li>');
     outlook.innerHTML = items.join("");
   }
   function refresh() {
     const r = +rank.value,
       g = +grade.value,
       v = data[g]?.[r];
-    amount.innerHTML = v != null ? `${yen.format(v)} <span>円 / 月</span>` : '<span class="empty">該当する金額はありません</span>';
+    amount.innerHTML = v != null ? `${yen.format(v)} <span>円 / 月</span>` : '<span class="c-lookup__empty">該当する金額はありません</span>';
     detail.textContent = `${ranks[r]} ・ ${g + 1}号俸`;
     showOutlook(r, g, v);
-    highlighted?.classList.remove("highlight");
+    highlighted?.classList.remove("is-highlight");
     highlighted = document.querySelector(`#tbody tr:nth-child(${g + 1}) td:nth-child(${r + 2})`);
     if (!highlighted) return;
-    highlighted.classList.add("highlight");
+    highlighted.classList.add("is-highlight");
     // ページ全体は動かさず、俸給表の枠の中だけを該当セルまでスクロールする
     const box = scroller.getBoundingClientRect(),
       cell = highlighted.getBoundingClientRect(),

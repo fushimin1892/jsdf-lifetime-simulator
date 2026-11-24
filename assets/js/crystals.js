@@ -7,15 +7,15 @@
 /* global CrystalsCore */
 (() => {
   "use strict";
-  const canvas = document.querySelector(".bg-scene .crystals");
+  const canvas = document.querySelector(".l-bg .l-bg__canvas");
   if (!canvas || !canvas.getContext) return;
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches,
     // 読み込んだときのブラウザの関数を持っておく（回帰テストが同期の代わりに置き換えるため）
     raf = window.requestAnimationFrame.bind(window),
-    layout = document.querySelector("main.layout");
+    layout = document.querySelector("main.l-main");
   // 立体を描く WebGL 用の描き先（花びら・影の描き先の上に重ねる）
   const glCanvas = document.createElement("canvas");
-  glCanvas.className = "crystals crystals-gl";
+  glCanvas.className = "l-bg__canvas l-bg__canvas--gl";
   canvas.after(glCanvas);
 
   const size = () => ({ w: canvas.clientWidth, h: canvas.clientHeight, dpr: window.devicePixelRatio || 1 });
