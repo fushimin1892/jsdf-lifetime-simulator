@@ -1,3 +1,6 @@
+// simulator.js：生涯年収シミュレーターの本体。
+// 入力欄の読み取り → 月ごとの俸給・賞与・手当の計算（model）→ 退職手当・若年定年退職者給付金（retirement）
+// → 税・共済掛金・手取り → 結果の表・グラフ・比較・共有URL・CSV（run）。法令の数値は window.RULES から読む。
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id),

@@ -1,6 +1,6 @@
-/* シミュレーターまわりの細かい調整 */
+/* simulator-fix.css：シミュレーターまわりの細かい調整（base.css の後、design.css の前に読む） */
 
-/* no-simulator-lift：シミュレーター内の部品はホバーで浮かせない */
+/* シミュレーター内の部品はホバーで浮かせない */
 #simulatorDialog .sim-grid > div:hover,
 #simulatorDialog .sim-metrics div:hover,
 #simulatorDialog .sim-total:hover,
@@ -11,7 +11,7 @@
   transform: none !important;
 }
 
-/* simulator-scroll-lock：シミュレーターを開いている間は背景をスクロールさせない */
+/* シミュレーターを開いている間は背景をスクロールさせない */
 html:has(#simulatorDialog[open]) {
   overflow: hidden;
   overscroll-behavior: none;
@@ -25,7 +25,6 @@ body:has(#simulatorDialog[open]) {
   overscroll-behavior: contain;
 }
 
-/* simulator-ui-polish */
 /* 数値入力と単位を別々のグリッド列にして、スピナーが単位に重ならないようにする */
 .unit {
   min-width: 0;

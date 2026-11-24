@@ -1,3 +1,6 @@
+// allowances.js：シミュレーターの「手当の条件」。
+// 所属ごとの配置手当・生活の条件の欄を作り、「ほかの手当を追加する」の行の追加・削除・入力の確認と、
+// 手当ごとの月額の計算（read()）を受け持つ。法令の額・割合は window.RULES.allowances から読む。
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);

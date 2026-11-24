@@ -1,3 +1,5 @@
+// notes-page.js：説明ページ（#notesPage）。各項目の長い説明（data-note-title の付いた文）を
+// 「詳しい説明」のリンクに置き換え、押したらその説明だけをダイアログに出す。
 (() => {
   "use strict";
   const page = document.getElementById("notesPage"),

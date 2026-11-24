@@ -1,3 +1,5 @@
+// scroll-lock.js：シミュレーターを開いている間、後ろのページがスクロールしないように固定し、
+// 閉じたら元の位置に戻す（iPhone などで dialog の外が動くのを防ぐ）。
 (() => {
   const dialog = document.getElementById("simulatorDialog");
   if (!dialog) return;
@@ -6,8 +8,10 @@
   let savedY = 0;
   let pendingY = null;
   let previous = null;
+  // 今のスクロール位置（ブラウザによって読める場所が違うので順に試す）
   const readY = () => window.scrollY || document.documentElement.scrollTop || body.scrollTop || 0;
   const launcher = document.getElementById("simLaunch");
+  // 開くボタンを押したときの位置を覚える（開いた後だと位置が変わっていることがある）
   launcher?.addEventListener(
     "click",
     () => {
@@ -15,6 +19,7 @@
     },
     true,
   );
+  // 固定：body を position: fixed にして、覚えた位置の分だけ上にずらす（見た目は動かない）
   const lock = () => {
     if (locked || !dialog.open) return;
     locked = true;
@@ -33,6 +38,7 @@
     body.style.right = "0";
     body.style.width = "100%";
   };
+  // 解除：body の指定を元に戻し、描き直しを2回待ってから元の位置へスクロールする
   const unlock = () => {
     if (!locked) return;
     locked = false;
@@ -49,6 +55,7 @@
       }),
     );
   };
+  // dialog の open 属性の変化を見て、固定・解除する
   dialog.addEventListener("close", unlock);
   new MutationObserver(() => (dialog.open ? lock() : unlock())).observe(dialog, {
     attributes: true,

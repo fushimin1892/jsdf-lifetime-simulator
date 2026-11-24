@@ -48,10 +48,10 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
       }
     </script>
-    <!-- フォント（fonts フォルダ。このサイトで使う文字だけに絞った Noto Sans JP と JetBrains Mono。OFL） -->
+    <!-- フォント（assets/fonts。このサイトで使う文字だけに絞った Noto Sans JP と JetBrains Mono。OFL） -->
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
-    <!-- デザイン（css フォルダ）。読み込む順番に意味があるので並びを変えない -->
+    <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
     <link rel="stylesheet" href="assets/css/base.css?v=20261124-6" />
     <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261124-6" />
     <link rel="stylesheet" href="assets/css/design.css?v=20261124-6" />
@@ -760,38 +760,38 @@
             </div>
             <div class="sim-chart" id="simChart"></div>
             <details class="sim-fold">
-            <summary class="sim-section-head">
-              <h3>年齢ごとの内訳</h3>
-              <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」。<span class="screen-only">押すと開きます</span></span>
-            </summary>
-            <div class="sim-scroll" tabindex="0" role="region" aria-label="年齢ごとの内訳の表">
-              <table class="sim-table">
-                <thead>
-                  <tr>
-                    <th>年齢</th>
-                    <th>階級・号俸</th>
-                    <th>年間俸給</th>
-                    <th>賞与</th>
-                    <th>手当</th>
-                    <th>推定年収</th>
-                    <th>税・共済掛金</th>
-                    <th>手取り</th>
-                  </tr>
-                </thead>
-                <tbody id="simRows"></tbody>
-              </table>
-            </div>
+              <summary class="sim-section-head">
+                <h3>年齢ごとの内訳</h3>
+                <span>昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」。<span class="screen-only">押すと開きます</span></span>
+              </summary>
+              <div class="sim-scroll" tabindex="0" role="region" aria-label="年齢ごとの内訳の表">
+                <table class="sim-table">
+                  <thead>
+                    <tr>
+                      <th>年齢</th>
+                      <th>階級・号俸</th>
+                      <th>年間俸給</th>
+                      <th>賞与</th>
+                      <th>手当</th>
+                      <th>推定年収</th>
+                      <th>税・共済掛金</th>
+                      <th>手取り</th>
+                    </tr>
+                  </thead>
+                  <tbody id="simRows"></tbody>
+                </table>
+              </div>
             </details>
             <details class="sim-fold" open>
-            <summary class="sim-section-head">
-              <h3>退職時・退職後の給付</h3>
-              <span>退職手当・若年定年退職者給付金・退職後の負担と年金の見込み</span>
-            </summary>
-            <div class="sim-scroll" tabindex="0" role="region" aria-label="退職時・退職後の給付の表">
-              <table class="sim-table">
-                <tbody id="retireRows"></tbody>
-              </table>
-            </div>
+              <summary class="sim-section-head">
+                <h3>退職時・退職後の給付</h3>
+                <span>退職手当・若年定年退職者給付金・退職後の負担と年金の見込み</span>
+              </summary>
+              <div class="sim-scroll" tabindex="0" role="region" aria-label="退職時・退職後の給付の表">
+                <table class="sim-table">
+                  <tbody id="retireRows"></tbody>
+                </table>
+              </div>
             </details>
             <!-- 再就職の年収によって、若年定年退職者給付金（60歳までの分）がどれだけ減るか -->
             <div id="reemploySection" hidden>
@@ -849,27 +849,35 @@
         </div>
         <div class="source">
           <dl class="source-body colophon">
-            <div><dt>SOURCE</dt><dd>出典：<a
-            href="https://laws.e-gov.go.jp/law/327AC0000000266"
-            target="_blank"
-            rel="noopener"
-            >e-Gov法令検索「防衛省の職員の給与等に関する法律」別表第二</a></dd></div>
-            <div><dt>LAW</dt><dd>2026年11月20日に公布された改正（防衛省の職員の給与等に関する法律の一部を改正する法律、令和8年法律第89号。2026年4月にさかのぼって適用）の俸給表を掲載しています。</dd></div>
-            <div><dt>LOG</dt><dd><details class="update-log">
-                <summary>対応している法令と更新履歴</summary>
-                <p>
-                  対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
-                </p>
-                <ul>
-                  <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
-                  <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
-                  <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
-                  <li>2026-11-16：手当の額を法令から選べるようにし、すべての数値を e-Gov の条文と照合する仕組みを追加</li>
-                  <li>2026-11-06：退職後の国民年金保険料の免除（退職の特例）を試算できるようにする</li>
-                  <li>2026-11-02：公開（2025年12月公布の改正の俸給表）</li>
-                </ul>
-              </details></dd></div>
-            <div><dt>NOTE</dt><dd>正式な金額・適用条件は法令等をご確認ください。</dd></div>
+            <div>
+              <dt>SOURCE</dt><dd>出典：<a
+                  href="https://laws.e-gov.go.jp/law/327AC0000000266"
+                  target="_blank"
+                  rel="noopener"
+                  >e-Gov法令検索「防衛省の職員の給与等に関する法律」別表第二</a></dd>
+            </div>
+            <div>
+              <dt>LAW</dt><dd>2026年11月20日に公布された改正（防衛省の職員の給与等に関する法律の一部を改正する法律、令和8年法律第89号。2026年4月にさかのぼって適用）の俸給表を掲載しています。</dd>
+            </div>
+            <div>
+              <dt>LOG</dt><dd><details class="update-log">
+                  <summary>対応している法令と更新履歴</summary>
+                  <p>
+                    対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
+                  </p>
+                  <ul>
+                    <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
+                    <li>2026-11-18：手当の入力の誤りの知らせ方を改善、セキュリティの検査を追加</li>
+                    <li>2026-11-17：退職手当・賞与・定年の計算の誤りを修正（監査による）</li>
+                    <li>2026-11-16：手当の額を法令から選べるようにし、すべての数値を e-Gov の条文と照合する仕組みを追加</li>
+                    <li>2026-11-06：退職後の国民年金保険料の免除（退職の特例）を試算できるようにする</li>
+                    <li>2026-11-02：公開（2025年12月公布の改正の俸給表）</li>
+                  </ul>
+                </details></dd>
+            </div>
+            <div>
+              <dt>NOTE</dt><dd>正式な金額・適用条件は法令等をご確認ください。</dd>
+            </div>
           </dl>
         </div>
       </section>
@@ -899,7 +907,7 @@
         </div>
       </div>
     </footer>
-    <!-- 手当・俸給などの数値（data フォルダ）と、計算・動きのプログラム（js フォルダ）。読み込む順番を変えない -->
+    <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
     <script src="assets/data/pay-table.js?v=20261124-6"></script>
     <script src="assets/data/promotion-table.js?v=20261124-6"></script>
     <script src="assets/js/pay-lookup.js?v=20261124-6"></script>

@@ -1,3 +1,5 @@
+// pay-lookup.js：トップの「俸給を調べる」（階級・号俸を選ぶと俸給月額と昇給の見通しを出す）と、
+// 自衛官 俸給表（#paytable の表）を window.PAY_TABLE から作る。
 (() => {
   "use strict";
   const ranks = [

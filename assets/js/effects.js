@@ -1,3 +1,5 @@
+// effects.js：見た目の演出（ヘッダーを細くする・画面に入ったら表示・金額のカウントアップ・グラフの伸び）と、
+// 文章をコピーしにくくする処理。計算には関わらない。
 (() => {
   "use strict";
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
