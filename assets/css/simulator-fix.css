@@ -31,11 +31,6 @@ body:has(#simulatorDialog[open]) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
   align-items: stretch;
-  border-radius: 11px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
 }
 .c-unit-input input {
   box-sizing: border-box;
@@ -51,7 +46,6 @@ body:has(#simulatorDialog[open]) {
   min-width: 43px;
   padding: 0 13px 0 10px;
   border-left: 1px solid #eff1ec;
-  background: linear-gradient(180deg, #fbfbfa, #f8f9f6);
   font-weight: 650;
 }
 .c-unit-input:focus-within {
@@ -70,7 +64,6 @@ body:has(#simulatorDialog[open]) {
 .c-note-link {
   display: inline;
   margin-top: 4px;
-  color: #6c7456;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.6;
