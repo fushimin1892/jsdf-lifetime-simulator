@@ -915,6 +915,59 @@
   window.salarySimulatorModel = model;
   // テスト用（test/law-cases.js が条文から作った期待値と比べる）。画面の動作には使わない
   window.salarySimulatorTax = { salaryIncome, salaryTaxes, ypIncome, incomeAdjustment, firstPayYm };
+  // ---- 俸給を調べる：毎月の手取りの目安 ----
+  // 俸給だけを受ける場合（手当なし・配偶者と扶養親族なし・40歳未満で介護の掛金なし）の、ある月の手取り。
+  // 共済掛金はシミュレーターと同じ率（標準報酬は俸給の額で決める）。所得税・住民税は、同じ俸給が1年続き、
+  // 賞与（期末手当・勤勉手当の標準の割合と階級による加算）も受けるとして年額を出し、所得税は俸給と賞与の額の割合で、
+  // 住民税は12分の1で、1か月分にする
+  function lookupNet(col, pay) {
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })),
+      y = now.getFullYear(),
+      ym = y * 12 + now.getMonth(),
+      general = col === 0,
+      shortRate =
+        (general ? KY.general.short : KY.short) + (general ? KY.general.welfare : KY.welfare) + (ym >= KY.childFrom[0] * 12 + KY.childFrom[1] - 1 ? KY.child : 0),
+      longRate = KY.pension + KY.retire;
+    let g = 0;
+    while (g + 1 < KY.stdTable.length && pay >= KY.stdTable[g + 1][0]) g++;
+    const stdShort = KY.stdTable[g][1],
+      stdPension = Math.min(Math.max(stdShort, KY.pensionStdMin), pensionCap(ym)),
+      monthSocial = Math.floor(stdShort * shortRate) + Math.floor(stdPension * longRate),
+      // 賞与：1回分＝（俸給＋階級による加算）×（期末手当＋勤勉手当の標準の割合）。年2回
+      B = R.bonus,
+      kind = col <= B.shiteiCols ? "shitei" : "normal",
+      add = (B.rankAdd.find(([max]) => col <= max) || [0, 0])[1],
+      once = Math.floor(pay * (1 + add) * (B.kimatsuPer[kind] + B.kinbenStandard[kind])),
+      b = Math.floor(once / 1000) * 1000,
+      // 短期は年度の上限まで、厚生年金は1回の上限まで（シミュレーターと同じ）
+      bonusSocial = Math.floor(Math.min(b * 2, KY.bonusShortYearCap) * shortRate) + 2 * Math.floor(Math.min(b, KY.bonusPensionCap) * longRate),
+      income = pay * 12 + once * 2,
+      { it, rt } = salaryTaxes(income, monthSocial * 12 + bonusSocial, y, { spouse: false, general: 0, specific: 0 }),
+      incomeTax = Math.round((it * pay) / income),
+      residentTax = Math.round(rt / 12);
+    return { social: monthSocial, incomeTax, residentTax, net: pay - monthSocial - incomeTax - residentTax };
+  }
+  {
+    const rankSel = $("rank"),
+      gradeSel = $("grade"),
+      out = $("amountNet");
+    const showNet = () => {
+      const col = Number(rankSel.value),
+        pay = window.PAY_TABLE?.[Number(gradeSel.value)]?.[col];
+      if (pay == null) {
+        out.hidden = true;
+        return;
+      }
+      const n = lookupNet(col, pay);
+      out.hidden = false;
+      out.querySelector("b").textContent = fmt(n.net);
+      out.querySelector("small").textContent =
+        `共済掛金 ${fmt(n.social)}・所得税 ${fmt(n.incomeTax)}・住民税 ${fmt(n.residentTax)} を引いた額。手当なし・配偶者と扶養親族なし・40歳未満として計算した目安です`;
+    };
+    rankSel.addEventListener("change", showNet);
+    gradeSel.addEventListener("change", showNet);
+    showNet();
+  }
   // 俸給表はこのページに埋め込んだ PAY_TABLE を使う
   const table = window.PAY_TABLE;
   if (!table) $("simError").textContent = "俸給データの読み込みに失敗しました。";
@@ -1549,7 +1602,7 @@
       incomeY59Biz: "60歳になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
       incomeCiv: "自衛官以外の職員の定年になる年の前年の給与収入は0〜5,000万円で入力するか、空欄にしてください。",
       incomeCivBiz: "自衛官以外の職員の定年になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
-      selfRetireAge: "自己都合で退職する年齢は整数で入力してください。",
+      selfRetireAge: "自己都合で退職する年齢は、入隊時の年齢より大きく、定年の年齢以下の整数で入力してください。",
     };
     const invalid = inputs.find((el) => el.value.trim() === "" || !el.checkValidity());
     // 間違った欄が閉じたまとまり（details）の中にあれば、開いて見えるようにする
@@ -1619,7 +1672,7 @@
         lastRank = `${reached}${x.monthly.at(-1).grade ? ` ${x.monthly.at(-1).grade}号俸` : ""}`;
       $("totalIncome").textContent = fmt(x.total);
       $("totalDetail").textContent =
-        "いずれも額面の試算。在職中の給与の総額に、退職手当と若年定年退職者給付金は含みません" +
+        "生涯年収と3つの内訳は、税金などを引く前の額（額面）です" +
         (reached === target
           ? ""
           : c.retireAge < targetAge
@@ -1682,12 +1735,6 @@
       $("grossAll").textContent = fmt(x.total + r.allowance + r.pension);
       $("totalDeductions").textContent = fmt(deductions + r.tax);
       $("lifetimeNet").textContent = fmt(lifetime);
-      // いちばん上の大きな表示（くわしい数字と同じ値）
-      $("heroGross").textContent = fmt(x.total + r.allowance + r.pension);
-      $("heroSalary").textContent = fmt(x.total);
-      $("heroRetire").textContent = fmt(r.allowance);
-      $("heroYp").textContent = r.payments.length ? fmt(r.pension) : "対象外";
-      $("heroNet").textContent = fmt(lifetime);
       // 上の帯も生涯年収にそろえる
       $("stickyTotal").textContent = fmt(x.total + r.allowance + r.pension);
       const row = (k, v, note = "") => `<tr><th scope="row">${k}</th><td>${v}</td><td>${note}</td></tr>`;

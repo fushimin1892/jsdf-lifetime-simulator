@@ -1,4 +1,4 @@
-// ヘッダーと最初の画面の「生涯年収を試算」ボタンは、右下のボタンと同じくシミュレーターを開く
+// 最初の画面の「生涯年収を試算する」ボタンは、右下のボタンと同じくシミュレーターを開く
 document.querySelectorAll("[data-open-sim]").forEach((b) => b.addEventListener("click", () => document.getElementById("simLaunch").click()));
 (() => {
   "use strict";

@@ -3,7 +3,6 @@
 /* シミュレーター内の部品はホバーで浮かせない */
 #simulatorDialog .c-simulator__grid > div:hover,
 #simulatorDialog .c-metrics div:hover,
-#simulatorDialog .c-result-total:hover,
 #simulatorDialog .c-lookup__result:hover,
 #simulatorDialog .c-allowance-item:hover,
 #simulatorDialog .c-simulator.c-card:hover,

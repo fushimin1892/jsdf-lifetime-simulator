@@ -258,27 +258,9 @@ html body .l-header__nav a:hover {
 html body .l-header__nav a:hover::after {
   transform: scaleX(1);
 }
-html body .l-header__cta {
-  grid-column: 11 / 13;
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  font: 600 0.75rem/1 var(--sans);
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  white-space: nowrap;
-}
-html body .l-header__cta:hover {
-  background: var(--od-2);
-}
-html body .l-header__cta span,
 html body .c-btn span {
   transition: transform 0.25s;
 }
-html body .l-header__cta:hover span,
 html body .c-btn:hover span {
   transform: translateX(4px);
 }
@@ -427,7 +409,7 @@ html body .c-btn--ghost:hover {
   background: var(--ink);
   color: var(--paper-2);
 }
-html body :is(.c-btn, .l-header__cta, a, select):focus-visible {
+html body :is(.c-btn, a, select):focus-visible {
   outline: 2px solid var(--od);
   outline-offset: 3px;
 }
@@ -1027,9 +1009,6 @@ html body .c-hero .c-lookup {
   html body .c-brand {
     grid-column: 1 / 8;
   }
-  html body .l-header__cta {
-    grid-column: 8 / 13;
-  }
   html body .c-hero__inner {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
@@ -1128,12 +1107,6 @@ html body .c-hero .c-lookup {
     font-size: 0.75rem;
     letter-spacing: 0.04em;
   }
-  html body .l-header__cta {
-    gap: 4px;
-    padding: 8px 10px;
-    font-size: 0.6875rem;
-    letter-spacing: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .c-hero__chip-dot,
@@ -1212,11 +1185,8 @@ html body #simulatorDialog .c-source a {
 html body #simulatorDialog .c-simulator__sticky {
   background: var(--ink);
 }
-html body #simulatorDialog .c-result-total {
-  color: #fff;
-}
-html body #simulatorDialog .c-result-total strong,
 html body #simulatorDialog .c-metrics strong,
+
 html body #simulatorDialog .c-simulator__sticky strong {
   font-family: var(--num);
   font-variant-numeric: tabular-nums;
@@ -1242,19 +1212,6 @@ html body #simulatorDialog .c-metrics strong {
   margin-top: 8px;
   color: var(--ink);
   font-size: 1.375rem;
-}
-html body #simulatorDialog .c-metrics > .c-metrics__item--net {
-  grid-column: span 2;
-}
-html body #simulatorDialog .c-metrics > .c-metrics__item--net small {
-  color: #c9ccbf;
-}
-html body #simulatorDialog .c-metrics > .c-metrics__item--net strong {
-  color: #fff;
-  font-size: 1.75rem;
-}
-html body #simulatorDialog .c-metrics > .c-metrics__item--net:last-child strong {
-  color: var(--brass);
 }
 html body #notesPage {
   color-scheme: light;
@@ -1753,12 +1710,6 @@ html body #simulatorDialog :is(.c-allowance-item, details.c-fold, .c-compare, .c
   border-radius: var(--r);
   box-shadow: none;
 }
-html body #simulatorDialog .c-metrics > .c-metrics__item--net {
-  border-color: var(--ink);
-}
-html body #simulatorDialog .c-result-total {
-  border-radius: var(--r);
-}
 /* 入力欄：角 4px・細い線・影なし */
 html
   body
@@ -1802,8 +1753,7 @@ html body #simulatorDialog h3.c-simulator__group-title {
   font-weight: 600;
   font-size: 1rem;
 }
-html body #simulatorDialog .c-metrics strong,
-html body #simulatorDialog .c-result-total strong {
+html body #simulatorDialog .c-metrics strong {
   font-weight: 500;
 }
 
@@ -1811,11 +1761,6 @@ html body #simulatorDialog .c-result-total strong {
 @media (max-width: 960px) {
   html body #simulatorDialog .c-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 560px) {
-  html body #simulatorDialog .c-metrics > .c-metrics__item--net {
-    grid-column: 1 / -1;
   }
 }
 
@@ -1826,7 +1771,8 @@ html body #simulatorDialog .c-result-total strong {
    ・線（ほかの操作）：すりガラスの白に、細い線の二重の縁。かざすと墨の面に変わる
    ・墨の帯の上（結果へ・閉じる）：透ける面に明るい細い線
    =================================================================== */
-html body :is(.c-btn--primary, .l-header__cta),
+html body :is(.c-btn--primary),
+
 html body #simulatorDialog .c-action-btn {
   position: relative;
   overflow: hidden;
@@ -1843,7 +1789,8 @@ html body #simulatorDialog .c-action-btn {
     background-color 0.3s,
     transform 0.3s;
 }
-html body :is(.c-btn--primary, .l-header__cta)::after,
+html body :is(.c-btn--primary)::after,
+
 html body #simulatorDialog .c-action-btn::after {
   content: "";
   position: absolute;
@@ -1854,7 +1801,8 @@ html body #simulatorDialog .c-action-btn::after {
   transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
   pointer-events: none;
 }
-html body :is(.c-btn--primary, .l-header__cta):hover,
+html body :is(.c-btn--primary):hover,
+
 html body #simulatorDialog .c-action-btn:hover {
   border-color: #0f110b;
   background: linear-gradient(180deg, #364027 0%, #263016 55%, #181e0e 100%);
@@ -1863,12 +1811,13 @@ html body #simulatorDialog .c-action-btn:hover {
     inset 0 0 0 3px #263016,
     inset 0 0 0 4px rgba(210, 197, 149, 0.7);
 }
-html body :is(.c-btn--primary, .l-header__cta):hover::after,
+html body :is(.c-btn--primary):hover::after,
+
 html body #simulatorDialog .c-action-btn:hover::after {
   transform: translateX(120%);
 }
 /* 矢印：真鍮色の細い丸の中に */
-html body :is(.c-btn--primary, .l-header__cta) span {
+html body :is(.c-btn--primary) span {
   display: inline-grid;
   place-items: center;
   width: 22px;
@@ -1878,11 +1827,6 @@ html body :is(.c-btn--primary, .l-header__cta) span {
   border-radius: 50%;
   font-size: 0.6875rem;
   line-height: 1;
-}
-html body .l-header__cta span {
-  width: 18px;
-  height: 18px;
-  margin-right: -4px;
 }
 
 html body .c-btn--ghost,
@@ -1969,18 +1913,13 @@ html body .c-lookup::after {
   background: #a8904f;
 }
 @media (prefers-reduced-motion: reduce) {
-  html body :is(.c-btn--primary, .l-header__cta)::after,
+  html body :is(.c-btn--primary)::after,
+
   html body #simulatorDialog .c-action-btn::after {
     transition: none;
   }
 }
 /* シミュレーターの結果の箱も、ボタンと同じ縁にそろえる（墨の箱＝真鍮の細い輪、白い箱＝細い線の二重の縁） */
-html body #simulatorDialog :is(.c-result-total, .c-metrics > .c-metrics__item--net) {
-  background: linear-gradient(180deg, #23271d 0%, #1b1e17 60%, #14160f 100%);
-  box-shadow:
-    inset 0 0 0 5px #1b1e17,
-    inset 0 0 0 6px rgba(210, 197, 149, 0.32);
-}
 html body #simulatorDialog .c-metrics > div:not(.c-metrics__item--net),
 html body #simulatorDialog :is(.c-compare, details.c-fold) {
   box-shadow:
@@ -2493,4 +2432,47 @@ html body #simulatorDialog .c-result-hero__net b {
   html body #simulatorDialog .c-result-hero__parts b {
     white-space: nowrap;
   }
+}
+html body #simulatorDialog .c-result-hero__detail {
+  display: block;
+  margin-top: 10px;
+  color: #b9b394;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+html body #simulatorDialog .c-result-hero__detail:empty {
+  display: none;
+}
+/* 生涯年収のすぐ下につなげる数字（勤務期間・最終階級など） */
+html body #simulatorDialog .c-metrics.c-metrics--joined {
+  margin-top: 10px;
+}
+
+/* ---------- 俸給を調べる：毎月の手取りの目安 ---------- */
+html body .c-lookup .c-lookup__net {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(114, 133, 63, 0.08);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+html body .c-lookup .c-lookup__net b {
+  margin-left: 8px;
+  font: 500 1.5rem/1.2 var(--num);
+  font-variant-numeric: tabular-nums;
+}
+html body .c-lookup .c-lookup__net span {
+  margin-left: 4px;
+  color: var(--od);
+  font-size: 0.8125rem;
+}
+html body .c-lookup .c-lookup__net small {
+  display: block;
+  margin-top: 6px;
+  color: var(--dim);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.6;
 }

@@ -190,45 +190,6 @@ a {
   font-size: 0.8125rem;
   margin-top: 10px;
 }
-.c-result-total {
-  margin-top: 20px;
-  padding: 23px;
-}
-.c-result-total__split {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
-  gap: 16px;
-}
-.c-result-total__split > div + div {
-  border-left: 1px solid rgba(255, 255, 255, 0.18);
-  padding-left: 16px;
-}
-.c-result-total__split div:not(:first-child) strong {
-  font-size: clamp(1.25rem, 2.6vw, 1.625rem);
-}
-@media (max-width: 600px) {
-  .c-result-total__split {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-  .c-result-total__split > div + div {
-    border-left: 0;
-    padding-left: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
-    padding-top: 10px;
-  }
-}
-.c-result-total span,
-.c-result-total small {
-  display: block;
-  font-size: 0.75rem;
-  color: #d8ddcb;
-}
-.c-result-total strong {
-  display: block;
-  font-size: clamp(1.625rem, 4vw, 2.25rem);
-  margin: 8px 0;
-}
 .c-metrics {
   grid-template-columns: repeat(4, 1fr);
   margin-top: 12px;
@@ -242,9 +203,6 @@ a {
 }
 .c-metrics strong {
   margin-top: 6px;
-}
-.c-metrics .c-metrics__item--net {
-  background: #eaece3;
 }
 #retireRows th,
 #retireRows td:last-child {
