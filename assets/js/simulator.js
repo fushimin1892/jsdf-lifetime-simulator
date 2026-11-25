@@ -997,6 +997,8 @@
     const kokuhoCalc = $("afterHealth").value === "kokuhoCalc";
     for (const el of document.querySelectorAll("[data-kokuho]")) el.hidden = !kokuhoCalc;
     $("afterHealthYen").closest(".c-unit-input").parentElement.hidden = kokuhoCalc || $("afterHealth").value === "none";
+    // 保険料を払う年数は、自分で保険料を払うとき（任意継続・国民健康保険）だけ出す
+    $("afterHealthYears").closest(".c-unit-input").parentElement.hidden = $("afterHealth").value === "none";
     $("targetRankWrap").hidden = ninkiExit;
     // 退職の年齢：定年（予想階級）か、任期満了（任期の合計）
     if (ninkiExit) {
@@ -1152,8 +1154,9 @@
       // 年収 x のときに受け取る1回目と2回目の合計（2回目の減額と、1回目の返納を差し引いた額。計算本体と同じ式）
       got = a.got;
     $("reemploySummary").innerHTML =
-      `退職の翌年の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
-      `${man(U)}円で2回目が0、${man(G)}円以上で1回目も全額返納になります。`;
+      `再就職の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
+      `それを超えると減り、<b>${man(U)}円で2回目が0</b>、<b>${man(G)}円以上で1回目も全額返納</b>になります。` +
+      `いまの入力（年収${man(income)}円）では <b>${fmt(Math.round(got(income)))}</b> です。`;
     const W = Math.max(300, box.clientWidth - 16 || 640),
       H = W < 480 ? 220 : 250,
       left = 50,
@@ -1549,6 +1552,8 @@
       selfRetireAge: "自己都合で退職する年齢は整数で入力してください。",
     };
     const invalid = inputs.find((el) => el.value.trim() === "" || !el.checkValidity());
+    // 間違った欄が閉じたまとまり（details）の中にあれば、開いて見えるようにする
+    if (invalid) for (let d = invalid.closest("details"); d; d = d.parentElement.closest("details")) d.open = true;
     // 昇任までの期間などは、入力欄の最小値（法令の最短）〜最大値と単位を使って案内する
     const unit = (el) => el.parentElement.querySelector("span")?.textContent || "";
     let message = invalid
@@ -1677,6 +1682,14 @@
       $("grossAll").textContent = fmt(x.total + r.allowance + r.pension);
       $("totalDeductions").textContent = fmt(deductions + r.tax);
       $("lifetimeNet").textContent = fmt(lifetime);
+      // いちばん上の大きな表示（くわしい数字と同じ値）
+      $("heroGross").textContent = fmt(x.total + r.allowance + r.pension);
+      $("heroSalary").textContent = fmt(x.total);
+      $("heroRetire").textContent = fmt(r.allowance);
+      $("heroYp").textContent = r.payments.length ? fmt(r.pension) : "対象外";
+      $("heroNet").textContent = fmt(lifetime);
+      // 上の帯も生涯年収にそろえる
+      $("stickyTotal").textContent = fmt(x.total + r.allowance + r.pension);
       const row = (k, v, note = "") => `<tr><th scope="row">${k}</th><td>${v}</td><td>${note}</td></tr>`;
       // 任期満了金（任期制自衛官）の行
       const termRows = (r.terms || [])

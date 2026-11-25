@@ -2343,3 +2343,154 @@ html body :is(input, textarea, select, [contenteditable]) {
   user-select: text;
   -webkit-touch-callout: default;
 }
+
+/* ---------- 入力の「開くと出る」まとまり（分からなければ開かなくてよい項目） ---------- */
+/* 帯を押すと中の入力欄が出る。閉じていても値は計算に使う */
+html body #simulatorDialog .c-simulator__guide {
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border-left: 3px solid #8d8452;
+  background: #f6f5ee;
+  color: #3d4234;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+html body #simulatorDialog details.c-sim-more {
+  margin-top: 22px;
+  border: 1px solid #e4e5df;
+  border-radius: 10px;
+  background: #fbfbf8;
+}
+html body #simulatorDialog details.c-sim-more > summary.c-sim-more__summary {
+  display: block;
+  position: relative;
+  padding: 14px 48px 14px 16px;
+  list-style: none;
+  cursor: pointer;
+}
+html body #simulatorDialog details.c-sim-more > summary.c-sim-more__summary::-webkit-details-marker {
+  display: none;
+}
+html body #simulatorDialog details.c-sim-more > summary.c-sim-more__summary::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #4a5a26;
+  border-bottom: 2px solid #4a5a26;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s;
+}
+html body #simulatorDialog details.c-sim-more[open] > summary.c-sim-more__summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+html body #simulatorDialog details.c-sim-more > summary h3.c-simulator__group-title {
+  margin: 0;
+}
+html body #simulatorDialog .c-sim-more__hint {
+  display: block;
+  margin-top: 6px;
+  color: #6b6e62;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+html body #simulatorDialog details.c-sim-more[open] {
+  padding-bottom: 16px;
+}
+html body #simulatorDialog details.c-sim-more > :not(summary) {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+html body #simulatorDialog details.c-sim-more > summary:focus-visible {
+  outline: 2px solid #4a5a26;
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  html body #simulatorDialog details.c-sim-more > :not(summary) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+html body #simulatorDialog details.c-sim-more > h4.c-sim-more__sub {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e4e5df;
+  color: #4c592a;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* ---------- 結果のいちばん上：自衛隊での生涯年収（額面）を大きく出す ---------- */
+html body #simulatorDialog .c-result-hero {
+  padding: 22px 20px 18px;
+  border-radius: 12px;
+  background: #1f2419;
+  color: #f4f2e8;
+}
+html body #simulatorDialog .c-result-hero__label {
+  display: block;
+  color: #cfc9a8;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+}
+html body #simulatorDialog .c-result-hero__total {
+  display: block;
+  margin-top: 4px;
+  font-size: clamp(1.6rem, 8vw, 2.6rem);
+  white-space: nowrap;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+html body #simulatorDialog .c-result-hero__parts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+html body #simulatorDialog .c-result-hero__parts li {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+}
+html body #simulatorDialog .c-result-hero__parts span {
+  display: block;
+  color: #cfc9a8;
+  font-size: 0.75rem;
+}
+html body #simulatorDialog .c-result-hero__parts b {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+html body #simulatorDialog .c-result-hero__net {
+  margin: 14px 0 0;
+  color: #cfc9a8;
+  font-size: 0.875rem;
+}
+html body #simulatorDialog .c-result-hero__net b {
+  margin-left: 6px;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  html body #simulatorDialog .c-result-hero__parts {
+    grid-template-columns: 1fr;
+  }
+  html body #simulatorDialog .c-result-hero {
+    padding: 18px 14px 14px;
+  }
+  html body #simulatorDialog .c-result-hero__parts b {
+    white-space: nowrap;
+  }
+}
