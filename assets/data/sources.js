@@ -15,6 +15,30 @@ window.SOURCES = {
 
   laws: [
     {
+      key: "ypShorei",
+      title: "若年定年退職者給付金に関する省令",
+      num: "平成二十一年防衛省令第五号",
+      egovId: "421M60002000005",
+      url: "https://laws.e-gov.go.jp/law/421M60002000005",
+      egovRevision: { promulgated: "2026-07-03", enforced: "2026-07-03", by: "若年定年退職者給付金に関する省令の一部を改正する省令" },
+    },
+    {
+      key: "shotokuRei",
+      title: "所得税法施行令",
+      num: "昭和四十年政令第九十六号",
+      egovId: "340CO0000000096",
+      url: "https://laws.e-gov.go.jp/law/340CO0000000096",
+      egovRevision: { promulgated: "2026-03-31", enforced: "2026-05-22", by: "所得税法施行令の一部を改正する政令" },
+    },
+    {
+      key: "kokuhoRei",
+      title: "国民健康保険法施行令",
+      num: "昭和三十三年政令第三百六十二号",
+      egovId: "333CO0000000362",
+      url: "https://laws.e-gov.go.jp/law/333CO0000000362",
+      egovRevision: { promulgated: "2026-07-29", enforced: "2026-08-01", by: "健康保険法施行令等の一部を改正する政令" },
+    },
+    {
       key: "boeiKyuyo",
       title: "防衛省の職員の給与等に関する法律",
       num: "昭和二十七年法律第二百六十六号",
