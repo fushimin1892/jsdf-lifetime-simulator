@@ -32,7 +32,7 @@ for (const b of ["ground", "maritime", "air"]) {
 await set("branch", "ground"); await set("targetRank", "1曹"); await set("manager", "none");
 await addAllowance("扶養手当", (it) => setIn(it, ".c-allowance-item__amount", "13000", "input"));
 await addAllowance("地域手当", (it) => { setIn(it, ".c-allowance-item__prefecture", "東京都"); });
-await addAllowance("広域異動手当", (it) => { setIn(it, ".c-allowance-item__distance", "10"); setIn(it, ".c-allowance-item__start", "2", "input"); });
+await addAllowance("広域異動手当", (it) => { setIn(it, ".c-allowance-item__distance", "16"); setIn(it, ".c-allowance-item__start", "2", "input"); });
 await addAllowance("野外訓練・演習従事手当", (it) => setIn(it, ".c-allowance-item__days", "3", "input"));
 await set("spouse", "yes"); await set("dependents", "2"); await set("specificDependents", "1"); await set("reemployIncome", "450"); await wait(500);
 out.cases.push("manual: " + read());
