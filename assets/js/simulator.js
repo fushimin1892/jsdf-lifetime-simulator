@@ -805,7 +805,9 @@
           Yv = Y(G, A),
           U = Yv - Pc * NS.upperMultiplier,
           [a1, a2, a3] = adjust3(E, I.after, I.y59, L, A, Yv, U);
-        chart = { L, U, G: Yv, first: E[0], second: E[1], got: (x) => adjust3(E, x, -Infinity, L, A, Yv, U).slice(0, 2).reduce((p, q) => p + q, 0) };
+        // グラフは3回目も含める。3回目を決める年（60歳になる年の前年）の年収が空欄なら、退職の翌年と同じ年収が続くとする
+        const x3 = inc.y59 ? I.y59 : null;
+        chart = { L, U, G: Yv, first: E[0], second: E[1], third: E[2], thirdFixed: x3 != null, thirdYear: "60歳になる年の前年", lateSeparate: late > 0, got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) };
         Object.assign(detail, { L, U, G, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, income59: I.y59 });
         if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
         else {
@@ -825,7 +827,9 @@
             U = Yv - Pc * NS.lateUpper,
             [a1, a2, a3] = adjust3(E, I.after, I.civ, L, A, Yv, U);
           assumptions.push("定年が60歳以上の人の給与年額相当額の割合（55〜70％）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第16項の割合を使っています");
-          chart = { L, U, G: Yv, first: E[0], second: E[1], got: (x) => adjust3(E, x, -Infinity, L, A, Yv, U).slice(0, 2).reduce((p, q) => p + q, 0) };
+          // グラフは3回目も含める。3回目を決める年（自衛官以外の職員の定年の前年）の年収が空欄なら、退職の翌年と同じ年収が続くとする
+          const x3 = inc.civ ? I.civ : null;
+          chart = { L, U, G: Yv, first: E[0], second: E[1], third: E[2], thirdFixed: x3 != null, thirdYear: "自衛官以外の職員の定年の前年", got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) };
           Object.assign(detail, { L, U, G: Go, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, incomeCiv: I.civ });
           if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
           else {
@@ -1312,13 +1316,21 @@
     $("reemploySection").hidden = !a;
     if (!a) return;
     const { L, U, G, first, second } = a,
-      full = first + second,
-      // 年収 x のときに受け取る1回目と2回目の合計（2回目の減額と、1回目の返納を差し引いた額。計算本体と同じ式）
+      third = a.third || 0,
+      full = first + second + third,
+      // 年収 x のときに受け取る合計（2回目・3回目の減額と、1回目の返納を差し引いた額。計算本体と同じ式）
       got = a.got;
+    $("reemployLead").textContent = third ? "1回目から3回目の合計（60歳までの分）。" : "1回目と2回目の合計（退職の翌年の所得で決まる分）。";
     $("reemploySummary").innerHTML =
       `再就職の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
-      `それを超えると減り、<b>${man(U)}円で2回目が0</b>、<b>${man(G)}円以上で1回目も全額返納</b>になります。` +
-      `いまの入力（年収${man(income)}円）では <b>${fmt(Math.round(got(income)))}</b> です。`;
+      `それを超えると減り、<b>${man(U)}円で2回目が0</b>、<b>${man(G)}円以上で1回目も全額返納</b>${third && !a.thirdFixed ? "（3回目も0）" : ""}になります。` +
+      `いまの入力（年収${man(income)}円）では <b>${fmt(Math.round(got(income)))}</b> です。` +
+      (third
+        ? a.thirdFixed
+          ? `3回目は、入力した${a.thirdYear}の年収で計算しています。`
+          : `3回目は${a.thirdYear}の年収で決まり、ここでは同じ年収が続くとしています。`
+        : "") +
+      (a.lateSeparate ? "60歳以後の分（4回目から6回目）は61歳の年の年収で決まるため、このグラフに含みません。" : "");
     const W = Math.max(300, box.clientWidth - 16 || 640),
       H = W < 480 ? 220 : 250,
       left = 50,

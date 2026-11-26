@@ -680,6 +680,43 @@ const check = (cond, msg) => {
     check(/重なっています/.test(leave.errOverlap), `育休と介護休暇の重なりの案内：${leave.errOverlap}`);
   }
 
+  // ---- 10. 再就職の年収のグラフ（令和10年4月以後の退職は3回目も含む。第27条の4第4項・附則第12項）----
+  //   60歳になる年の前年の年収が空欄なら同じ年収が続くとして、グラフの額が結果の1〜3回目の合計と一致すること
+  {
+    const chart = await page.evaluate(async () => {
+      const g = (id) => document.getElementById(id),
+        set = (id, v) => {
+          g(id).value = String(v);
+          g(id).dispatchEvent(new Event("change", { bubbles: true }));
+        },
+        out = [];
+      set("entryType", "sotsu");
+      set("branch", "ground");
+      set("targetRank", "1曹");
+      set("startAge", 18);
+      set("entryYear", 2026);
+      set("entryMonth", 4);
+      set("retireReason", "teinen");
+      for (const inc of [0, 300, 500, 700, 900, 1200]) {
+        set("reemployIncome", inc);
+        g("simLaunch").click();
+        const sum = [...document.querySelectorAll("#retireRows tr")]
+          .filter((tr) => /給付金 [123]回目（/.test(tr.cells[0].textContent))
+          .reduce((t, tr) => t + Number(tr.cells[1].textContent.replace(/[^0-9]/g, "")), 0);
+        out.push({ inc, sum, text: g("reemploySummary").textContent });
+      }
+      set("reemployIncome", 0);
+      g("simLaunch").click();
+      return out;
+    });
+    for (const { inc, sum, text } of chart) {
+      const m = text.match(/では ([0-9,]+)円 です/),
+        shown = m ? Number(m[1].replace(/,/g, "")) : NaN;
+      check(shown === sum, `年収${inc}万円：グラフの額 ${shown}（期待 結果の1〜3回目の合計 ${sum}）`);
+    }
+    check(/満額（15,771,600円）/.test(chart[0].text), `満額は438,100円×4年×9か月＝15,771,600円：${chart[0].text.slice(0, 60)}`);
+  }
+
   for (const e of errors) check(false, "ページのエラー: " + e);
   await browser.close();
   server.close();
