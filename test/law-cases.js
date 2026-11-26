@@ -466,7 +466,10 @@ const check = (cond, msg) => {
         return {
           err: g("simError").textContent,
           years: x.retire.years,
-          m: x.monthly.map((k) => ({ pay: k.pay, basePay: k.basePay, social: k.social, bonus: k.bonus, kinben: k.kinben, benefit: k.benefit || 0, std: k.stdShort, allowances: k.allowances })),
+          m: x.monthly.map((k) => ({ pay: k.pay, basePay: k.basePay, social: k.social, bonus: k.bonus, kinben: k.kinben, benefit: k.benefit || 0, support: k.support || 0, std: k.stdShort, allowances: k.allowances, rank: k.rank })),
+          events: x.monthly.flatMap((k, i) => k.promotions.map((p) => ({ month: i, to: p.to }))),
+          adjust: x.retire.adjust,
+          detail: g("deductionDetail").textContent,
         };
       };
     set("entryType", "sotsu");
@@ -483,8 +486,17 @@ const check = (cond, msg) => {
     g("kaigoAge").value = "";
     out.base = run();
     set("ikujiMonths", 12);
-    set("ikujiAge", 30);
+    set("ikujiAge", 31);
     out.ikuji = run();
+    // 手当金の延長（2歳まで）と、育児休業支援手当金を受けない場合
+    set("ikujiAge", 30);
+    set("ikujiMonths", 24);
+    set("ikujiExtend", 24);
+    set("ikujiSupport", "no");
+    out.extend = run();
+    set("ikujiExtend", 12);
+    set("ikujiSupport", "yes");
+    set("ikujiMonths", 12);
     g("ikujiAge").value = "";
     set("kaigoMonths", 6);
     set("kaigoAge", 45);
@@ -495,7 +507,26 @@ const check = (cond, msg) => {
     set("selfRetireAge", 40);
     out.selfBase = run().years;
     set("ikujiAge", 30);
-    out.selfIkuji = run().years;
+    const si = run();
+    out.selfIkuji = si.years;
+    out.selfIkujiAdjust = si.adjust;
+    g("ikujiAge").value = "";
+    out.selfBaseAdjust = run().adjust;
+    // 調整額の上位60か月に育休が入る場合：35歳から36か月休み、40歳で自己都合退職
+    set("ikujiMonths", 36);
+    set("ikujiAge", 35);
+    {
+      const r = run(),
+        x = window.salarySimulatorTax.lastModel;
+      out.longAdjust = {
+        adjust: r.adjust,
+        err: r.err,
+        rows: x.monthly.map((k) => ({ amount: k.col === 0 ? null : (window.RULES.retirement.adjustMonthly[k.col] ?? 0), ikuji: k.leave?.kind === "ikuji", idx: k.leave?.idx })),
+        years: r.years,
+      };
+    }
+    set("ikujiMonths", 12);
+    set("ikujiAge", 30);
     // 入力の誤り：月数の上限と重なり
     set("ikujiMonths", 37);
     g("simLaunch").click();
@@ -514,7 +545,8 @@ const check = (cond, msg) => {
     const B = leave.base.m,
       I = leave.ikuji.m,
       K = leave.kaigo.m,
-      from = (30 - 18) * 12,
+      from = (31 - 18) * 12,
+      from30 = (30 - 18) * 12,
       kfrom = (45 - 18) * 12,
       day = (std) => {
         const v = std / 22,
@@ -525,34 +557,90 @@ const check = (cond, msg) => {
       kinbenP = (half) => (half >= 12 ? 1 : [0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95][half]),
       near = (a, b) => Math.abs(a - b) <= 1;
     check(!leave.base.err && !leave.ikuji.err && !leave.kaigo.err, `育休・介護休暇の計算でエラーが出ない ${leave.ikuji.err}${leave.kaigo.err}`);
-    // 育児休業の12か月：給与0・掛金0、手当金は6か月67％・6か月50％（上限あり）
+    // 育児休業の12か月：給与0・掛金0、手当金は6か月67％・6か月50％（上限あり）。
+    // 最初の月は育児休業支援手当金（標準報酬の日額の13％×20日。日額の上限 2,932円）を足す（第68条の3）
     for (let k = 0; k < 12; k++) {
       const x = I[from + k],
         rate = k < 6 ? 0.67 : 0.5,
         cap = k < 6 ? 332454 : 248100,
-        expect = Math.min(Math.floor(day(x.std) * rate) * 22, cap);
+        support = k === 0 ? Math.min(Math.floor(day(x.std) * 0.13), 2932) * 20 : 0,
+        expect = Math.min(Math.floor(day(x.std) * rate) * 22, cap) + support;
+      check(x.support === support, `育休${k + 1}か月目の育児休業支援手当金 ${x.support}（期待 ${support}）`);
       check(x.pay === 0 && x.allowances === 0 && x.social === 0, `育休${k + 1}か月目：俸給 ${x.pay}・手当 ${x.allowances}・掛金 ${x.social}（期待 すべて0）`);
       check(x.benefit === expect, `育休${k + 1}か月目の育児休業手当金 ${x.benefit}（期待 ${expect}：標準報酬 ${x.std} の日額×${rate}×22日）`);
     }
-    check(I[from + 12].pay === B[from + 12].pay && I[from + 12].benefit === 0, `育休が終わった月は俸給が元に戻る ${I[from + 12].pay}／${B[from + 12].pay}`);
-    // 賞与：30歳の6月（基準日以前6か月のうち育休2か月）→ 期末 5か月80％・勤勉 4か月70％。12月は6か月とも育休で支給なし。
+    check(I[from + 12].pay > 0 && I[from + 12].benefit === 0, `育休が終わった月は俸給が出て、手当金はない ${I[from + 12].pay}`);
+    // 昇任の遅れ：育休（30歳から24か月）の中にある昇任は、復帰後の最初の機会（年1回）まで遅れる（防衛省「両立支援ハンドブック」Q7）。
+    // 昇任後の号俸は昇任時の号俸で決まるので、階級だけを比べる
+    {
+      const rk = (e) => e.to.split(" ")[0],
+        be = leave.base.events.filter((e) => e.month >= from30),
+        ie = leave.extend.events.filter((e) => e.month >= from30),
+        hit = be.find((e) => e.month < from30 + 24);
+      if (hit) {
+        const d = Math.ceil((from30 + 24 - hit.month) / 12) * 12;
+        check(ie[0] && ie[0].month === hit.month + d && rk(ie[0]) === rk(hit), `育休中の昇任（${hit.to}、入隊${hit.month}か月）は ${ie[0]?.month}か月に遅れる（期待 ${hit.month + d}）`);
+        const end = leave.base.m.length;
+        check(
+          be.filter((e) => e.month + d < end).every((e, i) => ie[i] && ie[i].month === e.month + d && rk(ie[i]) === rk(e)),
+          `後の昇任も同じだけ遅れる：${be.map((e) => e.month).join(",")} → ${ie.map((e) => e.month).join(",")}`,
+        );
+        check(/遅らせて計算しています/.test(leave.extend.detail) && !/遅らせて/.test(leave.ikuji.detail), `昇任を遅らせた案内が出る：${leave.extend.detail.slice(0, 120)}`);
+      } else check(false, "育休の期間に昇任が入る条件になっていない（テストの条件を見直す）");
+    }
+    // 手当金の延長（2歳まで）：24か月とも手当金があり、7か月目以後は50％。支援手当金なし
+    {
+      const E = leave.extend.m;
+      check(!leave.extend.err, `延長の計算でエラーが出ない ${leave.extend.err}`);
+      for (const k of [0, 12, 17, 18, 23]) {
+        const x = E[from30 + k],
+          rate = k < 6 ? 0.67 : 0.5,
+          expect = Math.min(Math.floor(day(x.std) * rate) * 22, k < 6 ? 332454 : 248100);
+        check(x.benefit === expect && x.support === 0, `延長：育休${k + 1}か月目の手当金 ${x.benefit}（期待 ${expect}）・支援手当金 ${x.support}（期待 0）`);
+      }
+      check(E[from30 + 24].benefit === 0, `育休が終われば手当金はない ${E[from + 24].benefit}`);
+    }
+    // 賞与：31歳の6月（基準日以前6か月のうち育休2か月）→ 期末 5か月80％・勤勉 4か月70％。12月は6か月とも育休で支給なし。
     //   翌年6月（育休4か月）→ 期末 4か月60％・勤勉 2か月30％
     const jun = from + 2,
       dec = from + 8,
       jun2 = from + 14,
       part = (x) => ({ kimatsu: x.bonus - x.kinben, kinben: x.kinben });
     for (const [m, km, kn, label] of [
-      [jun, 5, 8, "30歳の6月"],
-      [jun2, 4, 4, "31歳の6月"],
+      [jun, 5, 8, "31歳の6月"],
+      [jun2, 4, 4, "32歳の6月"],
     ]) {
       const b = part(B[m]),
         i = part(I[m]);
       check(near(i.kimatsu, Math.floor(b.kimatsu * kimatsuP(km))), `${label}の期末手当 ${i.kimatsu}（期待 ${b.kimatsu}×${kimatsuP(km)}）`);
       check(near(i.kinben, Math.floor(b.kinben * kinbenP(kn))), `${label}の勤勉手当 ${i.kinben}（期待 ${b.kinben}×${kinbenP(kn)}）`);
     }
-    check(I[dec].bonus === 0, `30歳の12月は基準日以前6か月がすべて育休なので賞与なし ${I[dec].bonus}`);
+    check(I[dec].bonus === 0, `31歳の12月は基準日以前6か月がすべて育休なので賞与なし ${I[dec].bonus}`);
     // 退職手当の勤続期間：自己都合40歳（22年）→ 育休12か月で4か月を除いて21年
     check(leave.selfBase === 22 && leave.selfIkuji === 21, `退職手当の勤続年数 ${leave.selfBase} → ${leave.selfIkuji}（期待 22 → 21）`);
+    // 調整額：育休の月は休職月等として一部を除くが、上位60か月に入らない月なので、調整額は変わらない（施行令第6条第3項第2号）
+    {
+      // 条文どおりに数え直す：区分（調整月額）ごとに、子が1歳の月まで（休み始めから13か月）は3分の1、その後は2分の1（切り上げ）を最初の月から除き、
+      // 残りの上位60か月を合計。自己都合で勤続10〜24年は2分の1（退職手当法第6条の4第1項・第4項第3号、施行令第6条第3項）
+      const L = leave.longAdjust,
+        out = new Set();
+      for (const u of [true, false]) {
+        const groups = {};
+        L.rows.forEach((r, i) => {
+          if (r.ikuji && r.idx < 13 === u) (groups[r.amount] ||= []).push(i);
+        });
+        for (const list of Object.values(groups)) list.slice(0, Math.ceil(list.length / (u ? 3 : 2))).forEach((i) => out.add(i));
+      }
+      const top = L.rows
+          .filter((r, i) => !out.has(i))
+          .map((r) => r.amount)
+          .sort((a, b) => b - a)
+          .slice(0, 60)
+          .reduce((a, b) => a + b, 0),
+        expect = L.years >= 10 && L.years <= 24 ? Math.floor(top / 2) : top;
+      check(!L.err && L.adjust === expect && out.size === 5 + 12, `35歳から36か月の育休・40歳自己都合の調整額 ${L.adjust}（期待 ${expect}、除く月 ${out.size}（期待 17））`);
+    }
+    check(leave.selfIkujiAdjust === leave.selfBaseAdjust, `退職手当の調整額 ${leave.selfIkujiAdjust}（期待 ${leave.selfBaseAdjust}。除く月は上位60か月の外）`);
     // 介護休暇の6か月：俸給0、掛金はかかる、手当金は66日（3か月分）まで67％
     for (let k = 0; k < 6; k++) {
       const x = K[kfrom + k],

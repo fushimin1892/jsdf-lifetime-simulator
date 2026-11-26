@@ -52,10 +52,10 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261126-2" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261126-2" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261126-2" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261126-2" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261126-3" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261126-3" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261126-3" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261126-3" />
   </head>
   <body>
     <i class="c-scroll-progress" aria-hidden="true"></i>
@@ -820,7 +820,28 @@
                 <input id="ikujiMonths" type="number" min="1" max="36" step="1" value="12" aria-describedby="ikujiNote" /><span>か月</span>
               </div>
               <small id="ikujiNote" class="c-field-note"
-                >子が生まれた月から休むとして計算します（子が3歳になるまで）。休んでいる月は給与が出ず、共済掛金は免除、共済組合から育児休業手当金（非課税。子が1歳になるまで、標準報酬の67％・7か月目から50％）が出ます。賞与は休んだ期間に応じて減り、退職手当の勤続期間から休んだ月の3分の1（子が1歳になった月より後は2分の1）を除きます。号俸は、復帰したあと休んだ期間も勤務したとみなして調整されるとして、減らしません。昇任の日に休んでいると、その時の昇任の対象にならないため、入力した昇任の時期より遅れることがあります（国家公務員の育児休業等に関する法律第5条・第8条〜第10条、同法第27条、国家公務員共済組合法第68条の2・第100条の2）</small
+                >子が生まれた月から休むとして計算します（子が3歳になるまで）。休んでいる月は給与が出ず、共済掛金は免除、共済組合から育児休業手当金（非課税。子が1歳になるまで、標準報酬の67％・7か月目から50％）が出ます。賞与は休んだ期間に応じて減り、退職手当の勤続期間と調整額の計算から休んだ月の3分の1（子が1歳になった月より後は2分の1）を除きます。号俸は、復帰したあと休んだ期間も勤務したとみなして調整されるとして、減らしません。定期昇任の日に休んでいると、その昇任の対象になりません（防衛省「両立支援ハンドブック」）。その場合は、復帰後の最初の昇任の機会（年1回。3曹は年2回）まで、その昇任と後の昇任を遅らせて計算します（国家公務員の育児休業等に関する法律第5条・第8条〜第10条、同法第27条、国家公務員共済組合法第68条の2・第100条の2、国家公務員退職手当法施行令第6条第3項）</small
+              >
+            </div>
+            <div>
+              <label for="ikujiExtend">育児休業手当金を受ける期間</label
+              ><select id="ikujiExtend" aria-describedby="ikujiExtendNote">
+                <option value="12" selected>子が1歳になるまで</option>
+                <option value="18">1歳6か月まで（延長）</option>
+                <option value="24">2歳まで（再延長）</option>
+              </select>
+              <small id="ikujiExtendNote" class="c-field-note"
+                >保育所に申し込んだが入れないときなどは、1歳6か月まで、さらに2歳まで延ばせます。延ばした期間も標準報酬の50％です（国家公務員共済組合法第68条の2第1項）。休む月数が短いときは、休みが終わるまでです</small
+              >
+            </div>
+            <div>
+              <label for="ikujiSupport">育児休業支援手当金</label
+              ><select id="ikujiSupport" aria-describedby="ikujiSupportNote">
+                <option value="yes" selected>受ける</option>
+                <option value="no">受けない</option>
+              </select>
+              <small id="ikujiSupportNote" class="c-field-note"
+                >子が生まれてすぐの期間に14日以上休むと、最初の28日（土日を除く）に標準報酬の13％が上乗せされます（同法第68条の3）。父は、母が産後休業をしていれば受けられます。母は、夫も生後8週間以内に14日以上育児休業を取ることが必要です（夫が自営業や無職のときなどは不要）</small
               >
             </div>
             <div>
@@ -835,7 +856,7 @@
                 <input id="kaigoMonths" type="number" min="1" max="6" step="1" value="3" aria-describedby="kaigoNote" /><span>か月</span>
               </div>
               <small id="kaigoNote" class="c-field-note"
-                >1人の家族の介護につき通算6か月まで（自衛隊法施行規則第49条の2）。月の全日を休むとして計算します。俸給などは減り、扶養手当・住居手当はそのまま出ます。共済掛金はかかり、共済組合から介護休業手当金（非課税。通算66日まで標準報酬の67％）が出ます。勤勉手当は休んだ日が30日を超えると減ります。退職手当の勤続期間を減らすかどうかは公式の資料で確かめられていないため、減らしていません</small
+                >1人の家族の介護につき通算6か月まで（自衛隊法施行規則第49条の2）。月の全日を休むとして計算します。俸給などは減り、扶養手当・住居手当はそのまま出ます。共済掛金はかかり、共済組合から介護休業手当金（非課税。通算66日まで標準報酬の67％）が出ます。勤勉手当は休んだ日が30日を超えると減ります。介護休暇は給与が減る休みで、退職手当の「休職月等」に当たらないため、退職手当は減りません（国家公務員退職手当法の運用方針）</small
               >
             </div>
           </div>
@@ -1129,9 +1150,9 @@
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261126-2"></script>
-    <script src="assets/data/promotion-table.js?v=20261126-2"></script>
-    <script src="assets/js/pay-lookup.js?v=20261126-2"></script>
+    <script src="assets/data/pay-table.js?v=20261126-3"></script>
+    <script src="assets/data/promotion-table.js?v=20261126-3"></script>
+    <script src="assets/js/pay-lookup.js?v=20261126-3"></script>
     <button
       class="c-sim-launch"
       id="simLaunch"
@@ -1142,11 +1163,11 @@
       <span class="c-sim-launch__icon" aria-hidden="true">↗</span
       ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261126-2"></script>
-    <script src="assets/js/regional-rate.js?v=20261126-2"></script>
-    <script src="assets/js/allowances.js?v=20261126-2"></script>
-    <script src="assets/js/simulator.js?v=20261126-2"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261126-2"></script>
+    <script src="assets/data/rules.js?v=20261126-3"></script>
+    <script src="assets/js/regional-rate.js?v=20261126-3"></script>
+    <script src="assets/js/allowances.js?v=20261126-3"></script>
+    <script src="assets/js/simulator.js?v=20261126-3"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261126-3"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <header class="c-notes__head">
@@ -1155,11 +1176,11 @@
       </header>
       <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261126-2"></script>
-    <script src="assets/js/effects.js?v=20261126-2"></script>
-    <script src="assets/js/crystals-core.js?v=20261126-2"></script>
-    <script src="assets/js/crystals.js?v=20261126-2"></script>
-    <script src="assets/js/scroll-lock.js?v=20261126-2"></script>
-    <script src="assets/js/print.js?v=20261126-2"></script>
+    <script src="assets/js/notes-page.js?v=20261126-3"></script>
+    <script src="assets/js/effects.js?v=20261126-3"></script>
+    <script src="assets/js/crystals-core.js?v=20261126-3"></script>
+    <script src="assets/js/crystals.js?v=20261126-3"></script>
+    <script src="assets/js/scroll-lock.js?v=20261126-3"></script>
+    <script src="assets/js/print.js?v=20261126-3"></script>
   </body>
 </html>

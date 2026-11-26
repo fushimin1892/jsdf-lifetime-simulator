@@ -497,10 +497,17 @@
         if (x.leave.kind === "ikuji") {
           x.social = 0;
           x.socialMonth = 0;
-          const IB = LV.ikujiBenefit;
-          if (x.leave.idx < IB.untilMonths) {
+          const IB = LV.ikujiBenefit,
+            SB = LV.supportBenefit;
+          // 子が1歳（延長したときは1歳6か月・2歳）に達するまで
+          if (x.leave.idx < (c.ikujiExtendMonths || IB.untilMonths)) {
             const first = x.leave.idx < IB.firstMonths;
             x.benefit = Math.min(Math.floor(day * (first ? IB.first : IB.rest)) * LV.workdays, first ? IB.capFirst : IB.capRest);
+          }
+          // 育児休業支援手当金（第68条の3）：休み始めた月（子が生まれた月）に、28日のうち土日を除いた日の分
+          if (c.ikujiSupport && x.leave.idx === 0) {
+            x.support = Math.min(Math.floor(day * SB.rate), SB.capDay) * SB.days;
+            x.benefit += x.support;
           }
         } else {
           const KB = LV.kaigoBenefit,
@@ -877,7 +884,8 @@
     const paidMonths = terms.length ? c.ninki.terms[terms.length - 1].end : 0,
       // 高等工科学校の卒業生は、生徒の期間の2分の1を勤続期間に通算する（自衛官として6か月以上在職した場合。防衛省給与法第28条の2第4項）
       // 育児休業の月（休職月等）は、子が1歳に達した日の属する月までは3分の1、それ以後は2分の1を勤続期間から除く（端数は切り上げ。
-      // 育児休業法第10条第2項、退職手当法第7条第4項、退職手当法施行令第5条の2）。介護休暇の月の扱いは確かめられていないので除かない
+      // 育児休業法第10条第2項、退職手当法第7条第4項、退職手当法施行令第5条の2）。介護休暇の月は、給与を減額される期間で休職月等に
+      // 当たらないので除かない（国家公務員退職手当法の運用方針 第六条の四関係二イ）
       ikujiOut = (() => {
         const list = monthly.slice(paidMonths).filter((x) => x.leave?.kind === "ikuji"),
           under1 = list.filter((x) => x.leave.idx < R.leave.retireIkujiUnder1Months).length;
@@ -902,8 +910,21 @@
     else rate = bandMonths(n >= RT.art5From ? ART5 : n >= RT.art4From ? ART4 : ART3, n >= RT.art5From ? Math.min(n, RT.teinenMaxYears) : n);
     const basic = Math.floor(Math.min(P * rate * (teinen || n <= RT.selfAdjustMaxYears ? RT.adjustFactor : 1), P * RT.capMonths));
     // 調整額（法第6条の4）：調整月額の多い順に60か月分。勤続4年以下（自己都合は24年以下）は半額、自己都合で9年以下は0
+    // 育児休業の月（休職月等）は、職員の区分ごとに、子が1歳に達した日の属する月までは3分の1、それ以後は2分の1（端数は切り上げ）を
+    // 最初の月から順に除く（施行令第6条第3項第2号・第3号。区分は調整月額が同じ月をまとめて数える）。介護休暇の月は除かない
+    const adjustOut = new Set();
+    for (const under1 of [true, false]) {
+      const groups = new Map();
+      monthly.slice(paidMonths).forEach((x, i) => {
+        if (x.leave?.kind !== "ikuji" || x.leave.idx < R.leave.retireIkujiUnder1Months !== under1) return;
+        const key = adjustMonthly(x.col, x.grade);
+        groups.set(key, [...(groups.get(key) || []), i]);
+      });
+      for (const list of groups.values()) list.slice(0, Math.ceil(list.length / (under1 ? 3 : 2))).forEach((i) => adjustOut.add(i));
+    }
     const top = monthly
       .slice(paidMonths)
+      .filter((x, i) => !adjustOut.has(i))
       .map((x) => adjustMonthly(x.col, x.grade))
       .sort((a, b) => b - a)
       .slice(0, RT.adjustTopMonths)
@@ -1738,6 +1759,27 @@
         message = `${name}を始める年齢は、入隊時の年齢（${c.startAge}歳）以上で、休みが退職（${c.retireAge}歳）までに終わる整数で入力してください。`;
       else c.leaves.push({ kind, from, months });
     }
+    c.ikujiExtendMonths = Number($("ikujiExtend").value) || R.leave.ikujiBenefit.untilMonths;
+    c.ikujiSupport = $("ikujiSupport").value === "yes";
+    // 定期昇任日に育児休業中の者は昇任の対象外（定員外として扱う。防衛省「両立支援ハンドブック」2026年版 Q7）。
+    // 休みの中にある昇任は、復帰後の最初の昇任の機会（年1回。3曹は年2回）まで遅らせ、その後の昇任と昇任前の教育期間も同じだけ遅らせる。
+    // 幹部候補生の任官（階級と号俸が決まっている昇任）は定期昇任ではないので遅らせない
+    c.promotionDelay = null;
+    const ikujiLeave = !message && c.leaves.find((l) => l.kind === "ikuji");
+    if (ikujiLeave) {
+      const end = ikujiLeave.from + ikujiLeave.months,
+        hit = c.promotions.filter((p) => !p.grade && p.month >= ikujiLeave.from && p.month < end).sort((a, b) => a.month - b.month)[0];
+      if (hit) {
+        const S = R.leave.promotionStep,
+          step = hit.col === 15 ? S.sergeant : S.other,
+          at = hit.month,
+          delay = Math.ceil((end - at) / step) * step;
+        for (const p of c.promotions) if (!p.grade && p.month >= at) p.month += delay;
+        c.education = c.education.map(([s, e]) => (s > 0 && e >= at ? [s + delay, e + delay] : [s, e]));
+        if (c.eigaiStart != null && c.eigaiStart >= at) c.eigaiStart += delay;
+        c.promotionDelay = { at, delay };
+      }
+    }
     if (!message && c.leaves.length === 2) {
       const [a, b] = c.leaves;
       if (a.from < b.from + b.months && b.from < a.from + a.months) message = "育児休業と介護休暇の期間が重なっています。どちらかの年齢か月数を変えてください。";
@@ -1965,7 +2007,10 @@
       $("allowanceNotice").hidden = x.years.some((y) => y.allowances > 0);
       const benefitTotal = x.years.reduce((s, y) => s + y.benefit, 0);
       $("deductionDetail").textContent =
-        (benefitTotal ? `育児休業手当金・介護休業手当金（共済組合から。非課税）${fmt(benefitTotal)} を手取りに含めています。` : "") +
+        (benefitTotal ? `育児休業手当金・介護休業手当金など（共済組合から。非課税）${fmt(benefitTotal)} を手取りに含めています。` : "") +
+        (c.promotionDelay
+          ? `育児休業中に昇任の時期が来るため、${c.startAge + Math.floor(c.promotionDelay.at / 12)}歳ごろの昇任とその後の昇任を${c.promotionDelay.delay}か月遅らせて計算しています。`
+          : "") +
         `在職中：共済掛金 ${fmt(sum("social"))}、所得税 ${fmt(sum("incomeTax"))}、住民税 ${fmt(sum("residentTax"))}。退職後に納める住民税 ${fmt(x.afterResident)}${kokumin ? `、退職後の国民年金保険料 ${fmt(kokumin)}` : ""}${health ? `、退職後の健康保険料 ${fmt(health)}` : ""}。退職所得の税 ${fmt(r.tax)}`;
       // 比較用の要約（Aとして保存できる）
       latestSummary = {
