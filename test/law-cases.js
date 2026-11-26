@@ -539,6 +539,19 @@ const check = (cond, msg) => {
     g("ikujiAge").value = "";
     g("kaigoAge").value = "";
     set("retireReason", "teinen");
+    // 医師・歯科医師である自衛官の昇給抑制は57歳から（防衛省給与法施行令第6条の16第1項）。1曹で60歳定年（特例）、標準の4号俸の昇給
+    set("targetRank", "1曹");
+    set("startAge", 38);
+    const grades = (sp) => {
+      set("retireSpecial", sp);
+      g("simLaunch").click();
+      const x = window.salarySimulatorTax.lastModel;
+      return { err: g("simError").textContent, retire: x.monthly.length / 12 + 38, g: x.monthly.map((k) => k.grade) };
+    };
+    out.doctor = grades("doctor");
+    out.expertG = grades("expert");
+    set("retireSpecial", "none");
+    set("startAge", 18);
     return out;
   });
   {
@@ -653,6 +666,16 @@ const check = (cond, msg) => {
       bk = part(B[kj]),
       ik = part(K[kj]);
     check(ik.kimatsu === bk.kimatsu && near(ik.kinben, Math.floor(bk.kinben * kinbenP(8))), `45歳の6月：期末 ${ik.kimatsu}（期待 ${bk.kimatsu}）・勤勉 ${ik.kinben}（期待 ${bk.kinben}×0.7）`);
+    {
+      // 入隊4月・38歳（1曹の最高号俸に届かないように）。55歳・56歳の1月は、医師は昇給し（標準4号俸）、それ以外の医療職は昇給しない（標準は0）。
+      // 57歳の1月は医師も抑制で0（1曹の最高号俸に届いていないことも確かめる）
+      const D = leave.doctor,
+        X = leave.expertG,
+        at = (a) => (a - 1 - 38) * 12 + 9;
+      check(!D.err && !X.err && D.retire === 60 && X.retire === 60, `医師・医療職とも60歳定年 ${D.retire}・${X.retire} ${D.err}${X.err}`);
+      for (const a of [56, 57]) check(D.g[at(a)] - D.g[at(a) - 1] === 4 && X.g[at(a)] - X.g[at(a) - 1] === 0, `${a - 1}歳の1月の昇給：医師 ${D.g[at(a)] - D.g[at(a) - 1]}号俸（期待 4）・医療職 ${X.g[at(a)] - X.g[at(a) - 1]}号俸（期待 0）`);
+      check(D.g[at(58)] - D.g[at(58) - 1] === 0 && D.g[at(58)] < 160, `57歳の1月は医師も抑制 ${D.g[at(58)] - D.g[at(58) - 1]}号俸（期待 0、号俸 ${D.g[at(58)]}）`);
+    }
     check(/1〜36か月/.test(leave.errMax), `育休の月数の上限の案内：${leave.errMax}`);
     check(/重なっています/.test(leave.errOverlap), `育休と介護休暇の重なりの案内：${leave.errOverlap}`);
   }

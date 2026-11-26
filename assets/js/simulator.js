@@ -264,7 +264,8 @@
       const month = ((c.entryMonth - 1 + m) % 12) + 1,
         // 満年齢（誕生月を入隊月とみなす）。55歳以降は全階級で昇給が抑制される
         // （給与法第5条第2項で準用する一般職給与法第8条第8項第1号）
-        age55 = c.startAge + Math.floor(m / 12) >= R.promotion.restrictAge;
+        // （医師・歯科医師である自衛官は57歳。施行令第6条の16第1項）
+        age55 = c.startAge + Math.floor(m / 12) >= (c.restrictAge ?? R.promotion.restrictAge);
       // 昇給は毎年1月1日（将は官職で号俸が決まるので昇給しない）
       if (m > 0 && month === 1 && rank !== 0) {
         // 入隊後最初の昇給は、入隊から12月末までの月数で月割り（施行令第6条の14第2項）。
@@ -1130,7 +1131,7 @@
     const sp = $("retireSpecial")?.value,
       S = R.promotion.retireSpecial;
     if (sp === "chief" && rank === "将") return S.chief;
-    if (sp === "expert" && !["将", "将補"].includes(rank)) return Math.max(age, S.expert);
+    if ((sp === "expert" || sp === "doctor") && !["将", "将補"].includes(rank)) return Math.max(age, S[sp]);
     return age;
   }
   function updateRetirement() {
@@ -1759,6 +1760,7 @@
         message = `${name}を始める年齢は、入隊時の年齢（${c.startAge}歳）以上で、休みが退職（${c.retireAge}歳）までに終わる整数で入力してください。`;
       else c.leaves.push({ kind, from, months });
     }
+    c.restrictAge = $("retireSpecial").value === "doctor" ? R.promotion.restrictAgeDoctor : R.promotion.restrictAge;
     c.ikujiExtendMonths = Number($("ikujiExtend").value) || R.leave.ikujiBenefit.untilMonths;
     c.ikujiSupport = $("ikujiSupport").value === "yes";
     // 定期昇任日に育児休業中の者は昇任の対象外（定員外として扱う。防衛省「両立支援ハンドブック」2026年版 Q7）。
