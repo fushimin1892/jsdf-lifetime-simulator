@@ -722,8 +722,11 @@
       ? Math.max(0, ...[0, 1, 2, 3, 4].map((k) => monthly.slice(Math.max(0, monthly.length - 12 * (k + 1)), monthly.length - 12 * k).reduce((s, x) => s + (x.kasan || 0), 0)))
       : 0;
     const lump = c.ypLump === "lump";
-    let chart = null,
-      detail;
+    // グラフ（再就職の年収と受け取り額）：全部の回を、判定する年ごとの所得で調整した額の合計。
+    // 年を指定して入力していない年は、退職の翌年と同じ年収が続くとする（入力した年はその額で固定）
+    const parts = [],
+      fixedOr = (key) => (inc[key] ? I[key] : null);
+    let detail;
     if (!isNew) {
       // ---- 令和10年3月までに退職（2回払い。60歳以後の分も2回払い） ----
       const name = period ? (period.to[0] === 2026 && period.to[1] === 3 ? "改正前の制度（令和8年3月までの退職）" : `経過措置（${period.from[0]}年${period.from[1]}月〜${period.to[0]}年${period.to[1]}月の退職）`) : "本則";
@@ -735,7 +738,7 @@
           L = G - Pc * YM.lowerMultiplier,
           U = G - Pc * YM.upperMultiplier,
           [a1, a2] = adjust2(f, s, I.after, L, U, G);
-        chart = { L, U, G, first: f, second: s, got: (x) => adjust2(f, s, x, L, U, G).reduce((p, q) => p + q, 0) };
+        parts.push({ L, Z: G, full: f + s, got: (x) => adjust2(f, s, x, L, U, G).reduce((p, q) => p + q, 0) });
         Object.assign(detail, { L, U, G, full: f + s, incomeAfter: I.after });
         if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
         else {
@@ -767,7 +770,7 @@
           const L = Go - Pc * YM.lateLower,
             U = Go - Pc * YM.lateUpper,
             [a1, a2] = adjust2(f, s, I.after, L, U, Go);
-          chart = { L, U, G: Go, first: f, second: s, got: (x) => adjust2(f, s, x, L, U, Go).reduce((p, q) => p + q, 0) };
+          parts.push({ L, Z: Go, full: f + s, got: (x) => adjust2(f, s, x, L, U, Go).reduce((p, q) => p + q, 0) });
           Object.assign(detail, { L, U, G: Go, full: f + s, incomeAfter: I.after });
           if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
           else {
@@ -778,7 +781,9 @@
           // 60歳以後の分（附則第12項・第15項）：61歳の年の所得で調整。給与年額相当額は勤勉手当の率を変えて100分の70
           const L = Gl - Pc * YM.lateLower,
             U = Gl - Pc * YM.lateUpper,
-            [a1, a2] = adjust2(f, s, I.y61, L, U, Gl);
+            [a1, a2] = adjust2(f, s, I.y61, L, U, Gl),
+            x61 = fixedOr("y61");
+          parts.push({ L, Z: Gl, full: f + s, fixed: x61 != null, got: (x) => adjust2(f, s, x61 ?? x, L, U, Gl).reduce((p, q) => p + q, 0) });
           Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, income61: I.y61 });
           assumptions.push("60歳以後の分の支給月は、1回目の支給月と同じ決まり（60歳になった月の後の4月か10月）として表示しています");
           if (lump) pay("3回目・4回目を一時に・60歳以後の分", a1 + a2, (Math.floor(ym60 / 12) + 2) * 12 + YP.secondMonth - 1, "ichiji", "y61", { lump: true });
@@ -805,9 +810,9 @@
           Yv = Y(G, A),
           U = Yv - Pc * NS.upperMultiplier,
           [a1, a2, a3] = adjust3(E, I.after, I.y59, L, A, Yv, U);
-        // グラフは3回目も含める。3回目を決める年（60歳になる年の前年）の年収が空欄なら、退職の翌年と同じ年収が続くとする
-        const x3 = inc.y59 ? I.y59 : null;
-        chart = { L, U, G: Yv, first: E[0], second: E[1], third: E[2], thirdFixed: x3 != null, thirdYear: "60歳になる年の前年", lateSeparate: late > 0, got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) };
+        // 3回目は60歳になる年の前年の所得で調整する
+        const x3 = fixedOr("y59");
+        parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
         Object.assign(detail, { L, U, G, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, income59: I.y59 });
         if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
         else {
@@ -827,9 +832,9 @@
             U = Yv - Pc * NS.lateUpper,
             [a1, a2, a3] = adjust3(E, I.after, I.civ, L, A, Yv, U);
           assumptions.push("定年が60歳以上の人の給与年額相当額の割合（55〜70％）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第16項の割合を使っています");
-          // グラフは3回目も含める。3回目を決める年（自衛官以外の職員の定年の前年）の年収が空欄なら、退職の翌年と同じ年収が続くとする
-          const x3 = inc.civ ? I.civ : null;
-          chart = { L, U, G: Yv, first: E[0], second: E[1], third: E[2], thirdFixed: x3 != null, thirdYear: "自衛官以外の職員の定年の前年", got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) };
+          // 3回目は自衛官以外の職員の定年の前年の所得で調整する
+          const x3 = fixedOr("civ");
+          parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
           Object.assign(detail, { L, U, G: Go, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, incomeCiv: I.civ });
           if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
           else {
@@ -843,7 +848,10 @@
             A = Gl + Math.floor(kasanMax * YP.lateSalaryRate),
             Yv = Y(Gl, A),
             U = Yv - Pc * NS.lateUpper,
-            [a1, a2, a3] = adjust3(E, I.y61, I.civ, L, A, Yv, U);
+            [a1, a2, a3] = adjust3(E, I.y61, I.civ, L, A, Yv, U),
+            x61 = fixedOr("y61"),
+            xCiv = fixedOr("civ");
+          parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], fixed: x61 != null && xCiv != null, got: (x) => adjust3(E, x61 ?? x, xCiv ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
           assumptions.push("60歳以後の分の給与年額相当額（100分の70）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第15項と同じとしています");
           Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, lateA: A, income61: I.y61, incomeCiv: I.civ });
           pay("4回目・60歳以後の分", a1, firstPayYm(ym60), "ichiji", "y61", { full: E[0] });
@@ -852,6 +860,19 @@
         }
       }
     }
+    const moving = parts.filter((q) => !q.fixed),
+      chart = parts.length
+        ? {
+            count: payments.filter((q) => !q.tsuikyu).length,
+            lump,
+            full: parts.reduce((t, q) => t + q.full, 0),
+            L: Math.min(...parts.map((q) => q.L)),
+            Z: moving.length ? Math.max(...moving.map((q) => q.Z)) : null,
+            late: late > 0 && !over60,
+            fixedYears: ["y59", "y61", "civ"].some((k) => inc[k]),
+            got: (x) => parts.reduce((t, q) => t + q.got(x), 0),
+          }
+        : null;
     return { payments, chart, detail: { ...detail, assumptions, early, late, Pc } };
   }
   // 退職手当と若年定年退職者給付金、それぞれの退職所得の税
@@ -1315,22 +1336,18 @@
       a = r.reemploy;
     $("reemploySection").hidden = !a;
     if (!a) return;
-    const { L, U, G, first, second } = a,
-      third = a.third || 0,
-      full = first + second + third,
-      // 年収 x のときに受け取る合計（2回目・3回目の減額と、1回目の返納を差し引いた額。計算本体と同じ式）
-      got = a.got;
-    $("reemployLead").textContent = third ? "1回目から3回目の合計（60歳までの分）。" : "1回目と2回目の合計（退職の翌年の所得で決まる分）。";
+    const { L, full, got } = a,
+      // 受け取りが0になる年収（年を指定して入力した年収だけで決まる回が残るときは、そこから先は一定）
+      G = a.Z ?? L,
+      zero = got(G) <= 0;
+    $("reemployLead").textContent = a.lump ? "全部の回の合計（一時に受け取る分を含む）。" : `全部の回（${a.count}回分）の合計。`;
     $("reemploySummary").innerHTML =
       `再就職の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
-      `それを超えると減り、<b>${man(U)}円で2回目が0</b>、<b>${man(G)}円以上で1回目も全額返納</b>${third && !a.thirdFixed ? "（3回目も0）" : ""}になります。` +
+      (zero ? `それを超えると減り、<b>${man(G)}円以上で0</b>（1回目は全額返納）になります。` : `それを超えると減り、<b>${man(G)}円</b>から先は一定です。`) +
       `いまの入力（年収${man(income)}円）では <b>${fmt(Math.round(got(income)))}</b> です。` +
-      (third
-        ? a.thirdFixed
-          ? `3回目は、入力した${a.thirdYear}の年収で計算しています。`
-          : `3回目は${a.thirdYear}の年収で決まり、ここでは同じ年収が続くとしています。`
-        : "") +
-      (a.lateSeparate ? "60歳以後の分（4回目から6回目）は61歳の年の年収で決まるため、このグラフに含みません。" : "");
+      `60歳までの分は退職の翌年（3回払いの3回目は60歳になる年の前年）、` +
+      (a.late ? "60歳以後の分は61歳の年（3回払いの3回目は自衛官以外の職員の定年の前年）" : "") +
+      `の年収で決まり、ここではどの年も同じ年収としています${a.fixedYears ? "（年を指定して入力した年収は、その額で計算）" : ""}。`;
     const W = Math.max(300, box.clientWidth - 16 || 640),
       H = W < 480 ? 220 : 250,
       left = 50,
@@ -1345,7 +1362,7 @@
       X = (v) => left + (v / xMax) * plotW,
       Y = (v) => top + plotH - (v / yMax) * plotH,
       // 区切り（下限・上限・全額返納）と、その間を細かく刻んだ点で線を描く（令和10年4月以後の式は折れ点が増えるため）
-      xs = [...new Set([0, Math.max(0, L), U, G, xMax, ...Array.from({ length: 121 }, (_, i) => (xMax * i) / 120)])].filter((v) => v >= 0 && v <= xMax).sort((p, q) => p - q);
+      xs = [...new Set([0, Math.max(0, L), G, xMax, ...Array.from({ length: 121 }, (_, i) => (xMax * i) / 120)])].filter((v) => v >= 0 && v <= xMax).sort((p, q) => p - q);
     let svg = `<defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aaa175" stop-opacity=".55"/><stop offset="1" stop-color="#aaa175" stop-opacity=".05"/></linearGradient></defs>`;
     for (let i = 0; i <= 4; i++) {
       svg += `<line x1="${left}" x2="${W - right}" y1="${Y(yStep * i)}" y2="${Y(yStep * i)}" stroke="${i ? "#e9ebe6" : "#d6d9cf"}" ${i ? 'stroke-dasharray="3 4"' : ""}/>`;
@@ -1368,7 +1385,7 @@
             ? `<text x="${X(v) - 4}" y="${top + 12 + row * 14}" text-anchor="end" font-size="11" fill="${color}" font-weight="700">${label}</text>`
             : `<text x="${X(v) + 4}" y="${top + 12 + row * 14}" font-size="11" fill="${color}" font-weight="700">${label}</text>`)
         : "";
-    svg += mark(L, `満額の上限 ${man(L)}`, "#566530", 0) + mark(U, `2回目0 ${man(U)}`, "#777048", 1) + mark(G, `全額返納 ${man(G)}`, "#a0453a", 2);
+    svg += mark(L, `満額の上限 ${man(L)}`, "#566530", 0) + (G > L ? mark(G, `${zero ? "0になる" : "以後一定"} ${man(G)}`, "#a0453a", 1) : "");
     // 入力した年収の位置
     const ix = Math.min(income, xMax);
     svg +=
