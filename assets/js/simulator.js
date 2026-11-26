@@ -633,6 +633,40 @@
     return m <= 3 ? y * 12 + 3 : m <= 9 ? y * 12 + 9 : (y + 1) * 12 + 3;
   };
   const ymText = (ym) => `${Math.floor(ym / 12)}年${(ym % 12) + 1}月`;
+  // 2回払いの調整（令和10年3月までに退職）：2回目＝満額×（上限−所得）÷（上限−下限）、上限を超えたら1回目の一部を返納、
+  // 給与年額相当額（full）以上なら1回目を全額返納（第27条の4第1項〜第3項）
+  const adjust2 = (first, second, x, L, U, full) => {
+    if (x <= L) return [first, second];
+    const s = x >= U ? 0 : Math.floor((second * (U - x)) / (U - L)),
+      back = x <= U ? 0 : x >= full ? first : Math.floor((first * (x - U)) / (full - U));
+    return [first - back, s];
+  };
+  // 3回払いの調整（令和10年4月以後に退職。第27条の4）：支給調整額＝0.75×（合計−合計×（加算調整上限額−所得）÷（加算調整上限額−下限））
+  //   ＝0.75×合計×（所得−下限）÷（加算調整上限額−下限）。2回目から引き、支給調整上限額以上で2回目は0。
+  //   支給調整上限額を超え給与年額調整額未満なら（支給調整額−2回目の満額）を1回目から返納、給与年額調整額以上なら1回目を全額返納。
+  //   3回目は3回目の判定年の所得で、0.25×合計×（所得−下限）÷（加算調整上限額−下限）を引き、給与年額調整額以上なら0
+  const adjust3 = ([e1, e2, e3], x2, x3, L, A, Y, U) => {
+    const T = e1 + e2 + e3,
+      cut = (share, x) => (x > L ? Math.floor((share * T * (x - L)) / (A - L)) : 0);
+    let s1 = e1,
+      s2 = e2,
+      s3 = e3;
+    if (x2 > L) {
+      const d = cut(YP.newSystem.secondShare, x2);
+      s2 = x2 >= U ? 0 : Math.max(0, e2 - d);
+      if (x2 >= Y) s1 = 0;
+      else if (x2 > U) s1 = Math.max(0, e1 - Math.max(0, d - e2));
+    }
+    s3 = x3 >= Y ? 0 : Math.max(0, e3 - cut(YP.newSystem.thirdShare, x3));
+    return [s1, s2, s3];
+  };
+  // 再就職の年収のグラフ：回のまとまり（parts）ごとに、年収 x のときの受け取り額を足す。
+  // parts は数値だけ（type 2：2回払い、type 3：3回払い。x・x2・x3 は年を指定して入力した所得で、null なら x と同じ年収が続くとする）
+  const chartGot = (chart, x) =>
+    chart.parts.reduce(
+      (t, q) => t + (q.type === 2 ? adjust2(q.first, q.second, q.x ?? x, q.L, q.U, q.G) : adjust3(q.E, q.x2 ?? x, q.x3 ?? x, q.L, q.A, q.Y, q.U)).reduce((a, b) => a + b, 0),
+      0,
+    );
   function youngPension(table, c, monthly, age, civil) {
     const last = monthly.at(-1),
       P = last.basePay,
@@ -689,33 +723,6 @@
       const keys = Object.keys(rates).map(Number);
       return years < Math.min(...keys) ? [1, 1] : rates[Math.min(years, Math.max(...keys))];
     };
-    // 2回払いの調整（令和10年3月までに退職）：2回目＝満額×（上限−所得）÷（上限−下限）、上限を超えたら1回目の一部を返納、
-    // 給与年額相当額（full）以上なら1回目を全額返納（第27条の4第1項〜第3項）
-    const adjust2 = (first, second, x, L, U, full) => {
-      if (x <= L) return [first, second];
-      const s = x >= U ? 0 : Math.floor((second * (U - x)) / (U - L)),
-        back = x <= U ? 0 : x >= full ? first : Math.floor((first * (x - U)) / (full - U));
-      return [first - back, s];
-    };
-    // 3回払いの調整（令和10年4月以後に退職。第27条の4）：支給調整額＝0.75×（合計−合計×（加算調整上限額−所得）÷（加算調整上限額−下限））
-    //   ＝0.75×合計×（所得−下限）÷（加算調整上限額−下限）。2回目から引き、支給調整上限額以上で2回目は0。
-    //   支給調整上限額を超え給与年額調整額未満なら（支給調整額−2回目の満額）を1回目から返納、給与年額調整額以上なら1回目を全額返納。
-    //   3回目は3回目の判定年の所得で、0.25×合計×（所得−下限）÷（加算調整上限額−下限）を引き、給与年額調整額以上なら0
-    const adjust3 = ([e1, e2, e3], x2, x3, L, A, Y, U) => {
-      const T = e1 + e2 + e3,
-        cut = (share, x) => (x > L ? Math.floor((share * T * (x - L)) / (A - L)) : 0);
-      let s1 = e1,
-        s2 = e2,
-        s3 = e3;
-      if (x2 > L) {
-        const d = cut(NS.secondShare, x2);
-        s2 = x2 >= U ? 0 : Math.max(0, e2 - d);
-        if (x2 >= Y) s1 = 0;
-        else if (x2 > U) s1 = Math.max(0, e1 - Math.max(0, d - e2));
-      }
-      s3 = x3 >= Y ? 0 : Math.max(0, e3 - cut(NS.thirdShare, x3));
-      return [s1, s2, s3];
-    };
     // 加算調整上限額に使う、退職前5年間の各年（退職日から12か月ずつ）の対象手当の合計額のうち最も高い額
     // （政令の定め方は未公布のため、12か月ずつに区切る方法は試算の仮定）
     const kasanMax = isNew
@@ -738,7 +745,7 @@
           L = G - Pc * YM.lowerMultiplier,
           U = G - Pc * YM.upperMultiplier,
           [a1, a2] = adjust2(f, s, I.after, L, U, G);
-        parts.push({ L, Z: G, full: f + s, got: (x) => adjust2(f, s, x, L, U, G).reduce((p, q) => p + q, 0) });
+        parts.push({ type: 2, first: f, second: s, L, U, G, x: null });
         Object.assign(detail, { L, U, G, full: f + s, incomeAfter: I.after });
         if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
         else {
@@ -770,7 +777,7 @@
           const L = Go - Pc * YM.lateLower,
             U = Go - Pc * YM.lateUpper,
             [a1, a2] = adjust2(f, s, I.after, L, U, Go);
-          parts.push({ L, Z: Go, full: f + s, got: (x) => adjust2(f, s, x, L, U, Go).reduce((p, q) => p + q, 0) });
+          parts.push({ type: 2, first: f, second: s, L, U, G: Go, x: null });
           Object.assign(detail, { L, U, G: Go, full: f + s, incomeAfter: I.after });
           if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
           else {
@@ -783,7 +790,7 @@
             U = Gl - Pc * YM.lateUpper,
             [a1, a2] = adjust2(f, s, I.y61, L, U, Gl),
             x61 = fixedOr("y61");
-          parts.push({ L, Z: Gl, full: f + s, fixed: x61 != null, got: (x) => adjust2(f, s, x61 ?? x, L, U, Gl).reduce((p, q) => p + q, 0) });
+          parts.push({ type: 2, first: f, second: s, L, U, G: Gl, x: x61 });
           Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, income61: I.y61 });
           assumptions.push("60歳以後の分の支給月は、1回目の支給月と同じ決まり（60歳になった月の後の4月か10月）として表示しています");
           if (lump) pay("3回目・4回目を一時に・60歳以後の分", a1 + a2, (Math.floor(ym60 / 12) + 2) * 12 + YP.secondMonth - 1, "ichiji", "y61", { lump: true });
@@ -812,7 +819,7 @@
           [a1, a2, a3] = adjust3(E, I.after, I.y59, L, A, Yv, U);
         // 3回目は60歳になる年の前年の所得で調整する
         const x3 = fixedOr("y59");
-        parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
+        parts.push({ type: 3, E, L, A, Y: Yv, U, x2: null, x3 });
         Object.assign(detail, { L, U, G, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, income59: I.y59 });
         if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
         else {
@@ -834,7 +841,7 @@
           assumptions.push("定年が60歳以上の人の給与年額相当額の割合（55〜70％）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第16項の割合を使っています");
           // 3回目は自衛官以外の職員の定年の前年の所得で調整する
           const x3 = fixedOr("civ");
-          parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], got: (x) => adjust3(E, x, x3 ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
+          parts.push({ type: 3, E, L, A, Y: Yv, U, x2: null, x3 });
           Object.assign(detail, { L, U, G: Go, A, Y: Yv, full: E[0] + E[1] + E[2], incomeAfter: I.after, incomeCiv: I.civ });
           if (lump) pay("1回目・2回目を一時に", a1 + a2, (ry + 2) * 12 + YP.secondMonth - 1, "ichiji", "after", { lump: true });
           else {
@@ -851,7 +858,7 @@
             [a1, a2, a3] = adjust3(E, I.y61, I.civ, L, A, Yv, U),
             x61 = fixedOr("y61"),
             xCiv = fixedOr("civ");
-          parts.push({ L, Z: Yv, full: E[0] + E[1] + E[2], fixed: x61 != null && xCiv != null, got: (x) => adjust3(E, x61 ?? x, xCiv ?? x, L, A, Yv, U).reduce((p, q) => p + q, 0) });
+          parts.push({ type: 3, E, L, A, Y: Yv, U, x2: x61, x3: xCiv });
           assumptions.push("60歳以後の分の給与年額相当額（100分の70）と加算の扱いは、令和10年4月以後の政令が未公布のため、今の施行令附則第15項と同じとしています");
           Object.assign(detail, { lateL: L, lateU: U, lateG: Gl, lateA: A, income61: I.y61, incomeCiv: I.civ });
           pay("4回目・60歳以後の分", a1, firstPayYm(ym60), "ichiji", "y61", { full: E[0] });
@@ -860,17 +867,19 @@
         }
       }
     }
-    const moving = parts.filter((q) => !q.fixed),
+    // 年収で動く回のまとまり（年を指定した所得だけで決まるものを除く）。0になる年収は、その中で最も高い給与年額相当額など
+    const moving = parts.filter((q) => (q.type === 2 ? q.x == null : q.x2 == null || q.x3 == null)),
       chart = parts.length
         ? {
             count: payments.filter((q) => !q.tsuikyu).length,
             lump,
-            full: parts.reduce((t, q) => t + q.full, 0),
+            full: parts.reduce((t, q) => t + (q.type === 2 ? q.first + q.second : q.E[0] + q.E[1] + q.E[2]), 0),
             L: Math.min(...parts.map((q) => q.L)),
-            Z: moving.length ? Math.max(...moving.map((q) => q.Z)) : null,
+            Z: moving.length ? Math.max(...moving.map((q) => (q.type === 2 ? q.G : q.Y))) : null,
             late: late > 0 && !over60,
+            over60,
             fixedYears: ["y59", "y61", "civ"].some((k) => inc[k]),
-            got: (x) => parts.reduce((t, q) => t + q.got(x), 0),
+            parts,
           }
         : null;
     return { payments, chart, detail: { ...detail, assumptions, early, late, Pc } };
@@ -1331,12 +1340,22 @@
     el.addEventListener("pointerleave", hide);
   }
   // 再就職の年収と、若年定年退職者給付金（60歳までの分）の受け取り額のグラフ
+  // 給付金の各回を決める所得の年（給与法第27条の4・附則第12項〜第15項）。3回払い（令和10年4月以後の退職）は3回目・6回目の年が別
+  const yearsText = (a) => {
+    const three = a.parts[0].type === 3;
+    if (a.over60) return `退職の翌年${three ? "（3回目は自衛官以外の職員の定年の前年）" : ""}`;
+    return (
+      `60歳までの分は退職の翌年${three ? "（3回目は60歳になる年の前年）" : ""}` +
+      (a.late ? `、60歳以後の分は61歳の年${three ? "（6回目は自衛官以外の職員の定年の前年）" : ""}` : "")
+    );
+  };
   function drawReemployChart(r, income) {
     const box = $("reemployChart"),
       a = r.reemploy;
     $("reemploySection").hidden = !a;
     if (!a) return;
-    const { L, full, got } = a,
+    const { L, full } = a,
+      got = (x) => chartGot(a, x),
       // 受け取りが0になる年収（年を指定して入力した年収だけで決まる回が残るときは、そこから先は一定）
       G = a.Z ?? L,
       zero = got(G) <= 0;
@@ -1345,9 +1364,7 @@
       `再就職の年収が <b>${man(Math.max(0, L))}円以下</b>なら満額（${fmt(full)}）。` +
       (zero ? `それを超えると減り、<b>${man(G)}円以上で0</b>（1回目は全額返納）になります。` : `それを超えると減り、<b>${man(G)}円</b>から先は一定です。`) +
       `いまの入力（年収${man(income)}円）では <b>${fmt(Math.round(got(income)))}</b> です。` +
-      `60歳までの分は退職の翌年（3回払いの3回目は60歳になる年の前年）、` +
-      (a.late ? "60歳以後の分は61歳の年（3回払いの3回目は自衛官以外の職員の定年の前年）" : "") +
-      `の年収で決まり、ここではどの年も同じ年収としています${a.fixedYears ? "（年を指定して入力した年収は、その額で計算）" : ""}。`;
+      `${yearsText(a)}の年収で決まり、ここではどの年も同じ年収としています${a.fixedYears ? "（年を指定して入力した年収は、その額で計算）" : ""}。`;
     const W = Math.max(300, box.clientWidth - 16 || 640),
       H = W < 480 ? 220 : 250,
       left = 50,
