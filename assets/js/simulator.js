@@ -232,6 +232,33 @@
           startMonth: g.from,
           endMonth: g.from + 36,
         }));
+    // 育児休業・介護休暇で休む月（入隊からの月数）。kind は "ikuji" か "kaigo"、idx は休み始めてから何か月目か（0から）
+    const leaveAt = (m) => {
+      for (const l of c.leaves || []) if (m >= l.from && m < l.from + l.months) return { kind: l.kind, idx: m - l.from, total: l.months };
+      return null;
+    };
+    // 基準日（6月1日・12月1日）以前6か月の在職期間・勤務期間から、休んだ期間を除く（人事院規則9-40第5条・第11条）
+    const LV = R.leave,
+      bonusPeriods = (m) => {
+        const from = Math.max(0, m - 6),
+          inside = m - from;
+        let ikuji = 0,
+          ikujiCut = 0,
+          kaigo = 0;
+        for (let k = from; k < m; k++) {
+          const l = leaveAt(k);
+          if (l?.kind === "ikuji") {
+            ikuji++;
+            if (l.total > LV.bonusIkujiMinMonths) ikujiCut++;
+          }
+          if (l?.kind === "kaigo") kaigo++;
+        }
+        const kaigoCut = kaigo * LV.workdays > LV.kinbenKaigoDays ? kaigo : 0;
+        // 基準日以前6か月に勤務した日がなければ、期末手当・勤勉手当とも支給しない（育児休業法第8条、規則9-40第11条第2項第13号）
+        const worked = inside - ikuji - kaigo > 0;
+        // 入隊から6か月未満は、入隊からの月数が在職期間（今までと同じ）
+        return { kimatsu: worked ? inside - ikujiCut / 2 : 0, kinben: worked ? inside - ikujiCut - kaigoCut : 0, worked };
+      };
     for (let m = 0; m < (c.retireAge - c.startAge) * 12; m++) {
       // 暦の月（1〜12）。入隊月から数える
       const month = ((c.entryMonth - 1 + m) % 12) + 1,
@@ -342,37 +369,54 @@
         const scale = c.bonus / B.annualMonths,
           cls = bonusClass(rank, special, c.manager),
           [kimatsuPer, kinbenPer] = bonusPer(cls, fyNow, month);
-        kinben = Math.floor(kinbenBase * kinbenPer * scale * kinbenRate(m, 0));
-        bonus = Math.floor(kimatsuBase * kimatsuPer * scale * kimatsuRate(m)) + kinben;
+        const bp = bonusPeriods(m),
+          kinbenMonths = Math.floor(bp.kinben),
+          kinbenDays = bp.kinben - kinbenMonths >= 0.5 ? 15 : 0;
+        kinben = bp.worked && bp.kinben > 0 ? Math.floor(kinbenBase * kinbenPer * scale * kinbenRate(kinbenMonths, kinbenDays)) : 0;
+        bonus = bp.worked && bp.kimatsu > 0 ? Math.floor(kimatsuBase * kimatsuPer * scale * kimatsuRate(bp.kimatsu)) + kinben : 0;
       }
       const sum = (filter) => window.allowanceSimulator.monthly(list.filter(filter), pay, m, firstPay, regionalExtra),
-        allowances = Math.floor(sum(() => true) + eigai + special),
+        leave = leaveAt(m),
+        // 休まずに勤務した場合の手当（共済の標準報酬の基礎に使う）
+        workAllowances = Math.floor(sum(() => true) + eigai + special),
+        // 育児休業の月は給与を支給しない。介護休暇の月は俸給などを減額し、扶養手当・住居手当だけを支給する
+        allowances = !leave
+          ? workAllowances
+          : leave.kind === "ikuji"
+            ? 0
+            : Math.floor(sum((a) => LV.kaigoKeep.includes(a.kind ?? a.name))),
         // 年1回まとめて支給する分（指定場所生活調整金）は、共済掛金では期末手当等と同じに扱う
         lump = sum((a) => a.method === "year_end"),
         ym = (c.entryYear || 2026) * 12 + c.entryMonth - 1 + m;
+      const leaveOff = !!leave;
       monthly.push({
-        pay,
+        pay: leaveOff ? 0 : pay,
         basePay: pay,
+        leave,
+        // 共済の標準報酬の基礎（休んでいる月は、休む前と同じ報酬とみなす。休業中の月は定時決定・随時改定に使わない）
+        remBase: pay + workAllowances - lump,
         col: rank,
         rank: candidate ? "幹部候補生（教育中）" : rankNames[rank],
         grade: candidate ? null : level + 1,
         promotions: events.filter((e) => e.month === m),
         bonus,
+        // その月に支給した勤勉手当（賞与のうち。検査で使う）
+        kinben,
         allowances,
-        lump,
+        lump: leaveOff ? 0 : lump,
         // 非課税の通勤手当、若年定年退職者給付金の計算に使う扶養手当・営外手当
         // 通勤手当は、所得税の非課税限度額（定期代と、車の片道距離ごとの限度額。合わせて月15万円）までが非課税
-        nontax: Math.floor(
+        nontax: leaveOff ? 0 : Math.floor(
           list
             .filter((a) => (a.kind ?? a.name) === "通勤手当")
             .reduce((s, a) => s + Math.min(window.allowanceSimulator.monthly([a], pay, m, firstPay, regionalExtra), a.nontaxAmount ?? Infinity), 0),
         ),
-        fuyou: sum((a) => (a.kind ?? a.name) === "扶養手当"),
-        eigai,
+        fuyou: leave?.kind === "ikuji" ? 0 : sum((a) => (a.kind ?? a.name) === "扶養手当"),
+        eigai: leaveOff ? 0 : eigai,
         // 所得金額調整控除の条件に使う：扶養手当を受けている子（22歳になった後の最初の3月まで）がいる月
         childUnder23: list.some((a) => (a.children || []).some((k) => ymNow >= k.from && ymNow <= k.end)),
         // 令和10年4月以後に退職した人の加算調整上限額に使う手当（給与法第27条の4第1項）：俸給の特別調整額・対象の手当・勤勉手当
-        kasan: Math.floor(special + sum((a) => YP.newSystem.kasanNames.includes(a.kind ?? a.name)) + kinben),
+        kasan: leaveOff ? kinben : Math.floor(special + sum((a) => YP.newSystem.kasanNames.includes(a.kind ?? a.name)) + kinben),
         year: Math.floor(ym / 12),
         ym,
         age: c.startAge + Math.floor(m / 12),
@@ -383,7 +427,8 @@
     //   定時決定：毎年4〜6月の報酬の平均で、9月から翌年8月まで（6月1日以後に入隊した年と、7〜9月に随時改定した年は行わない）
     //   随時改定：報酬が変わった月から3か月の平均が2等級以上ずれたら、4か月目から改定
     const N = monthly.length,
-      remOf = (x) => x.pay + x.allowances - x.lump,
+      // 標準報酬の基礎の報酬。育児休業・介護休暇の月は、休む前と同じ報酬とみなす
+      remOf = (x) => x.remBase ?? x.pay + x.allowances - x.lump,
       gradeOf = (v) => {
         let g = 0;
         while (g + 1 < KY.stdTable.length && v >= KY.stdTable[g + 1][0]) g++;
@@ -440,6 +485,29 @@
         Math.floor(stdPension * longRate) +
         Math.floor(bShort * shortRate) +
         Math.floor(Math.min(b, KY.bonusPensionCap) * longRate);
+      // 育児休業の月は共済掛金を免除する（国家公務員共済組合法第100条の2。休業を始めた月から、終わった日の翌日の属する月の前月まで）。
+      // 休業の月の手当金（非課税）：標準報酬の日額（月額の22分の1。5円未満切り捨て・5円以上は10円に切り上げ）× 割合 × 22日。月の上限は雇用保険の給付と同じ額
+      // 月の手取りの表示に使う、毎月の給与から引く共済掛金（期末手当等の分を除く）
+      x.socialMonth = Math.floor(stdShort * shortRate) + Math.floor(stdPension * longRate);
+      x.stdShort = stdShort;
+      x.benefit = 0;
+      if (x.leave) {
+        const LV = R.leave,
+          day = Math.round(stdShort / LV.workdays / 10) * 10;
+        if (x.leave.kind === "ikuji") {
+          x.social = 0;
+          x.socialMonth = 0;
+          const IB = LV.ikujiBenefit;
+          if (x.leave.idx < IB.untilMonths) {
+            const first = x.leave.idx < IB.firstMonths;
+            x.benefit = Math.min(Math.floor(day * (first ? IB.first : IB.rest)) * LV.workdays, first ? IB.capFirst : IB.capRest);
+          }
+        } else {
+          const KB = LV.kaigoBenefit,
+            days = Math.max(0, Math.min(LV.workdays, KB.days - x.leave.idx * LV.workdays));
+          x.benefit = Math.min(Math.floor(day * KB.rate) * days, Math.floor((KB.cap * days) / LV.workdays));
+        }
+      }
       // 老齢厚生年金（報酬比例部分）の見込みに使う、厚生年金の標準報酬月額と標準賞与額
       x.pensionStd = stdPension + Math.min(b, KY.bonusPensionCap);
     }
@@ -494,7 +562,17 @@
         yearTotal = salary + extra,
         social = slice.reduce((sum, month) => sum + month.social, 0),
         it = slice.reduce((sum, month) => sum + month.incomeTax, 0),
-        rt = slice.reduce((sum, month) => sum + month.residentTax, 0);
+        rt = slice.reduce((sum, month) => sum + month.residentTax, 0),
+        // 育児休業手当金・介護休業手当金（共済組合から。非課税なので手取りにそのまま加える）
+        benefit = slice.reduce((sum, month) => sum + (month.benefit || 0), 0),
+        // 賞与を除いた毎月の手取りの平均：給与＋手当＋手当金 − 毎月の共済掛金 − 所得税（給与の分）− 住民税
+        monthNet = Math.round(
+          slice.reduce((sum, x) => {
+            const regular = x.pay + x.allowances - x.nontax,
+              itShare = x.taxable > 0 ? Math.round((x.incomeTax * Math.max(0, regular)) / x.taxable) : 0;
+            return sum + x.pay + x.allowances + (x.benefit || 0) - x.socialMonth - itShare - x.residentTax;
+          }, 0) / slice.length,
+        );
       total += yearTotal;
       // 昇任のない年は年度末の階級・号俸、昇任した年は「昇任前 → 昇任時」の階級・号俸を出す
       const steps = [];
@@ -515,7 +593,9 @@
         incomeTax: it,
         residentTax: rt,
         deductions: social + it + rt,
-        net: yearTotal - social - it - rt,
+        benefit,
+        monthNet,
+        net: yearTotal - social - it - rt + benefit,
       });
     }
     return { total, years, monthly, events, afterResident, retire: retirement(table, c, monthly) };
@@ -796,7 +876,14 @@
     // 任期満了金を受けた任期は、その後の退職手当の勤続期間から除く（国家公務員退職手当法第7条第5項）
     const paidMonths = terms.length ? c.ninki.terms[terms.length - 1].end : 0,
       // 高等工科学校の卒業生は、生徒の期間の2分の1を勤続期間に通算する（自衛官として6か月以上在職した場合。防衛省給与法第28条の2第4項）
-      months = monthly.length - paidMonths + (c.studentCreditMonths && monthly.length >= 6 ? c.studentCreditMonths : 0),
+      // 育児休業の月（休職月等）は、子が1歳に達した日の属する月までは3分の1、それ以後は2分の1を勤続期間から除く（端数は切り上げ。
+      // 育児休業法第10条第2項、退職手当法第7条第4項、退職手当法施行令第5条の2）。介護休暇の月の扱いは確かめられていないので除かない
+      ikujiOut = (() => {
+        const list = monthly.slice(paidMonths).filter((x) => x.leave?.kind === "ikuji"),
+          under1 = list.filter((x) => x.leave.idx < R.leave.retireIkujiUnder1Months).length;
+        return Math.ceil(under1 / 3) + Math.ceil((list.length - under1) / 2);
+      })(),
+      months = monthly.length - paidMonths - ikujiOut + (c.studentCreditMonths && monthly.length >= 6 ? c.studentCreditMonths : 0),
       last = monthly.at(-1),
       P = last.basePay,
       n = Math.floor(months / 12) || (months >= 6 ? 1 : 0),
@@ -1602,6 +1689,10 @@
       incomeY59Biz: "60歳になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
       incomeCiv: "自衛官以外の職員の定年になる年の前年の給与収入は0〜5,000万円で入力するか、空欄にしてください。",
       incomeCivBiz: "自衛官以外の職員の定年になる年の前年の事業所得は0〜5,000万円で入力するか、空欄にしてください。",
+      ikujiAge: "育児休業を始める年齢は整数で入力するか、取らない場合は空欄にしてください。",
+      ikujiMonths: "育児休業の月数は1〜36か月の整数で入力してください（子が3歳になるまで）。",
+      kaigoAge: "介護休暇を始める年齢は整数で入力するか、取らない場合は空欄にしてください。",
+      kaigoMonths: "介護休暇の月数は1〜6か月の整数で入力してください（1人の家族につき通算6か月まで）。",
       selfRetireAge: "自己都合で退職する年齢は、入隊時の年齢より大きく、定年の年齢以下の整数で入力してください。",
     };
     const invalid = inputs.find((el) => el.value.trim() === "" || !el.checkValidity());
@@ -1632,6 +1723,26 @@
       else c.retireAge = a;
     }
     if (!message && c.retireAge <= c.startAge) message = "入隊時の年齢は定年年齢より小さくしてください。";
+    // 育児休業・介護休暇：休み始める年齢（空欄なら取らない）と月数。在職中に収まり、2つが重ならないこと
+    c.leaves = [];
+    for (const [kind, ageId, monthsId, name, max] of [
+      ["ikuji", "ikujiAge", "ikujiMonths", "育児休業", R.leave.ikujiMaxMonths],
+      ["kaigo", "kaigoAge", "kaigoMonths", "介護休暇", R.leave.kaigoMaxMonths],
+    ]) {
+      if (message || $(ageId).value.trim() === "") continue;
+      const age = value(ageId),
+        months = value(monthsId),
+        from = Math.round((age - c.startAge) * 12);
+      if (!Number.isInteger(months) || months < 1 || months > max) message = `${name}の月数は1〜${max}か月の整数で入力してください。`;
+      else if (!Number.isInteger(age) || age < c.startAge || from + months > Math.round((c.retireAge - c.startAge) * 12))
+        message = `${name}を始める年齢は、入隊時の年齢（${c.startAge}歳）以上で、休みが退職（${c.retireAge}歳）までに終わる整数で入力してください。`;
+      else c.leaves.push({ kind, from, months });
+    }
+    if (!message && c.leaves.length === 2) {
+      const [a, b] = c.leaves;
+      if (a.from < b.from + b.months && b.from < a.from + a.months) message = "育児休業と介護休暇の期間が重なっています。どちらかの年齢か月数を変えてください。";
+    }
+    if (message) for (const id of ["ikujiAge", "ikujiMonths", "kaigoAge", "kaigoMonths"]) if (message.startsWith(id.startsWith("ikuji") ? "育児" : "介護")) $(id).closest("details").open = true;
     if (!message && table[c.initialGrade - 1]?.[18] == null) {
       const max = table.reduce((n, row, i) => (row[18] != null ? i + 1 : n), 0);
       message = `入隊時の2士の号俸は、給料表にある1〜${max}号俸で入力してください。`;
@@ -1668,6 +1779,8 @@
           }
           x = model(table, c);
         }
+      // 検査（test/law-cases.js）が月ごとの値を確かめるために残す。画面の表示には使わない
+      window.salarySimulatorTax.lastModel = x;
       const reached = x.monthly.at(-1).rank,
         lastRank = `${reached}${x.monthly.at(-1).grade ? ` ${x.monthly.at(-1).grade}号俸` : ""}`;
       $("totalIncome").textContent = fmt(x.total);
@@ -1694,7 +1807,7 @@
       $("simRows").innerHTML = x.years
         .map(
           (y) =>
-            `<tr><td>${y.age}〜${y.age + 1}歳</td><td>${y.ranks}</td><td>${fmt(y.salary)}</td><td>${fmt(y.bonus)}</td><td>${fmt(y.allowances)}</td><td>${fmt(y.total)}</td><td>${fmt(y.deductions)}</td><td>${fmt(y.net)}</td></tr>`,
+            `<tr><td>${y.age}〜${y.age + 1}歳</td><td>${y.ranks}</td><td>${fmt(y.salary)}</td><td>${fmt(y.bonus)}</td><td>${fmt(y.allowances)}</td><td>${fmt(y.total)}</td><td>${fmt(y.deductions)}</td><td>${fmt(y.net)}</td><td>${fmt(y.monthNet)}</td></tr>`,
         )
         .join("");
       // 退職手当・若年定年退職者給付金と、生涯の手取り
@@ -1848,7 +1961,11 @@
             fmt(basicPension + hirei),
             `老齢基礎年金 ${fmt(basicPension)}（令和8年度の満額をもとに、${exemptMonths ? `退職後に免除した${exemptMonths}か月を2分の1として` : "20〜60歳の40年間すべて納めた場合として"}計算）＋老齢厚生年金の報酬比例部分 ${fmt(hirei)}（在職中の標準報酬×5.481/1000）。退職等年金給付・加給年金・賃金の再評価は含まず、生涯の手取りにも含めません`,
           );
+      // 手当を1つも入れていないときは、結果の上で知らせる（押すと手当の欄を開く）
+      $("allowanceNotice").hidden = x.years.some((y) => y.allowances > 0);
+      const benefitTotal = x.years.reduce((s, y) => s + y.benefit, 0);
       $("deductionDetail").textContent =
+        (benefitTotal ? `育児休業手当金・介護休業手当金（共済組合から。非課税）${fmt(benefitTotal)} を手取りに含めています。` : "") +
         `在職中：共済掛金 ${fmt(sum("social"))}、所得税 ${fmt(sum("incomeTax"))}、住民税 ${fmt(sum("residentTax"))}。退職後に納める住民税 ${fmt(x.afterResident)}${kokumin ? `、退職後の国民年金保険料 ${fmt(kokumin)}` : ""}${health ? `、退職後の健康保険料 ${fmt(health)}` : ""}。退職所得の税 ${fmt(r.tax)}`;
       // 比較用の要約（Aとして保存できる）
       latestSummary = {
@@ -1987,6 +2104,13 @@
     });
 
   // ---- 年ごとの表を CSV で保存する（この端末の中だけで作り、どこにも送らない） ----
+  // 「手当を入れる」：手当の欄を開いてそこへ移る
+  $("openAllowances").addEventListener("click", () => {
+    const d = $("allowanceTitle").closest("details");
+    d.open = true;
+    d.scrollIntoView({ behavior: "smooth", block: "start" });
+    d.querySelector("summary").focus({ preventScroll: true });
+  });
   $("csvSim")?.addEventListener("click", () => {
     const table = $("simRows").closest("table"),
       rows = [...table.querySelectorAll("tr")].map((tr) => [...tr.cells].map((cell) => cell.textContent.trim()));

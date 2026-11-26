@@ -52,10 +52,10 @@
     <link rel="preload" href="assets/fonts/noto-sans-jp.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="assets/fonts/jetbrains-mono.woff2" as="font" type="font/woff2" crossorigin />
     <!-- デザイン（assets/css）。base（骨組み）→ simulator-fix（調整）→ design（見た目）→ print（印刷）の順に上書きするので、並びを変えない -->
-    <link rel="stylesheet" href="assets/css/base.css?v=20261125-5" />
-    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261125-5" />
-    <link rel="stylesheet" href="assets/css/design.css?v=20261125-5" />
-    <link rel="stylesheet" href="assets/css/print.css?v=20261125-5" />
+    <link rel="stylesheet" href="assets/css/base.css?v=20261126-2" />
+    <link rel="stylesheet" href="assets/css/simulator-fix.css?v=20261126-2" />
+    <link rel="stylesheet" href="assets/css/design.css?v=20261126-2" />
+    <link rel="stylesheet" href="assets/css/print.css?v=20261126-2" />
   </head>
   <body>
     <i class="c-scroll-progress" aria-hidden="true"></i>
@@ -806,6 +806,39 @@
               <small id="publicReemployNote" class="c-field-note">なる場合、若年定年退職者給付金は支給されません（給与法第27条の2第1項ただし書。任期付き・非常勤・一時的な任用は除く）</small>
             </div>
           </div>
+          <h4 class="c-sim-more__sub">育児休業・介護休暇</h4>
+          <div class="c-simulator__grid">
+            <div>
+              <label for="ikujiAge">育児休業を始める年齢</label>
+              <div class="c-unit-input">
+                <input id="ikujiAge" type="number" min="16" max="70" step="1" placeholder="取らない" data-optional="1" aria-describedby="ikujiNote" /><span>歳</span>
+              </div>
+            </div>
+            <div>
+              <label for="ikujiMonths">育児休業の月数</label>
+              <div class="c-unit-input">
+                <input id="ikujiMonths" type="number" min="1" max="36" step="1" value="12" aria-describedby="ikujiNote" /><span>か月</span>
+              </div>
+              <small id="ikujiNote" class="c-field-note"
+                >子が生まれた月から休むとして計算します（子が3歳になるまで）。休んでいる月は給与が出ず、共済掛金は免除、共済組合から育児休業手当金（非課税。子が1歳になるまで、標準報酬の67％・7か月目から50％）が出ます。賞与は休んだ期間に応じて減り、退職手当の勤続期間から休んだ月の3分の1（子が1歳になった月より後は2分の1）を除きます。号俸は、復帰したあと休んだ期間も勤務したとみなして調整されるとして、減らしません。昇任の日に休んでいると、その時の昇任の対象にならないため、入力した昇任の時期より遅れることがあります（国家公務員の育児休業等に関する法律第5条・第8条〜第10条、同法第27条、国家公務員共済組合法第68条の2・第100条の2）</small
+              >
+            </div>
+            <div>
+              <label for="kaigoAge">介護休暇を始める年齢</label>
+              <div class="c-unit-input">
+                <input id="kaigoAge" type="number" min="16" max="70" step="1" placeholder="取らない" data-optional="1" aria-describedby="kaigoNote" /><span>歳</span>
+              </div>
+            </div>
+            <div>
+              <label for="kaigoMonths">介護休暇の月数</label>
+              <div class="c-unit-input">
+                <input id="kaigoMonths" type="number" min="1" max="6" step="1" value="3" aria-describedby="kaigoNote" /><span>か月</span>
+              </div>
+              <small id="kaigoNote" class="c-field-note"
+                >1人の家族の介護につき通算6か月まで（自衛隊法施行規則第49条の2）。月の全日を休むとして計算します。俸給などは減り、扶養手当・住居手当はそのまま出ます。共済掛金はかかり、共済組合から介護休業手当金（非課税。通算66日まで標準報酬の67％）が出ます。勤勉手当は休んだ日が30日を超えると減ります。退職手当の勤続期間を減らすかどうかは公式の資料で確かめられていないため、減らしていません</small
+              >
+            </div>
+          </div>
           <h4 class="c-sim-more__sub">退職後の健康保険・年金</h4>
           <div class="c-simulator__grid">
             <div>
@@ -898,6 +931,10 @@
               <p class="c-result-hero__net">税金・共済掛金などを引いた手取りの目安 <b id="lifetimeNet"></b></p>
               <small class="c-result-hero__detail" id="totalDetail"></small>
             </div>
+            <p class="c-result-notice" id="allowanceNotice" hidden>
+              手当が入っていません。営外手当・扶養手当・地域手当・配置手当などを入れると、年収が増えます。
+              <button type="button" class="c-action-btn" id="openAllowances">手当を入れる</button>
+            </p>
             <div class="c-metrics c-metrics--joined">
               <div><small>勤務期間</small><strong id="serviceYears"></strong></div>
               <div><small>給与計算上の最終階級・号俸</small><strong id="lastRank"></strong></div>
@@ -967,6 +1004,7 @@
                       <th>推定年収</th>
                       <th>税・共済掛金</th>
                       <th>手取り</th>
+                      <th>月の手取り（賞与を除く平均）</th>
                     </tr>
                   </thead>
                   <tbody id="simRows"></tbody>
@@ -1045,6 +1083,7 @@
                     対応している改正：防衛省の職員の給与等に関する法律の一部を改正する法律（令和8年法律第89号、2026年11月20日公布）、一般職の職員の給与に関する法律等の一部を改正する法律（令和8年法律第79号、2026年11月18日公布）、人事院規則9-40-66（2026年11月18日公布）。2027年4月1日に施行される部分（賞与の6月・12月の割合をそろえる改正、単身赴任手当の距離の加算の廃止、転居手当の新設）は、2027年4月以後の月の計算に入れています。
                   </p>
                   <ul>
+                    <li>2026-11-26：育児休業・介護休暇を入れられるようにした（休み始める年齢と月数。給与・共済掛金・育児休業手当金と介護休業手当金・賞与・退職手当を法令どおりに計算）。年齢ごとの内訳に「月の手取り（賞与を除く平均）」を足した。手当を入れていないときに知らせ、手当の欄を開けるようにした</li>
                     <li>2026-11-25：シミュレーターを使いやすくした。結果のいちばん上に「自衛隊での生涯年収（給料・ボーナス・手当＋退職手当＋若年定年退職者給付金）」と手取りの目安を大きく出し、再就職の年収で給付金がいくらになるかのグラフを結果の上のほうへ移した。昇任の時期・手当・賞与・家族・健康保険などは、押すと開くまとまりにした（開かなければ初期値で計算）。あまり使わない入力欄（年ごとの収入・事業所得・追給・給付金の受け取り方・給与年額調整額の仮定・国民健康保険の料率）は出さず、初期値で計算するようにした。結果の数字の重なりをなくし、勤務期間などを生涯年収の下につなげた。「退職・税金・社会保険」も押すと開くまとまりにした。「俸給を調べる」に毎月の手取りの目安を足した。上の帯の「生涯年収を試算」ボタンをなくした。計算の結果は変わらない</li>
                     <li>2026-11-24：若年定年退職者給付金を退職した時期ごとの制度にした（令和9年度の退職は年8か月分、令和10年4月以後は年9か月分を3回に分けて支給。令和8年法律第53号）。60歳以後の分の所得による調整、事業所得の扱い、支給月、一時に受け取る選び方、2回目以降を一時所得とする税を追加。給与所得を所得税法別表第五で計算し、所得金額調整控除・通勤手当の非課税限度額・退職所得控除の勤続年数の切り上げを反映。自己都合で退職する年齢を選べるようにした。航海手当を陸・空でも選べるようにし（給与法第17条）、指定場所生活調整金を一般曹候補生・任期制だけにした（同法第26条の2）。定年の特例、配置手当を受ける期間、給付金の追給・以前の自衛官の期間の通算・公務員になる場合、国民健康保険料の料率からの計算を追加</li>
                     <li>2026-11-22：令和8年の給与法の改正を反映（俸給表の全号俸、営外手当 8,200円、賞与 年4.7か月、広域異動手当 8％・16％、単身赴任手当・転居手当、特地勤務手当の自動計算）。高等工科学校の卒業生の入隊区分、曹長・准尉からの3尉昇任、駐屯地・基地を選ぶだけの寒冷地手当、子の生まれた年度で決まる扶養手当、経歴のひな形、CSV保存を追加。スマホ幅の表示と文字の大きさの設定を改善</li>
@@ -1090,9 +1129,9 @@
       </div>
     </footer>
     <!-- 俸給表などの数値（assets/data）と、計算・動きのプログラム（assets/js）。後のファイルが前のファイルの値を使うので、読み込む順番を変えない -->
-    <script src="assets/data/pay-table.js?v=20261125-5"></script>
-    <script src="assets/data/promotion-table.js?v=20261125-5"></script>
-    <script src="assets/js/pay-lookup.js?v=20261125-5"></script>
+    <script src="assets/data/pay-table.js?v=20261126-2"></script>
+    <script src="assets/data/promotion-table.js?v=20261126-2"></script>
+    <script src="assets/js/pay-lookup.js?v=20261126-2"></script>
     <button
       class="c-sim-launch"
       id="simLaunch"
@@ -1103,11 +1142,11 @@
       <span class="c-sim-launch__icon" aria-hidden="true">↗</span
       ><span class="c-sim-launch__text">生涯年収を試算</span>
     </button>
-    <script src="assets/data/rules.js?v=20261125-5"></script>
-    <script src="assets/js/regional-rate.js?v=20261125-5"></script>
-    <script src="assets/js/allowances.js?v=20261125-5"></script>
-    <script src="assets/js/simulator.js?v=20261125-5"></script>
-    <script src="assets/js/simulator-dialog.js?v=20261125-5"></script>
+    <script src="assets/data/rules.js?v=20261126-2"></script>
+    <script src="assets/js/regional-rate.js?v=20261126-2"></script>
+    <script src="assets/js/allowances.js?v=20261126-2"></script>
+    <script src="assets/js/simulator.js?v=20261126-2"></script>
+    <script src="assets/js/simulator-dialog.js?v=20261126-2"></script>
     <!-- 説明ページ：項目ごとに説明を分けて表示する（中身はスクリプトが各項目から集めて作る） -->
     <dialog id="notesPage" aria-labelledby="notesTitle">
       <header class="c-notes__head">
@@ -1116,11 +1155,11 @@
       </header>
       <div class="c-notes__body" id="notesBody"></div>
     </dialog>
-    <script src="assets/js/notes-page.js?v=20261125-5"></script>
-    <script src="assets/js/effects.js?v=20261125-5"></script>
-    <script src="assets/js/crystals-core.js?v=20261125-5"></script>
-    <script src="assets/js/crystals.js?v=20261125-5"></script>
-    <script src="assets/js/scroll-lock.js?v=20261125-5"></script>
-    <script src="assets/js/print.js?v=20261125-5"></script>
+    <script src="assets/js/notes-page.js?v=20261126-2"></script>
+    <script src="assets/js/effects.js?v=20261126-2"></script>
+    <script src="assets/js/crystals-core.js?v=20261126-2"></script>
+    <script src="assets/js/crystals.js?v=20261126-2"></script>
+    <script src="assets/js/scroll-lock.js?v=20261126-2"></script>
+    <script src="assets/js/print.js?v=20261126-2"></script>
   </body>
 </html>
